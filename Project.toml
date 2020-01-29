@@ -9,4 +9,6 @@ NetCDF = "30363a11-5582-574a-97bb-aa9a979735b9"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 
 [compat]
+NetCDF = "0.8.2"
+Plots = "0.28.4"
 julia = "1"
