@@ -20,11 +20,11 @@ using ArgoData, Plots
 fi="MITprof/MITprof_mar2016_argo9506.nc"
 (lo,la,ye)=MITprof_read(fi)
 
-h = histogram(ye,bins=20,label=fi,title="number of Argo profiles with time")
+h = histogram(ye,bins=20,label=fi[end-10:end],title="Argo profiles")
 
 ye0=2004; ye1=ye0.+1
 kk=findall((ye.>ye0) .* (ye.<ye1))
-scatter(lo[kk],la[kk],label=fi,title="number of Argo profiles ")
+scatter(lo[kk],la[kk],label=fi[end-10:end],title="Argo profiles count")
 ```
 """
 function MITprof_read(f::String="MITprof/MITprof_mar2016_argo9506.nc")
