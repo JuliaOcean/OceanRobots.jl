@@ -6,4 +6,6 @@
 /dev/
 /docs/build/
 /docs/site/
+MITprof
+examples/*.ipynb
 .ipynb_checkpoints/
