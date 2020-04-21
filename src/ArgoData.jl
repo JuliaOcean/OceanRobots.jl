@@ -2,7 +2,9 @@ module ArgoData
 
 using NetCDF, Dates
 
-export MITprof_read, MITprof_loop
+include("DownloadArgo.jl")
+
+export MITprof_read, MITprof_loop, DownloadArgo
 
 """
     MITprof_read(f::String="MITprof/MITprof_mar2016_argo9506.nc")
