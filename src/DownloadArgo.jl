@@ -82,7 +82,7 @@ function mitprof_interp_setup(fil::String)
     meta["inclV"] = false
     meta["inclPTR"] = false
     meta["inclSSH"] = false
-    meta["TPOTfromTINSITU"] = 1
+    meta["TPOTfromTINSITU"] = true
 
     meta["doInterp"] = 1
     meta["addGrid"] = 1
@@ -201,20 +201,141 @@ function GetOneProfile(ds,m)
 
     prof=Dict()
     prof["pnum_txt"]=pnum_txt
-    prof["ymd"]=ymd
-    prof["hms"]=hms
-    prof["lat"]=lat
-    prof["lon"]=lon
-    prof["direc"]=direc
-    prof["T"]=t
-    prof["S"]=s
-    prof["p"]=p
-    prof["T_ERR"]=t_ERR
-    prof["S_ERR"]=s_ERR
+    prof["ymd"]=convert(Union{Int,Missing},ymd)
+    prof["hms"]=convert(Union{Int,Missing},hms)
+    prof["lat"]=convert(Union{Float64,Missing},lat)
+    prof["lon"]=convert(Union{Float64,Missing},lon)
+    prof["direc"]=convert(Union{Int,Missing},direc)
+    prof["T"]=convert(Array{Union{Float64,Missing}},t)
+    prof["S"]=convert(Array{Union{Float64,Missing}},s)
+    prof["p"]=convert(Array{Union{Float64,Missing}},p)
+    prof["T_ERR"]=convert(Array{Union{Float64,Missing}},t_ERR)
+    prof["S_ERR"]=convert(Array{Union{Float64,Missing}},s_ERR)
     prof["isBAD"]=isBAD
     prof["DATA_MODE"]=ds["DATA_MODE"][m]
 
     return prof
+end
+
+
+"""
+    sw_dpth(P,LAT)
+
+Calculate depth in meters from pressure (P; in decibars) and
+latitude (LAT; in °N)
+
+```
+d = sw_dpth(100.0,20.0)
+```
+"""
+function sw_dpth(P,LAT)
+    # Original author:  Phil Morgan 92-04-06  (morgan@ml.csiro.au)
+    # Reference: Unesco 1983. Algorithms for computation of fundamental properties of
+    # seawater, 1983. _Unesco Tech. Pap. in Mar. Sci._, No. 44, 53 pp. Eqn 25, p26
+
+    c1 = 9.72659
+    c2 = -2.2512E-5
+    c3 = 2.279E-10
+    c4 = -1.82E-15
+    gam_dash = 2.184e-6
+
+    LAT = abs.(LAT)
+    X   = sin.(deg2rad.(LAT))
+    X   = X.*X
+    bot_line = 9.780318*(1.0+(5.2788E-3+2.36E-5*X).*X) + gam_dash*0.5*P
+    top_line = (((c4*P+c3).*P+c2).*P+c1).*P
+    DEPTHM   = top_line./bot_line
+
+    return DEPTHM
+end
+
+"""
+    sw_ptmp(S,T,P,PR)
+
+Calculate potential temperature as per UNESCO 1983 report from salinity (S;
+in psu), in situ temperature (T; in °C), and pressure (P; in decibar)
+relative to PR (in decibar; 0 by default).
+
+```
+ptmp = sw_ptmp(S,T,P,PR=missing)
+```
+"""
+function sw_ptmp(S,T,P,PR=0.0)
+# Original author:  Phil Morgan
+# Reference: Fofonoff, P. and Millard, R.C. Jr
+#    Unesco 1983. Algorithms for computation of fundamental properties of
+#    seawater. _Unesco Tech. Pap. in Mar. Sci._, No. 44. Eqn.(31) p.39
+#    Bryden, H. 1973.
+#    "New Polynomials for thermal expansion, adiabatic temperature gradient
+#    and potential temperature of sea water." DEEP-SEA RES., 1973, Vol 20
+
+# theta1
+del_P  = PR - P
+del_th = del_P.*sw_adtg(S,T,P);
+th     = T + 0.5*del_th;
+q      = del_th;
+
+# theta2
+del_th = del_P.*sw_adtg(S,th,P+0.5*del_P);
+th     = th + (1 - 1/sqrt(2))*(del_th - q);
+q      = (2-sqrt(2))*del_th + (-2+3/sqrt(2))*q;
+
+# theta3
+del_th = del_P.*sw_adtg(S,th,P+0.5*del_P);
+th     = th + (1 + 1/sqrt(2))*(del_th - q);
+q      = (2 + sqrt(2))*del_th + (-2-3/sqrt(2))*q;
+
+# theta4
+del_th = del_P.*sw_adtg(S,th,P+del_P);
+PT     = th + (del_th - 2*q)/6;
+
+return PT
+end
+
+
+"""
+    sw_adtg(S,T,P)
+
+Calculate adiabatic temperature gradient as per UNESCO 1983 routines from salinity
+(S; in psu), in situ temperature (T; in °C), and pressure (P; in decibar)
+```
+adtg = sw_adtg(S,T,P)
+```
+"""
+function sw_adtg(S,T,P)
+    # Original author:  Phil Morgan
+    # Reference: Fofonoff, P. and Millard, R.C. Jr
+    #    Unesco 1983. Algorithms for computation of fundamental properties of
+    #    seawater. _Unesco Tech. Pap. in Mar. Sci._, No. 44. Eqn.(31) p.39
+    #    Bryden, H. 1973.
+    #    "New Polynomials for thermal expansion, adiabatic temperature gradient
+    #    and potential temperature of sea water." DEEP-SEA RES., 1973, Vol 20
+
+    a0 =  3.5803E-5;
+    a1 =  8.5258E-6;
+    a2 = -6.836E-8;
+    a3 =  6.6228E-10;
+
+    b0 =  1.8932E-6;
+    b1 = -4.2393E-8;
+
+    c0 =  1.8741E-8;
+    c1 = -6.7795E-10;
+    c2 =  8.733E-12;
+    c3 = -5.4481E-14;
+
+    d0 = -1.1351E-10;
+    d1 =  2.7759E-12;
+
+    e0 = -4.6206E-13;
+    e1 =  1.8676E-14;
+    e2 = -2.1687E-16;
+
+    ADTG =      a0 + (a1 + (a2 + a3.*T).*T).*T + (b0 + b1.*T).*(S-35.0) +
+    ( (c0 + (c1 + (c2 + c3.*T).*T).*T) + (d0 + d1.*T).*(S-35.0) ).*P +
+    (  e0 + (e1 + e2.*T).*T ).*P.*P
+
+    return ADTG
 end
 
 end
