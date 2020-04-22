@@ -6,6 +6,7 @@
 /dev/
 /docs/build/
 /docs/site/
+argo
 MITprof
 examples/*.ipynb
 .ipynb_checkpoints/
