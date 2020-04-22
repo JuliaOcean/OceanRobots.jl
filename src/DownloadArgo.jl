@@ -84,9 +84,9 @@ function mitprof_interp_setup(fil::String)
     meta["inclSSH"] = false
     meta["TPOTfromTINSITU"] = true
 
-    meta["doInterp"] = 1
-    meta["addGrid"] = 1
-    meta["outputMore"] = 0
+    meta["doInterp"] = true
+    meta["addGrid"] = true
+    meta["outputMore"] = false
     meta["method"] = "interp"
     meta["fillval"] = -9999.0
     meta["buffer_size"] = 10000
