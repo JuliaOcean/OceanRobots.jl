@@ -6,8 +6,8 @@ using Printf, Dates, YAML, NetCDF, NCDatasets, CSV, DataFrames, Dierckx
     GDAC_FTP(b::String,y::Int,m::Int)
 
 Download Argo data files for one regional domain (b), year (y), and
-month (m) from the `GDAC` FTP server (ftp://ftp.ifremer.fr/ifremer/argo
-or, equivalently, ftp://usgodae.org/pub/outgoing/argo).
+month (m) from the `GDAC` FTP server (`ftp://ftp.ifremer.fr/ifremer/argo`
+or, equivalently, `ftp://usgodae.org/pub/outgoing/argo`).
 
 ```
 b="atlantic"; yy=2009:2009; mm=8:12;

@@ -7,8 +7,8 @@ using NetCDF, Dates
 
 Standard Depth Argo Data Example.
 
-Here we read the `MITprof` standard depth data set from https://doi.org/10.7910/DVN/EE3C40
-For more information, please refer to Forget, et al 2015 (http://dx.doi.org/10.5194/gmd-8-3071-2015)
+Here we read the `MITprof` standard depth data set from `https://doi.org/10.7910/DVN/EE3C40`
+For more information, please refer to Forget, et al 2015 (`http://dx.doi.org/10.5194/gmd-8-3071-2015`)
 The produced figure shows the number of profiles as function of time for a chosen file
     and maps out the locations of Argo profiles collected for a chosen year.
 

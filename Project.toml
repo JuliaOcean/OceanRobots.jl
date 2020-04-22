@@ -15,4 +15,9 @@ YAML = "ddb6d928-2868-570f-bddf-ab3f9cf99eb6"
 
 [compat]
 NetCDF = "0.10"
+CSV = "0.6"
+DataFrames = "0.20"
+Dierckx = "0.4"
+NCDatasets = "0.10"
+YAML = "0.4"
 julia = "1"

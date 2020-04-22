@@ -6,5 +6,7 @@ This package is at a very early stage of development. Stay tuned ...
 ```
 
 ```@autodocs
-Modules = [ArgoData]
+Modules = [MITprof,DownloadArgo]
+Order   = [:type,:function]
 ```
+
