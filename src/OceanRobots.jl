@@ -1,4 +1,4 @@
-module ArgoData
+module OceanRobots
 
 include("MITprof.jl")
 include("DownloadArgo.jl")

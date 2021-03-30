@@ -1,4 +1,4 @@
-# ArgoData.jl
+# OceanRobots.jl
 
 This package is at a very early stage of development. Stay tuned ...
 

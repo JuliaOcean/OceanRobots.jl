@@ -1,6 +1,6 @@
-using ArgoData
+using OceanRobots
 using Test
 
-@testset "ArgoData.jl" begin
+@testset "OceanRobots.jl" begin
     # Write your own tests here.
 end

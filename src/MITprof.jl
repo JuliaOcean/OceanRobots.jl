@@ -13,7 +13,7 @@ The produced figure shows the number of profiles as function of time for a chose
     and maps out the locations of Argo profiles collected for a chosen year.
 
 ```
-using ArgoData, Plots
+using OceanRobots, Plots
 
 fi="MITprof/MITprof_mar2016_argo9506.nc"
 (lo,la,ye)=MITprof.read(fi)

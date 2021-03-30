@@ -1,7 +1,7 @@
-name = "ArgoData"
-uuid = "9eb831cf-c491-48dc-bed4-6aca718df73c"
+name = "OceanRobots"
+uuid = "0b51df41-3294-4961-8d23-db645e32016d"
 authors = ["gaelforget <gforget@mit.edu>"]
-version = "0.1.4"
+version = "0.0.1"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
