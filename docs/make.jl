@@ -6,12 +6,12 @@ makedocs(;
     pages=[
         "Home" => "index.md",
     ],
-    repo="https://github.com/gaelforget/ArgoData.jl/blob/{commit}{path}#L{line}",
+    repo="https://github.com/JuliaOcean/ArgoData.jl/blob/{commit}{path}#L{line}",
     sitename="ArgoData.jl",
     authors="gaelforget <gforget@mit.edu>",
     assets=String[],
 )
 
 deploydocs(;
-    repo="github.com/gaelforget/ArgoData.jl",
+    repo="github.com/JuliaOcean/ArgoData.jl",
 )
