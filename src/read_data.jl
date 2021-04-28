@@ -81,7 +81,8 @@ function drifters_ElipotEtAl16()
 Loop over all files and call drifters_ElipotEtAl16 with rng=(t0,t1)
 
 ```
-Threads.@threads for y in 2005:2020
+@everywhere using OceanRobots, CSV
+@distributed for y in 2005:2020
     df=drifters_ElipotEtAl16(y+0.0,y+1.0)
     fil="Drifter_hourly_v013/driftertraj_"*string(y)*".csv"
     CSV.write(fil, df)
