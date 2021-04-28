@@ -55,17 +55,16 @@ function drifters_ElipotEtAl16(fil::String;chnk=1000,rng=(-Inf,Inf))
     end
  
     return df
- end
+end
  
-
- """
+"""
     drifters_ElipotEtAl16()
 
 Path name and file list for near-surface [drifter data](https://doi.org/10.1002/2016JC011716)
 from the [Global Drifter Program](https://doi.org/10.25921/7ntx-z961)
 
 ```
-pth,list=drifters_ElipotEtAl16()
+pth,lst=drifters_ElipotEtAl16()
 ```
 """
 function drifters_ElipotEtAl16()
@@ -75,4 +74,27 @@ function drifters_ElipotEtAl16()
        "driftertrajWMLE_1.02_block6.nc","driftertrajWMLE_1.03_block7.nc"]
     return pth,lst
  end   
+ 
+ """
+    drifters_ElipotEtAl16(t0::Number,t1::Number)
+
+Loop over all files and call drifters_ElipotEtAl16 with rng=(t0,t1)
+
+```
+Threads.@threads for y in 2005:2020
+    df=drifters_ElipotEtAl16(y+0.0,y+1.0)
+    fil="Drifter_hourly_v013/driftertraj_"*string(y)*".csv"
+    CSV.write(fil, df)
+end
+```
+"""
+function drifters_ElipotEtAl16( t0::Number,t1::Number )
+    pth,lst=drifters_ElipotEtAl16()
+    df = DataFrame([fill(Int, 1) ; fill(Float64, 3)], [:ID, :lon, :lat, :t])
+    for fil in lst
+       println(fil)
+       append!(df,drifters_ElipotEtAl16( pth*fil,chnk=10000,rng=(t0,t1) ))
+    end
+    return df
+ end
  
