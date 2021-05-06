@@ -9,7 +9,8 @@ module DrifterViz
 using OceanRobots, MeshArrays, GLMakie, CSV, DataFrames
 import Proj4
 
-export animate_positions, proj_map, map_positions, background_stuff
+export proj_map, subset_positions, animate_positions
+export background_stuff, update_stuff!
 
 """
     animate_positions()
@@ -18,34 +19,76 @@ Plot positions in a loop, generate a movie
 
 ```
 #tt=collect(2000:0.1:2003)
-#df.y=2000 .+ df.t ./86400/365
-
-#source = LonLat(); dest = WinkelTripel();
-#scene = proj_map(DL,colorrange=(3.,4.))
-#animate_positions(scene,df,tt,"tmp.mp4")
+animate_positions(B)
 ```
 """
-function animate_positions()
-    return false
+function animate_positions(B)
+    time = Node(2005.1)
+    timestamps = 2005.1:0.01:2010.1
+    framerate = 20
+
+    dt=0.1
+    t0 = @lift($time-dt)
+    t1 = @lift($time+dt)
+    #(x,y) = @lift( DrifterViz.subset_positions(B,$(t0),$(t1)) )
+    xy = @lift( DrifterViz.subset_positions(B,$(t0),$(t1)) )
+    x = @lift($xy[:,1])
+    y = @lift($xy[:,2])
+    
+    #f=scatter(x,y)
+    #record(f, "tmp.mp4", timestamps; framerate = 30) do t
+    #    time[] = t
+    #end
+    
+    F=DrifterViz.proj_map(B)
+    ax = F[1, 1]
+    pnts = scatter!(ax, x, y, show_axis = false, color=:white, markersize=3, strokewidth=0.0)
+
+    #xy=Proj4.transform(B.source, B.dest, [70.0 50.0])
+    #txt=text!(ax,"$t0",position = (xy[1],xy[2]),color=:red) #textsize = 1e6
+
+    N=record(F, joinpath(tempdir(),"tmp.mp4"), timestamps; framerate = framerate) do t
+        time[] = t
+    end
+
+    return F,N
 end
 
-function map_positions(F,B,df)
-    ax = F[1, 1]
+"""
+    update_stuff!(B,t0,t1)
+"""
+function update_stuff!(B,t0,t1)
+    tst=(maximum(B.df[1].t)>t1)||(minimum(B.df[1].t)<t0)
+    if tst
+        pth,lst=DrifterViz.drifters_ElipotEtAl16()
+        tmp=readdir(pth)
+        tmp=tmp[findall(occursin.("driftertraj_",tmp))]
+        y0=Int(floor(minimum(B.df[1].t)))
+        df1=DataFrame(CSV.File(pth*"driftertraj_$(y0).csv"))
+        df2=DataFrame(CSV.File(pth*"driftertraj_$(y0+1).csv"))
+        B.df[1]=vcat(df1,df2)
+    end
+end
 
-    nmax=10000
-    x=fill(NaN,nmax)
-    y=fill(NaN,nmax)
-    x=df.lon; y=df.lat
-
-    xy=Proj4.transform(B.source, B.dest, [vec(x) vec(y)])
-
-    pnts = scatter!(ax,xy[:,1], xy[:,2],show_axis = false, color=:white, markersize=5)
-
-    t0=1.2345678 #round(tt[1],digits=2)
-    xy=Proj4.transform(B.source, B.dest, [70.0 50.0])
-    txt=text!(ax,"$t0",position = (xy[1],xy[2]),color=:red) #textsize = 1e6
-
-    return pnts,txt
+"""
+    subset_positions(B,t0,t1)
+"""
+#update the observables
+function subset_positions(B,t0,t1)
+    update_stuff!(B,t0,t1)
+    #
+    df=B.df[1]
+    df=df[df.t .> t0,:]
+    df=df[df.t .<= t1,:]
+    #
+    nmax=1000000
+    xy=fill(NaN,nmax,2)
+    npos=length(df.lon)
+    npos>nmax ? println("nmax exceeded; skipping data") : nothing #println("$npos")
+    npos=min(npos,nmax)
+    xy[1:npos,:]=Proj4.transform(B.source, B.dest, [vec(df.lon[1:npos]) vec(df.lat[1:npos])])
+    #
+    return xy
 end
 
 """
@@ -56,8 +99,8 @@ Geographic projection map of c using geomakie
 ```
 B=DrifterViz.background_stuff();
 F=DrifterViz.proj_map(B);
-df=B.df[1:1000:end,:]
-pnts,txt=DrifterViz.map_positions(F,B,df);
+#df=DrifterViz.subset_positions(B,2005.15,2005.16)
+F,N=DrifterViz.animate_positions(B)
 F
 ```
 """
@@ -107,6 +150,9 @@ end
 
 ##
 
+"""
+    background_stuff()
+"""
 function background_stuff()
     Γ=GridLoad(GridSpec("LatLonCap",MeshArrays.GRID_LLC90))
     
@@ -132,7 +178,10 @@ function background_stuff()
     ##
 
     pth,lst=drifters_ElipotEtAl16();
-    df=DataFrame(CSV.File(pth*"driftertraj_2010.csv"))
+    y0=2005
+    df1=DataFrame(CSV.File(pth*"driftertraj_$(y0).csv"))
+    df2=DataFrame(CSV.File(pth*"driftertraj_$(y0+1).csv"))
+    df=[vcat(df1,df2)]
 
     return (;lon,lat,DL,x,y,z,rng,source,dest,df)
 end
