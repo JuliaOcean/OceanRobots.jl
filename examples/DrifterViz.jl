@@ -1,12 +1,13 @@
 using GLMakie
 AbstractPlotting.inline!(true)
+#using CairoMakie
 
 #using ColorSchemes
 #using FixedPointNumbers
 
 module DrifterViz
 
-using OceanRobots, MeshArrays, GLMakie, CSV, DataFrames
+using OceanRobots, MeshArrays, CSV, DataFrames, GLMakie
 import Proj4
 
 export proj_map, subset_positions, animate_positions
@@ -24,31 +25,28 @@ animate_positions(B)
 """
 function animate_positions(B)
     time = Node(2005.1)
-    timestamps = 2005.1:0.01:2010.1
+    timestamps = 2005.1:0.01:2018.9
     framerate = 20
 
     dt=0.1
-    t0 = @lift($time-dt)
-    t1 = @lift($time+dt)
-    #(x,y) = @lift( DrifterViz.subset_positions(B,$(t0),$(t1)) )
-    xy = @lift( DrifterViz.subset_positions(B,$(t0),$(t1)) )
-    x = @lift($xy[:,1])
-    y = @lift($xy[:,2])
-    
-    #f=scatter(x,y)
-    #record(f, "tmp.mp4", timestamps; framerate = 30) do t
-    #    time[] = t
-    #end
-    
+    ii = @lift(findall( (B.df[1].t .> $time-dt).*(B.df[1].t .< $time+dt) ))
+    tt = @lift( string($time) )
+
+    nmax=100000
+    x = @lift( [B.df[1].x[$ii];fill(NaN,nmax-length($ii))])
+    y = @lift( [B.df[1].y[$ii];fill(NaN,nmax-length($ii))])
+
     F=DrifterViz.proj_map(B)
     ax = F[1, 1]
     pnts = scatter!(ax, x, y, show_axis = false, color=:white, markersize=3, strokewidth=0.0)
+    #color = vel, colorrange=(0.,5.0), colormap=:turbo
 
-    #xy=Proj4.transform(B.source, B.dest, [70.0 50.0])
-    #txt=text!(ax,"$t0",position = (xy[1],xy[2]),color=:red) #textsize = 1e6
+    xy=Proj4.transform(B.source, B.dest, [70.0 50.0])
+    txt=text!(ax,tt,position = (xy[1],xy[2]),color=:red) #textsize = 1e6
 
     N=record(F, joinpath(tempdir(),"tmp.mp4"), timestamps; framerate = framerate) do t
         time[] = t
+        #println(t)
     end
 
     return F,N
@@ -64,9 +62,13 @@ function update_stuff!(B,t0,t1)
         tmp=readdir(pth)
         tmp=tmp[findall(occursin.("driftertraj_",tmp))]
         y0=Int(floor(minimum(B.df[1].t)))
+
         df1=DataFrame(CSV.File(pth*"driftertraj_$(y0).csv"))
         df2=DataFrame(CSV.File(pth*"driftertraj_$(y0+1).csv"))
         B.df[1]=vcat(df1,df2)
+
+        tt=sort(unique(B.df[1].t))[1:24:end]
+        B.df[1]=filter(row -> sum(row.t .== tt)>0 ,B.df[1])
     end
 end
 
@@ -75,13 +77,14 @@ end
 """
 #update the observables
 function subset_positions(B,t0,t1)
-    update_stuff!(B,t0,t1)
+    #update_stuff!(B,t0,t1)
     #
     df=B.df[1]
     df=df[df.t .> t0,:]
     df=df[df.t .<= t1,:]
+
     #
-    nmax=1000000
+    nmax=100000
     xy=fill(NaN,nmax,2)
     npos=length(df.lon)
     npos>nmax ? println("nmax exceeded; skipping data") : nothing #println("$npos")
@@ -178,10 +181,22 @@ function background_stuff()
     ##
 
     pth,lst=drifters_ElipotEtAl16();
+
     y0=2005
-    df1=DataFrame(CSV.File(pth*"driftertraj_$(y0).csv"))
-    df2=DataFrame(CSV.File(pth*"driftertraj_$(y0+1).csv"))
-    df=[vcat(df1,df2)]
+    y1=2018
+    df=[DataFrame()]
+    for y=y0:y1
+        println("loading $(y)")
+        tmp=DataFrame(CSV.File(pth*"driftertraj_$(y).csv"))
+        tt=sort(unique(tmp.t))[1:24:end]
+        tmp=filter(row -> sum(row.t .== tt)>0 ,tmp)
+
+        xy=Proj4.transform(source, dest, [vec(tmp.lon) vec(tmp.lat)])
+        tmp.x=xy[:,1]
+        tmp.y=xy[:,2]
+    
+        df[1]=vcat(df[1],tmp)
+    end
 
     return (;lon,lat,DL,x,y,z,rng,source,dest,df)
 end
