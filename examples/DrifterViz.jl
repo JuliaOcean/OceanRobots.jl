@@ -25,14 +25,20 @@ animate_positions(B)
 """
 function animate_positions(B)
     time = Node(2005.1)
-    timestamps = 2005.1:0.01:2018.9
+    #timestamps = 2005.1:0.01:2018.9
+    timestamps = 0.0:0.01:3.0
     framerate = 20
 
-    dt=0.1
-    ii = @lift(findall( (B.df[1].t .> $time-dt).*(B.df[1].t .< $time+dt) ))
-    tt = @lift( string($time) )
+    #dt=0.1
+    #ii = @lift(findall( (B.df[1].t .> $time-dt).*(B.df[1].t .< $time+dt) ))
+    #tt = @lift( string($time) )
 
-    nmax=100000
+    dt=7.0
+    dd=@lift( 360.0*($time-floor.($time)) )
+    ii = @lift(findall( (abs.(B.df[1].d .- $dd).<dt).|(abs.(B.df[1].d .- $dd).> 360.0-dt) ))
+    tt = @lift( string($dd) )
+    
+    nmax=200000
     x = @lift( [B.df[1].x[$ii];fill(NaN,nmax-length($ii))])
     y = @lift( [B.df[1].y[$ii];fill(NaN,nmax-length($ii))])
 
@@ -159,8 +165,17 @@ end
 function background_stuff()
     Γ=GridLoad(GridSpec("LatLonCap",MeshArrays.GRID_LLC90))
     
-    lon=[i for i=-179.5:1.0:179.5, j=-78.5:1.0:78.5]
-    lat=[j for i=-179.5:1.0:179.5, j=-78.5:1.0:78.5]
+#Global Ocean
+    lo=[collect(20.5:1.0:179.5); collect(-179.5:1.0:19.5)]
+    la=collect(-78.5:0.5:78.5)
+
+#North Pacific 
+#    lo=[collect(110.0:0.5:180.0); collect(-180.0:0.5:-90.0)]
+#    la=collect(-20.0:0.25:50.0)
+
+    lon=[i for i in lo, j in la]
+    lat=[j for i in lo, j in la]
+
     (f,i,j,w)=InterpolationFactors(Γ,vec(lon),vec(lat))
     
     DL=log10.(Interpolate(Γ["Depth"],f,i,j,w))
@@ -171,12 +186,12 @@ function background_stuff()
     ##
 
     source=Proj4.Projection("+proj=longlat +datum=WGS84")
-    dest=Proj4.Projection("+proj=wintri +lon_0=200.0 +lat_1=0.0 +x_0=0.0 +y_0=0.0 +ellps=GRS80")
+    dest=Proj4.Projection("+proj=eqearth +lon_0=200.0 +lat_1=0.0 +x_0=0.0 +y_0=0.0 +ellps=GRS80")
 
     tmp=Proj4.transform(source, dest, [lon[:] lat[:]])
-    x=circshift(reshape(tmp[:,1],size(lon)),(-200,0))
-    y=circshift(reshape(tmp[:,2],size(lon)),(-200,0))
-    z=circshift(DL,(-200,0))
+    x=reshape(tmp[:,1],size(lon))
+    y=reshape(tmp[:,2],size(lon))
+    z=DL
 
     ##
 
@@ -191,9 +206,13 @@ function background_stuff()
         tt=sort(unique(tmp.t))[1:24:end]
         tmp=filter(row -> sum(row.t .== tt)>0 ,tmp)
 
+        #geographical projection for plotting
         xy=Proj4.transform(source, dest, [vec(tmp.lon) vec(tmp.lat)])
         tmp.x=xy[:,1]
         tmp.y=xy[:,2]
+
+        #pseudo-day of 360-day-year
+        tmp.d=360.0*(tmp.t-floor.(tmp.t))
     
         df[1]=vcat(df[1],tmp)
     end
