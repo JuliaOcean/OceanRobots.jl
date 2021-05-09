@@ -33,18 +33,20 @@ function animate_positions(B)
     #ii = @lift(findall( (B.df[1].t .> $time-dt).*(B.df[1].t .< $time+dt) ))
     #tt = @lift( string($time) )
 
-    dt=7.0
+    dt=15.0
     dd=@lift( 360.0*($time-floor.($time)) )
     ii = @lift(findall( (abs.(B.df[1].d .- $dd).<dt).|(abs.(B.df[1].d .- $dd).> 360.0-dt) ))
-    tt = @lift( string($dd) )
+    tt = @lift( string(Int(floor($dd))) )
     
-    nmax=200000
+    nmax=400000
     x = @lift( [B.df[1].x[$ii];fill(NaN,nmax-length($ii))])
     y = @lift( [B.df[1].y[$ii];fill(NaN,nmax-length($ii))])
+    c = @lift( [ sqrt.(B.df[1].u[$ii].^2+B.df[1].v[$ii].^2) ;fill(NaN,nmax-length($ii))])
 
     F=DrifterViz.proj_map(B)
     ax = F[1, 1]
-    pnts = scatter!(ax, x, y, show_axis = false, color=:white, markersize=3, strokewidth=0.0)
+    pnts = scatter!(ax, x, y, show_axis = false, color=c, colorrange=(0.0, 0.8),
+    colormap=:turbo, markersize=2, strokewidth=0.0)
     #color = vel, colorrange=(0.,5.0), colormap=:turbo
 
     xy=Proj4.transform(B.source, B.dest, [70.0 50.0])
@@ -66,11 +68,11 @@ function update_stuff!(B,t0,t1)
     if tst
         pth,lst=DrifterViz.drifters_ElipotEtAl16()
         tmp=readdir(pth)
-        tmp=tmp[findall(occursin.("driftertraj_",tmp))]
+        tmp=tmp[findall(occursin.("csv/drifters_",tmp))]
         y0=Int(floor(minimum(B.df[1].t)))
 
-        df1=DataFrame(CSV.File(pth*"driftertraj_$(y0).csv"))
-        df2=DataFrame(CSV.File(pth*"driftertraj_$(y0+1).csv"))
+        df1=DataFrame(CSV.File(pth*"csv/drifters_$(y0).csv"))
+        df2=DataFrame(CSV.File(pth*"csv/drifters_$(y0+1).csv"))
         B.df[1]=vcat(df1,df2)
 
         tt=sort(unique(B.df[1].t))[1:24:end]
@@ -129,10 +131,10 @@ function proj_map(B::NamedTuple)
     f = Figure()
     ax = f[1, 1] = Axis(f)
 
-    surf = surface!(ax,B.x,B.y,0*B.x; color=col, colorrange = B.rng, 
+    surf = surface!(ax,B.x,B.y,0*B.x; color=col, colorrange = B.rng, colormap=:broc,
         shading = false, scale_plot = false, axis = (xticks = [0.0],))
-    cbar=Colorbar(f,surf, width = 20)
-    f[1, 2] = cbar
+    #cbar=Colorbar(f,surf, width = 20)
+    #f[1, 2] = cbar
 
     ii=[i for i in -180:45:180, j in -78.5:1.0:78.5]';
     jj=[j for i in -180:45:180, j in -78.5:1.0:78.5]';
@@ -202,7 +204,7 @@ function background_stuff()
     df=[DataFrame()]
     for y=y0:y1
         println("loading $(y)")
-        tmp=DataFrame(CSV.File(pth*"driftertraj_$(y).csv"))
+        tmp=DataFrame(CSV.File(pth*"csv/drifters_$(y).csv"))
         tt=sort(unique(tmp.t))[1:24:end]
         tmp=filter(row -> sum(row.t .== tt)>0 ,tmp)
 
