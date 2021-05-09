@@ -45,13 +45,14 @@ function drifters_ElipotEtAl16(fil::String;chnk=1000,rng=(-Inf,Inf))
  
     ##
  
-    df = DataFrame(ID=Int[], lon=Float64[], lat=Float64[], t=Float64[])
+    df = DataFrame(ID=Int[], lon=Float64[], lat=Float64[], 
+                u=Float64[], v=Float64[], t=Float64[])
     !isinf(chnk) ? nn=Int(ceil(length(ii)/chnk)) : nn=1
     for jj=1:nn
        #println([jj nn])
        !isinf(chnk) ? i=(jj-1)*chnk.+(1:chnk) : i=(1:length(ii))
        i=i[findall(i.<length(ii))]
-       append!(df,DataFrame(lon=lo[i], lat=la[i], t=t[i], ID=Int.(ID[i])))
+       append!(df,DataFrame(lon=lo[i], lat=la[i], t=t[i], u=U[i], v=V[i], ID=Int.(ID[i])))
     end
  
     return df
@@ -84,14 +85,14 @@ Loop over all files and call drifters_ElipotEtAl16 with rng=(t0,t1)
 @everywhere using OceanRobots, CSV
 @distributed for y in 2005:2020
     df=drifters_ElipotEtAl16(y+0.0,y+1.0)
-    fil="Drifter_hourly_v013/driftertraj_"*string(y)*".csv"
+    fil="Drifter_hourly_v013/csv/drifters_"*string(y)*".csv"
     CSV.write(fil, df)
 end
 ```
 """
 function drifters_ElipotEtAl16( t0::Number,t1::Number )
     pth,lst=drifters_ElipotEtAl16()
-    df = DataFrame([fill(Int, 1) ; fill(Float64, 3)], [:ID, :lon, :lat, :t])
+    df = DataFrame([fill(Int, 1) ; fill(Float64, 5)], [:ID, :lon, :lat, :u, :v, :t])
     for fil in lst
        println(fil)
        append!(df,drifters_ElipotEtAl16( pth*fil,chnk=10000,rng=(t0,t1) ))
