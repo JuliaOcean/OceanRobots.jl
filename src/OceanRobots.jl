@@ -1,8 +1,8 @@
 module OceanRobots
 
-include("MITprof.jl")
-include("DownloadArgo.jl")
+using NetCDF, Dates, CFTime, DataFrames
 
-export MITprof, DownloadArgo
+include("read_data.jl")
+export drifters_ElipotEtAl16
 
 end # module
