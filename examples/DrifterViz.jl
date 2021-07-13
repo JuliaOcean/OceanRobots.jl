@@ -1,13 +1,13 @@
-using GLMakie
-AbstractPlotting.inline!(true)
-#using CairoMakie
+#using GLMakie
+#AbstractPlotting.inline!(true)
+using CairoMakie
 
 #using ColorSchemes
 #using FixedPointNumbers
 
 module DrifterViz
 
-using OceanRobots, MeshArrays, CSV, DataFrames, GLMakie
+using OceanRobots, MeshArrays, CSV, DataFrames, Makie
 import Proj4
 
 export proj_map, subset_positions, animate_positions
@@ -33,21 +33,26 @@ function animate_positions(B)
     #ii = @lift(findall( (B.df[1].t .> $time-dt).*(B.df[1].t .< $time+dt) ))
     #tt = @lift( string($time) )
 
-    dt=15.0
+    dt=3.0
     dd=@lift( 360.0*($time-floor.($time)) )
     ii = @lift(findall( (abs.(B.df[1].d .- $dd).<dt).|(abs.(B.df[1].d .- $dd).> 360.0-dt) ))
     tt = @lift( string(Int(floor($dd))) )
     
-    nmax=400000
+    nmax=100000
     x = @lift( [B.df[1].x[$ii];fill(NaN,nmax-length($ii))])
     y = @lift( [B.df[1].y[$ii];fill(NaN,nmax-length($ii))])
-    c = @lift( [ sqrt.(B.df[1].u[$ii].^2+B.df[1].v[$ii].^2) ;fill(NaN,nmax-length($ii))])
+    if true        
+        c = @lift( [ sqrt.(B.df[1].u[$ii].^2+B.df[1].v[$ii].^2) ;fill(NaN,nmax-length($ii))])
+        cr=(0.,5.0)
+    else
+        c = @lift( [B.df[1].u[$ii];fill(NaN,nmax-length($ii))])
+        cr = (-0.4, 0.4)
+    end
 
     F=DrifterViz.proj_map(B)
     ax = F[1, 1]
-    pnts = scatter!(ax, x, y, show_axis = false, color=c, colorrange=(0.0, 0.8),
+    pnts = scatter!(ax, x, y, show_axis = false, color=c, colorrange=cr,
     colormap=:turbo, markersize=2, strokewidth=0.0)
-    #color = vel, colorrange=(0.,5.0), colormap=:turbo
 
     xy=Proj4.transform(B.source, B.dest, [70.0 50.0])
     txt=text!(ax,tt,position = (xy[1],xy[2]),color=:red) #textsize = 1e6
@@ -131,7 +136,7 @@ function proj_map(B::NamedTuple)
     f = Figure()
     ax = f[1, 1] = Axis(f)
 
-    surf = surface!(ax,B.x,B.y,0*B.x; color=col, colorrange = B.rng, colormap=:broc,
+    surf = surface!(ax,B.x,B.y,0*B.x; color=col, colorrange = B.rng, colormap=:grayC,
         shading = false, scale_plot = false, axis = (xticks = [0.0],))
     #cbar=Colorbar(f,surf, width = 20)
     #f[1, 2] = cbar
@@ -180,10 +185,10 @@ function background_stuff()
 
     (f,i,j,w)=InterpolationFactors(Γ,vec(lon),vec(lat))
     
-    DL=log10.(Interpolate(Γ["Depth"],f,i,j,w))
+    DL=log10.(Interpolate(Γ.Depth,f,i,j,w))
     DL[findall((!isfinite).(DL))].=NaN
     DL=reshape(DL,size(lon))
-    rng=(3.,4.)
+    rng=(3.,5.)
 
     ##
 
