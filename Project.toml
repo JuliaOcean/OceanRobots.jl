@@ -1,7 +1,7 @@
 name = "OceanRobots"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
 authors = ["gaelforget <gforget@mit.edu>"]
-version = "0.0.2"
+version = "0.0.3"
 
 [deps]
 CFTime = "179af706-886a-5703-950a-314cd64e0468"
@@ -13,6 +13,6 @@ Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
 [compat]
 CSV = "0.6, 0.7, 0.8"
-DataFrames = "0.20, 0.21, 0.22, 1.0"
+DataFrames = "0.20, 0.21, 0.22, 1.0, 1.1, 1.2"
 NetCDF = "0.10, 0.11"
 julia = "1"
