@@ -4,16 +4,70 @@
 using Markdown
 using InteractiveUtils
 
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
+        el
+    end
+end
+
 # ╔═╡ 5fc8cc85-7bd4-4fea-8c6f-01dabee6eb5f
-using NCDatasets, Dates, CairoMakie
+using NCDatasets, Dates, CairoMakie, PlutoUI
 
 # ╔═╡ 720e1461-81b9-42b6-88be-0115a17268c0
-md"""# Plot Time Series From WHOTS mooring
+md"""# Plotting Time Series From WHOTS mooring"""
+
+# ╔═╡ 538ddc08-85bd-426b-92bc-f5dd78d38d5d
+TableOfContents()
+
+# ╔═╡ 7702cf82-f5fa-4b04-8147-043a4b049179
+md"""## Data Source
+
+For more on the data being plotted in this notebook please refer to the websites listed below.
+
+### [WHOTS](http://www.soest.hawaii.edu/whots/index.html)
 
 - <http://www.soest.hawaii.edu/whots/wh_data.html>
 - <http://uop.whoi.edu/currentprojects/WHOTS/whotsarchive.html>
 - <http://uop.whoi.edu/currentprojects/WHOTS/whotsdata.html>
+
+### [Oceansites](http://www.oceansites.org)
+
+On the U.S. servers, see
+
+- <https://dods.ndbc.noaa.gov/thredds/catalog/oceansites/DATA/catalog.html>
+- <https://dods.ndbc.noaa.gov/thredds/catalog/oceansites/long_timeseries/catalog.html>
+
+or similarly on the E.U. servers, see
+
+- <http://tds0.ifremer.fr/thredds/catalog/CORIOLIS-OCEANSITES-GDAC-OBS/long_timeseries/catalog.html>
+
+Oceansites provides many more time series in addition to the WHOTS timeseries. For example, the `long_timeseries` subfolder contains `["WHOTS","TRITON","Stratus","RAMA","PIRATA","PAPA","NTAS","KEO","DYFAMED"]` 
+```
 """
+
+# ╔═╡ 54768410-2886-4d72-a691-eea72aee6b67
+begin
+	y0_b = @bind y0 NumberField(2004:2018, default=2005)
+	m0_b = @bind m0 NumberField(1:12, default=1)
+	d0_b = @bind d0 NumberField(1:31, default=1)
+	y1_b = @bind y1 NumberField(2004:2018, default=2005)
+	m1_b = @bind m1 NumberField(1:12, default=2)
+	d1_b = @bind d1 NumberField(1:31, default=1)
+	md"""## Plotting
+	
+	Select initial and final time
+	
+	- year,month,day = $(y0_b) $(m0_b) $(d0_b)
+	- year,month,day = $(y1_b) $(m1_b) $(d1_b)
+	"""
+end
+
+# ╔═╡ afbd09fa-c013-4dc8-866e-3315c5631a58
+md"""## Code"""
 
 # ╔═╡ cfd3a864-73de-11ec-3f98-55bc2b29050c
 begin
@@ -47,8 +101,8 @@ function timeseries(d0,d1)
     f
 end
 
-# ╔═╡ fcd8c71d-c467-42fb-afa4-8a079a5ff362
-timeseries(DateTime(2018,7,1),DateTime(2018,8,1))
+# ╔═╡ fc87b8e9-6863-4077-8435-80e74f1536c3
+timeseries(DateTime(y0,m0,d0),DateTime(y1,m1,d1))
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -56,10 +110,12 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 NCDatasets = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
+PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
 CairoMakie = "~0.7.0"
 NCDatasets = "~0.11.7"
+PlutoUI = "~0.7.29"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -74,6 +130,12 @@ deps = ["ChainRulesCore", "LinearAlgebra"]
 git-tree-sha1 = "6f1d9bc1c08f9f4a8fa92e3ea3cb50153a1b40d4"
 uuid = "621f4979-c628-5d54-868e-fcf4e3e8185c"
 version = "1.1.0"
+
+[[deps.AbstractPlutoDingetjes]]
+deps = ["Pkg"]
+git-tree-sha1 = "8eaf9f1b4921132a4cff3f36a1d9ba923b14a481"
+uuid = "6e696c72-6542-2067-7265-42206c756150"
+version = "1.1.4"
 
 [[deps.AbstractTrees]]
 git-tree-sha1 = "03e0550477d86222521d254b741d470ba17ea0b5"
@@ -410,6 +472,23 @@ deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll",
 git-tree-sha1 = "129acf094d168394e80ee1dc4bc06ec835e510a3"
 uuid = "2e76f6c2-a576-52d4-95c1-20adfe4de566"
 version = "2.8.1+1"
+
+[[deps.Hyperscript]]
+deps = ["Test"]
+git-tree-sha1 = "8d511d5b81240fc8e6802386302675bdf47737b9"
+uuid = "47d2ed2b-36de-50cf-bf87-49c2cf4b8b91"
+version = "0.0.4"
+
+[[deps.HypertextLiteral]]
+git-tree-sha1 = "2b078b5a615c6c0396c77810d92ee8c6f470d238"
+uuid = "ac1192a8-f4b3-4bfe-ba22-af5b92cd3ab2"
+version = "0.9.3"
+
+[[deps.IOCapture]]
+deps = ["Logging", "Random"]
+git-tree-sha1 = "f7be53659ab06ddc986428d3a9dcc95f6fa6705a"
+uuid = "b5f81e59-6552-4d32-b1f0-c071b021bf89"
+version = "0.2.2"
 
 [[deps.IfElse]]
 git-tree-sha1 = "debdd00ffef04665ccbb3e150747a77560e8fad1"
@@ -810,6 +889,12 @@ git-tree-sha1 = "68604313ed59f0408313228ba09e79252e4b2da8"
 uuid = "995b91a9-d308-5afd-9ec6-746e21dbc043"
 version = "1.1.2"
 
+[[deps.PlutoUI]]
+deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "Markdown", "Random", "Reexport", "UUIDs"]
+git-tree-sha1 = "7711172ace7c40dc8449b7aed9d2d6f1cf56a5bd"
+uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+version = "0.7.29"
+
 [[deps.PolygonOps]]
 git-tree-sha1 = "77b3d3605fc1cd0b42d95eba87dfcd2bf67d5ff6"
 uuid = "647866c9-e3ac-4575-94e7-e3d426903924"
@@ -1187,9 +1272,13 @@ version = "3.5.0+0"
 
 # ╔═╡ Cell order:
 # ╟─720e1461-81b9-42b6-88be-0115a17268c0
+# ╟─538ddc08-85bd-426b-92bc-f5dd78d38d5d
+# ╟─7702cf82-f5fa-4b04-8147-043a4b049179
+# ╟─54768410-2886-4d72-a691-eea72aee6b67
+# ╟─fc87b8e9-6863-4077-8435-80e74f1536c3
+# ╟─afbd09fa-c013-4dc8-866e-3315c5631a58
 # ╠═5fc8cc85-7bd4-4fea-8c6f-01dabee6eb5f
 # ╠═cfd3a864-73de-11ec-3f98-55bc2b29050c
 # ╠═a8b006e1-90cd-4e51-b87b-fe02d983376f
-# ╠═fcd8c71d-c467-42fb-afa4-8a079a5ff362
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
