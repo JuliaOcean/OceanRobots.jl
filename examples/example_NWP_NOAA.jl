@@ -27,8 +27,41 @@ md"""# Plotting Time Series From NOAA mooring
 
 ###
 
-For more information about the data being plotted, please refer to <https://www.ndbc.noaa.gov/>
+For more information about the data being plotted, please refer to
+
+- <https://www.ndbc.noaa.gov/>
+- <https://www.ndbc.noaa.gov/measdes.shtml>
 """
+
+# ╔═╡ 6b5ffee8-a230-42d4-8c49-ff14e65f52b7
+	TableOfContents()
+
+# ╔═╡ 06d96eef-f99d-44fe-8c6f-344ab29f3a48
+md"""## Samples
+
+Here is a set of weblinks for one station's data sets and docs.
+
+- <https://www.ndbc.noaa.gov/station_page.php?station=41048>
+- <https://www.ndbc.noaa.gov/station_history.php?station=41048>
+- <https://www.ndbc.noaa.gov/station_realtime.php?station=41048>
+- <https://www.ndbc.noaa.gov/data/historical/stdmet/41048h2015.txt.gz>
+- <https://www.ndbc.noaa.gov/data/realtime2/41048.txt>
+"""
+
+# ╔═╡ 38a48b6b-4e07-4965-8947-6b758318462b
+md"""
+```
+#YY  MM DD hh mm WDIR WSPD GST  WVHT   DPD   APD MWD   PRES  ATMP  WTMP  DEWP  VIS PTDY  TIDE
+#yr  mo dy hr mn degT m/s  m/s     m   sec   sec degT   hPa  degC  degC  degC  nmi  hPa    ft
+2022 01 13 03 00 250  9.0 11.0    MM    MM    MM  MM 1020.6   8.2    MM   2.6   MM   MM    MM
+2022 01 13 02 50 250  9.0 11.0   2.2     8   5.6 225 1020.5   8.2  11.3   2.9   MM   MM    MM
+```
+"""
+
+# ╔═╡ 8b610dbe-f9ab-4498-8c98-fc8e83474981
+begin
+	md"""## Select To Plot"""
+end
 
 # ╔═╡ 46ff94e2-1b1e-454d-ab92-89be94123a47
 md"""## Appendices"""
@@ -36,7 +69,7 @@ md"""## Appendices"""
 # ╔═╡ db662fb4-7413-11ec-1af6-43b18c0c15a9
 begin
 	#See https://www.ndbc.noaa.gov/
-	parameters=Dict("stations" => [44066, 44017, 44097, 44013])
+	parameters=Dict("stations" => [41048, 44066, 44017, 44097, 44013])
 	
 	function get_NWP_NOAA(x)
 	    url0="https://www.ndbc.noaa.gov/data/realtime2/"
@@ -94,8 +127,14 @@ begin
 	"Done with reading data"
 end
 
+# ╔═╡ c0a3ec23-2e76-40e6-bdf8-b6b774dabae5
+begin
+	var_b = @bind var Select(names(x), default="PRES")
+	md"""Select variable : $(var_b)"""
+end
+
 # ╔═╡ 15ecca6a-69af-4700-b20f-d08a4b6c9492
-lines(dt,z)
+lines(dt,x[!,Symbol(var)])
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1480,7 +1519,12 @@ version = "3.5.0+0"
 
 # ╔═╡ Cell order:
 # ╟─d6feeecc-87db-4bfd-8341-adede2df8ea0
+# ╟─6b5ffee8-a230-42d4-8c49-ff14e65f52b7
+# ╟─06d96eef-f99d-44fe-8c6f-344ab29f3a48
+# ╟─38a48b6b-4e07-4965-8947-6b758318462b
+# ╟─8b610dbe-f9ab-4498-8c98-fc8e83474981
 # ╟─04354f30-e857-4c77-ad57-9e84c4356e4f
+# ╟─c0a3ec23-2e76-40e6-bdf8-b6b774dabae5
 # ╟─7a9b1432-7e21-4afd-8f35-56f2575f90c8
 # ╟─15ecca6a-69af-4700-b20f-d08a4b6c9492
 # ╟─46ff94e2-1b1e-454d-ab92-89be94123a47
