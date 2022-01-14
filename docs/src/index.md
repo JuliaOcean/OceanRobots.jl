@@ -6,9 +6,9 @@
 ```@index
 ```
 
-## Examples
+In [Examples](@ref) you will find:
 
 - [examples/DrifterViz.jl](https://github.com/gaelforget/OceanRobots.jl/blob/master/examples/DrifterViz.jl)
-- [examples/example\_NWP\_NOAA.jl](https://github.com/gaelforget/OceanRobots.jl/blob/master/examples/example_NWP_NOAA.jl)
-- [examples/examplel\_WHOTS.jl](https://github.com/gaelforget/OceanRobots.jl/blob/master/examples/examplel_WHOTS.jl)
+- [examples/example\_NWP\_NOAA.jl](examples/example_NWP_NOAA.html)
+- [examples/examplel\_WHOTS.jl](examples/example_WHOTS.html)
 
