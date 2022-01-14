@@ -1,8 +1,8 @@
 module OceanRobots
 
-using NetCDF, Dates, CFTime, DataFrames
+using NetCDF, Dates, CFTime, DataFrames, MAT
 
 include("read_data.jl")
-export drifters_ElipotEtAl16
+export drifters_hourly_mat
 
 end # module
