@@ -71,7 +71,7 @@ end
 function update_stuff!(B,t0,t1)
     tst=(maximum(B.df[1].t)>t1)||(minimum(B.df[1].t)<t0)
     if tst
-        pth,lst=DrifterViz.drifters_ElipotEtAl16()
+        pth,lst=DrifterViz.drifters_hourly_mat()
         tmp=readdir(pth)
         tmp=tmp[findall(occursin.("csv/drifters_",tmp))]
         y0=Int(floor(minimum(B.df[1].t)))
@@ -202,7 +202,7 @@ function background_stuff()
 
     ##
 
-    pth,lst=drifters_ElipotEtAl16();
+    pth,lst=drifters_hourly_mat();
 
     y0=2005
     y1=2018
