@@ -18,7 +18,10 @@ end
 using NCDatasets, Dates, CairoMakie, PlutoUI
 
 # ╔═╡ 720e1461-81b9-42b6-88be-0115a17268c0
-md"""# Plotting Time Series From WHOTS mooring"""
+md"""# Plotting Time Series From WHOTS mooring
+
+Here we plot time series from the [WHOTS mooring](http://www.soest.hawaii.edu/whots/wh_data.html) which measures both Ocean and Atmosphere variables. This is one of the long time series that serve to study Climate.
+"""
 
 # ╔═╡ 538ddc08-85bd-426b-92bc-f5dd78d38d5d
 TableOfContents()
@@ -66,43 +69,63 @@ begin
 	"""
 end
 
-# ╔═╡ afbd09fa-c013-4dc8-866e-3315c5631a58
-md"""## Code"""
+# ╔═╡ 15d2fe7b-1614-4eb3-acc2-a961ced5ebb7
+#save("mooring_WHOTS_200501.png",fig1)
+
+# ╔═╡ 39b3119d-1096-4e26-a171-f24d82000f94
+md"""## Netcdf File Content
+
+In this next cell we also read a selection of variables to make them available for e.g. plotting."""
 
 # ╔═╡ cfd3a864-73de-11ec-3f98-55bc2b29050c
 begin
 	fil="http://tds0.ifremer.fr/thredds/dodsC/CORIOLIS-OCEANSITES-GDAC-OBS/long_timeseries/WHOTS/OS_WHOTS_200408-201809_D_MLTS-1H.nc"
 	
 	ds=NCDataset(fil)
-	TIME = ds["TIME"][:,:]
-	AIRT = ds["AIRT"][:,:]
-	TEMP = ds["TEMP"][:,:]
-	PSAL = ds["PSAL"][:,:]
-	RAIN = ds["RAIN"][:,:]
-	RELH = ds["RELH"][:,:]
-	wspeed = sqrt.(ds["UWND"][:,:].^2+ds["VWND"][:,:].^2)
-	close(ds)
+	TIME = ds["TIME"][:,:]; uTIME=ds["TIME"].attrib["units"]
+	AIRT = ds["AIRT"][:,:]; uAIRT=ds["AIRT"].attrib["units"]
+	TEMP = ds["TEMP"][:,:]; uTEMP=ds["TEMP"].attrib["units"]
+	PSAL = ds["PSAL"][:,:]; uPSAL=ds["PSAL"].attrib["units"]
+	RAIN = ds["RAIN"][:,:]; uRAIN=ds["RAIN"].attrib["units"]
+	RELH = ds["RELH"][:,:]; uRELH=ds["RELH"].attrib["units"]
+	wspeed = sqrt.(ds["UWND"][:,:].^2+ds["VWND"][:,:].^2); uwspeed=ds["UWND"].attrib["units"]
+	with_terminal() do 
+		show(ds)
+	end
 end
 
+# ╔═╡ afbd09fa-c013-4dc8-866e-3315c5631a58
+md"""## Code"""
+
 # ╔═╡ a8b006e1-90cd-4e51-b87b-fe02d983376f
-function timeseries(d0,d1)
-    #t=Dates.value.(TIME.-TIME[1])/1000.0/86400.0
-    #tt=findall((t.>110).*(t.<140))
+function plot_timeseries(d0,d1)
+	
     tt=findall((TIME.>d0).*(TIME.<=d1))
     t=Dates.value.(TIME.-d0)/1000.0/86400.0
+	#or, e.g.:
+    #t=Dates.value.(TIME.-TIME[1])/1000.0/86400.0
+    #tt=findall((t.>110).*(t.<140))
 
     f=Figure()
-    lines(f[1,1],t[tt],wspeed[tt],label="wspeed"); axislegend()
-    lines(f[2,1],t[tt],AIRT[tt],label="AIRT"); axislegend()
-    lines(f[3,1],t[tt],TEMP[tt],label="TEMP"); axislegend()
-    lines(f[1,2],t[tt],RAIN[tt],label="RAIN"); axislegend()
-    lines(f[2,2],t[tt],RELH[tt],label="RELH"); axislegend()
-    lines(f[3,2],t[tt],PSAL[tt],label="PSAL"); axislegend()
+	ax1=Axis(f[1,1],xlabel="days",ylabel=uwspeed,title="wspeed")
+    lines!(ax1,t[tt],wspeed[tt])
+	ax1=Axis(f[2,1],xlabel="days",ylabel=uAIRT,title="AIRT")
+    lines!(ax1,t[tt],AIRT[tt])
+	ax1=Axis(f[3,1],xlabel="days",ylabel=uTEMP,title="TEMP")
+    lines!(ax1,t[tt],TEMP[tt])
+	
+	ax1=Axis(f[1,2],xlabel="days",ylabel=uRAIN,title="RAIN")
+    lines!(ax1,t[tt],RAIN[tt])
+	ax1=Axis(f[2,2],xlabel="days",ylabel=uRELH,title="RELH")
+    lines!(ax1,t[tt],RELH[tt])
+	ax1=Axis(f[3,2],xlabel="days",ylabel="x0"*uPSAL,title="PSAL")
+    lines!(ax1,t[tt],PSAL[tt])
+	
     f
 end
 
 # ╔═╡ fc87b8e9-6863-4077-8435-80e74f1536c3
-timeseries(DateTime(y0,m0,d0),DateTime(y1,m1,d1))
+fig1=plot_timeseries(DateTime(y0,m0,d0),DateTime(y1,m1,d1))
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1276,9 +1299,11 @@ version = "3.5.0+0"
 # ╟─7702cf82-f5fa-4b04-8147-043a4b049179
 # ╟─54768410-2886-4d72-a691-eea72aee6b67
 # ╟─fc87b8e9-6863-4077-8435-80e74f1536c3
+# ╟─15d2fe7b-1614-4eb3-acc2-a961ced5ebb7
+# ╟─39b3119d-1096-4e26-a171-f24d82000f94
+# ╟─cfd3a864-73de-11ec-3f98-55bc2b29050c
 # ╟─afbd09fa-c013-4dc8-866e-3315c5631a58
 # ╠═5fc8cc85-7bd4-4fea-8c6f-01dabee6eb5f
-# ╠═cfd3a864-73de-11ec-3f98-55bc2b29050c
 # ╠═a8b006e1-90cd-4e51-b87b-fe02d983376f
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
