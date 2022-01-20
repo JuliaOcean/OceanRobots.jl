@@ -24,3 +24,9 @@ Argo profiles count           |  Argo profiles map
 ![](examples/argo_per_year.png)  |  ![](examples/argo_map_2004.png)
 Surface Drifter Track | Mooring Time series 
 ![](https://user-images.githubusercontent.com/20276764/149673826-a43e2a44-f4e5-437b-99cb-5e032228b3af.png) | ![](https://user-images.githubusercontent.com/20276764/149675305-82364bde-e3a9-4975-8fb2-fb67e17dacc5.png)
+
+## Functionalities
+
+```@autodocs
+Modules = [OceanRobots]
+```
