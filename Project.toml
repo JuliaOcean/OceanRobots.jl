@@ -1,14 +1,16 @@
 name = "OceanRobots"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
 authors = ["gaelforget <gforget@mit.edu>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 CFTime = "179af706-886a-5703-950a-314cd64e0468"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 FTPClient = "01fcc997-4f28-56b8-8a06-30002c134abb"
+LightXML = "9c8b4983-aa76-5018-a973-4c85ecc9e179"
 MAT = "23992714-dd62-5051-b70f-ba57cb901cac"
 NCDatasets = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
