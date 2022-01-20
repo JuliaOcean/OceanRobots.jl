@@ -42,7 +42,7 @@ function parse_thredds_catalog(url,recursive=true)
     if recursive
         while !isempty(folders)
             tmp=pop!(folders)
-            url0=joinpath(dirname(url),tmp)
+            url0=dirname(url)*"/"*tmp
             tmp1,tmp2=parse_thredds_catalog(url0)
             [push!(files,j) for j in tmp1]
         end
