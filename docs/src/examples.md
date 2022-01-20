@@ -1,9 +1,9 @@
 # [Examples](@id examples)
 
-- [example\_NWP\_NOAA](example_NWP_NOAA.html) displays data from <https://www.ndbc.noaa.gov/>
-- [example\_WHOTS](example_WHOTS.html) displays data from <http://www.soest.hawaii.edu/whots/wh_data.html>
-- [examples/example\_GDP.jl](examples/example_GDP.html) : load and display a [drifter]([https://www.aoml.noaa.gov/phod/gdp/hourly_data.php) time series 
-- [examples/DrifterViz.jl](https://github.com/gaelforget/OceanRobots.jl/blob/master/examples/DrifterViz.jl) : drifting buoy data set animation
+- [example\_NWP\_NOAA](example_NWP_NOAA.html) displays [NOAA station](https://www.ndbc.noaa.gov/) data
+- [example\_WHOTS](example_WHOTS.html) displays [WHOTS mooring](http://www.soest.hawaii.edu/whots/wh_data.html) data
+- [example\_GDP.jl](example_GDP.html) : load and display a [drifter]([https://www.aoml.noaa.gov/phod/gdp/hourly_data.php) time series 
+- [DrifterViz.jl](https://github.com/gaelforget/OceanRobots.jl/blob/master/examples/DrifterViz.jl) : drifting buoy data set animation
 
 !!! note
     The static html rendering of the notebooks (this website) lack the interactivity that comes from [Running The Examples](@ref) yourself.
