@@ -9,8 +9,8 @@ In the [Examples](@ref) section you will find:
 
 - [example\_NWP\_NOAA](examples/example_NWP_NOAA.html) displays [NOAA station](https://www.ndbc.noaa.gov/) data
 - [example\_WHOTS](examples/example_WHOTS.html) displays [WHOTS mooring](http://www.soest.hawaii.edu/whots/wh_data.html) data
-- [example\_GDP.jl](examples/example_GDP.html) : load and display a [drifter]([https://www.aoml.noaa.gov/phod/gdp/hourly_data.php) time series
-- [DrifterViz.jl](https://github.com/gaelforget/OceanRobots.jl/blob/master/examples/DrifterViz.jl) : drifting buoy data set animation
+- [example\_GDP.jl](examples/example_GDP.html) displays a [drifter]([https://www.aoml.noaa.gov/phod/gdp/hourly_data.php) time series
+- [example\_Argo.jl](examples/example_Argo.jl) shows data from an [Argo](https://argo.ucsd.edu) profiling float
 
 For Argo data, please refer to the companion package [ArgoData.jl](https://github.com/JuliaOcean/ArgoData.jl)
 

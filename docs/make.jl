@@ -13,7 +13,7 @@ makedocs(;
     assets=String[],
 )
 
-lst=("example_NWP_NOAA.jl","example_WHOTS.jl","example_GDP.jl")
+lst=("example_NWP_NOAA.jl","example_WHOTS.jl","example_GDP.jl","example_Argo.jl")
 for i in lst
     fil_in=joinpath(@__DIR__,"..", "examples",i)
     fil_out=joinpath(@__DIR__,"build", "examples",i[1:end-2]*"html")
