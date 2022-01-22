@@ -10,15 +10,15 @@ In the [Examples](@ref) section you will find:
 - [example\_NWP\_NOAA](examples/example_NWP_NOAA.html) displays [NOAA station](https://www.ndbc.noaa.gov/) data
 - [example\_WHOTS](examples/example_WHOTS.html) displays [WHOTS mooring](http://www.soest.hawaii.edu/whots/wh_data.html) data
 - [example\_GDP.jl](examples/example_GDP.html) displays a [drifter]([https://www.aoml.noaa.gov/phod/gdp/hourly_data.php) time series
-- [example\_Argo.jl](examples/example_Argo.jl) shows data from an [Argo](https://argo.ucsd.edu) profiling float
+- [example\_Argo.jl](examples/example_Argo.html) shows data from an [Argo](https://argo.ucsd.edu) profiling float
 
 For Argo data, please refer to the companion package [ArgoData.jl](https://github.com/JuliaOcean/ArgoData.jl)
 
 ## Graphical Examples
 
-Argo profiles count           |  Argo profiles map 
+Argo Float Profiles             |  Argo Float Track
 :------------------------------:|:---------------------------------:
-![](examples/argo_per_year.png)  |  ![](examples/argo_map_2004.png)
+![](https://user-images.githubusercontent.com/20276764/150622766-aee5773d-7fea-4360-9b47-05f68e235499.png)  |  ![](https://user-images.githubusercontent.com/20276764/150622726-61169b99-4320-4069-b113-5edabb9b64fe.png)
 Surface Drifter Track | Mooring Time series 
 ![](https://user-images.githubusercontent.com/20276764/149673826-a43e2a44-f4e5-437b-99cb-5e032228b3af.png) | ![](https://user-images.githubusercontent.com/20276764/149675305-82364bde-e3a9-4975-8fb2-fb67e17dacc5.png)
 

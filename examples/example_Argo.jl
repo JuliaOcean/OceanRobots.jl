@@ -87,13 +87,17 @@ begin
 	co=[dx[1];co[:];dx[end]]/dt
 
 	fig1=Mkie.Figure()
-	ax,li=Mkie.lines(fig1[1,1], lon, lat, linewidth=2, 
-		color=co,xlabel="longitude",ylabel="latitude")
+	ax,li=Mkie.lines(fig1[1,1], lon, lat, linewidth=2, color=co)
+	ax.xlabel="longitude"
+	ax.ylabel="latitude"
 	ax.title="Float #"*string(wmo)*" trajectory, color coded by speed"
 	Mkie.Colorbar(fig1[1,2], limits = extrema(co), height=Mkie.Relative(0.65))
 
 	fig1
 end
+
+# ╔═╡ e460b83d-1539-43d6-8e7f-f3d9eb139466
+Mkie.save("Argo_example_traj.png", fig1)
 
 # ╔═╡ a9fd8646-7269-4f70-93cf-0e831d533237
 md"""## Visualize Profile Data"""
@@ -133,7 +137,10 @@ end
 plot_samples(TIME,PRES,TEMP,"temperature (TEMP_ADJUSTED)")
 
 # ╔═╡ 7ca6e8a0-2398-495a-aded-e5a99807e1ed
-plot_samples(TIME,PRES,PSAL,"salinity (PSAL_ADJUSTED)")
+begin
+	fig_S=plot_samples(TIME,PRES,PSAL,"salinity (PSAL_ADJUSTED)")
+	#Mkie.save("Argo_example_S.png", fig_S)
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1310,6 +1317,7 @@ version = "3.5.0+0"
 # ╟─1a835449-de37-4d08-9c91-c7affe7084cd
 # ╟─3fd610a8-80c1-4acc-b3ef-20883f77e32d
 # ╟─f47ef7b4-8e92-44a1-82ad-f8ca0337077b
+# ╠═e460b83d-1539-43d6-8e7f-f3d9eb139466
 # ╟─a9fd8646-7269-4f70-93cf-0e831d533237
 # ╟─5b814708-292a-45ed-8eab-386a7f097634
 # ╟─1168b742-6f2b-4c44-817a-621321b7d94b
