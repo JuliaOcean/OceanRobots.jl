@@ -55,7 +55,7 @@ function Argo_float_download(list_files,ii,suff="prof",ftp=missing)
     !isdir(path) ? mkdir(path) : nothing
 
     if ismissing(ftp)||isa(ftp,String)
-        fil_out=path*"/"*string(wmo)*"_"*suff*".nc"
+        fil_out=joinpath(path,string(wmo)*"_"*suff*".nc")
         path_ftp="ftp://ftp.ifremer.fr/ifremer/argo/dac/"
         fil_in=path_ftp*folder*"/"*string(wmo)*"/"*string(wmo)*"_"*suff*".nc"
         Downloads.download(fil_in, fil_out)
