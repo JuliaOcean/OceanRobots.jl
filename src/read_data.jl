@@ -30,7 +30,7 @@ fil="https://gaelforget.github.io/OceanRobots.jl/dev/examples/Argo_float_files.c
 Argo_float_files(fil)
 ```
 """
-function Argo_float_files(url::String)
+function Argo_float_files(fil::String)
     if isfile(fil)
         DataFrame(CSV.File(fil))
     else
