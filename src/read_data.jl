@@ -21,6 +21,24 @@ function Argo_float_files()
 end
 
 """
+    Argo_float_files(fil::String)
+
+Get list of Argo float files from csv file with columns two columns -- `folder` and `wmo`.
+
+```
+fil="https://gaelforget.github.io/OceanRobots.jl/dev/examples/Argo_float_files.csv"
+Argo_float_files(fil)
+```
+"""
+function Argo_float_files(url::String)
+    if isfile(fil)
+        DataFrame(CSV.File(fil))
+    else
+        DataFrame(CSV.File(Downloads.download(fil)))
+    end
+end
+
+"""
     Argo_float_download(list_files,ii=1,suff="prof",ftp=missing)
 
 Download one Argo file for float ranked `ii` in `list_files` 

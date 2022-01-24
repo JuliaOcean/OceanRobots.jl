@@ -15,6 +15,10 @@ using Test
 
     @test isa(ds["longitude"],OceanRobots.NCDatasets.CFVariable)
 
+
+    fil="https://gaelforget.github.io/OceanRobots.jl/dev/examples/Argo_float_files.csv"
+    Argo_float_files(fil)
+
     ii=10000
     list_files=Argo_float_files()
     Argo_float_download(list_files,ii)
