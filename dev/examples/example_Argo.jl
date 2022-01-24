@@ -31,10 +31,13 @@ TableOfContents()
 # ╔═╡ 9037e2ce-a04a-40d0-945e-ec3f19a4f3c4
 md"""## Download and Open File
 
-First we download one file that corresponds to all profiles collected by one float. It's identfier
-is `wmo=6900900`, which is a float that operated for almost seven years. There are thousands of other floats to choose from -- see data repositories.
+First we download one file that corresponds to all profiles collected by float `wmo=6900900`. This Argo float collected profiles for almost seven years. There are thousands of other floats to choose from -- see data repositories.
 
-The file is then open using the `NCDatasets.Dataset` function and its content is depicted below.
+Then we open the Argo file using the `NCDatasets.Dataset` function. The file content is summarized below.
+
+!!! note
+	A list of all Argo floats can be [found here](https://gaelforget.github.io/OceanRobots.jl/dev/examples/Argo_float_files.csv). 
+    A method to download Argo files in bulk & parallel is [provided here](https://github.com/gaelforget/OceanRobots.jl/blob/master/examples/Argo_distributed_download.jl).
 """
 
 # ╔═╡ 2558c88f-7fee-4a91-bfdd-46f1f61795b0
@@ -97,7 +100,7 @@ begin
 end
 
 # ╔═╡ e460b83d-1539-43d6-8e7f-f3d9eb139466
-Mkie.save("Argo_example_traj.png", fig1)
+#Mkie.save("Argo_example_traj.png", fig1)
 
 # ╔═╡ a9fd8646-7269-4f70-93cf-0e831d533237
 md"""## Visualize Profile Data"""
