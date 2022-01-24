@@ -14,10 +14,14 @@ end
 # ╔═╡ 89647c4e-e568-4d3a-af57-bcc541744e38
 md"""# Argo Profiling Float Example
 
-Argo is an international program that has been deploying profiling floats over the Global Ocean. The array has been collecting temperature and salinity profiles for almost 2 decades (global coverage by the float array ~ 2005). 
+Argo is an international program that maintains an array of over 3000 profiling floats distributed 
+over the Global Ocean. It collectively provides a high-quality and global data set that plays a 
+central role in climate research. The array has collected temperature and salinity profiles for 
+almost 2 decades (global coverage by the float array was achieved ~ 2005). 
 
-The floats drift at 1000m depth and come back to the surface every ten days, just after collecting a profile, and transmit data they collected via satellite. 
-For more information, about the international Argo program please refer to, for example, <https://www.coriolis.eu.org/Observing-the-Ocean/ARGO> or <https://argo.ucsd.edu>.
+The floats drift at 1000m depth and come back to the surface every ten days, just after 
+collecting profiles, to transmit their data via satellite. For more information about 
+the international Argo program please refer to, for example, <https://argo.ucsd.edu>.
 
 There are two official data repositories which contain the same files:
 
