@@ -84,7 +84,7 @@ end
 # ╔═╡ 1a835449-de37-4d08-9c91-c7affe7084cd
 md"""## Float Trajectory
 
-Here we extract the longitude and latitude time series for plotting. We compute an estimate of speed based on consecutive sample positions, which we know are separated by 20 days.
+Here we extract the longitude and latitude time series for plotting, and compute a drift speed estimate based on consecutive float positions (one every 10 days).
 
 Average estimated speed = $(round(speed_mean; digits=4)) m/s"""
 
