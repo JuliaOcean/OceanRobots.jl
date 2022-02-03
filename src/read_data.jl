@@ -141,7 +141,7 @@ function drifters_hourly_download(list_files,ii=1)
 end
 
 """
-    drifters_hourly_download(list_files,ii=1)
+    drifters_hourly_read(filename::String)
 
 Download one drifter file from NOAA ftp server     
 <ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v1.04/netcdf/>
@@ -152,7 +152,7 @@ fil=drifters_hourly_download(list_files,1)
 ds=drifters_hourly_read(fil)
 ```
 """
-drifters_hourly_read(filename::String)= Dataset(filename)
+drifters_hourly_read(filename::String) = Dataset(filename)
 
 """
     drifters_hourly_mat(pth,lst;chnk=Inf,rng=(-Inf,Inf))
