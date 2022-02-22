@@ -24,7 +24,7 @@ animate_positions(B)
 ```
 """
 function animate_positions(B)
-    time = Node(2005.1)
+    time = Observable(2005.1)
     #timestamps = 2005.1:0.01:2018.9
     timestamps = 0.0:0.01:3.0
     framerate = 20
@@ -42,16 +42,16 @@ function animate_positions(B)
     x = @lift( [B.df[1].x[$ii];fill(NaN,nmax-length($ii))])
     y = @lift( [B.df[1].y[$ii];fill(NaN,nmax-length($ii))])
     if true        
-        c = @lift( [ sqrt.(B.df[1].u[$ii].^2+B.df[1].v[$ii].^2) ;fill(NaN,nmax-length($ii))])
-        cr=(0.,5.0)
+        c = @lift( [ sqrt.(B.df[1].u[$ii].^2+B.df[1].v[$ii].^2) ;fill(0,nmax-length($ii))])
+        cr=(0.,1.0)
     else
-        c = @lift( [B.df[1].u[$ii];fill(NaN,nmax-length($ii))])
+        c = @lift( [B.df[1].u[$ii];fill(0,nmax-length($ii))])
         cr = (-0.4, 0.4)
     end
 
     F=DrifterViz.proj_map(B)
     ax = F[1, 1]
-    pnts = scatter!(ax, x, y, show_axis = false, color=c, colorrange=cr,
+    pnts = scatter!(ax, x, y, color=c, colorrange=cr,
     colormap=:turbo, markersize=2, strokewidth=0.0)
 
     xy=Proj4.transform(B.source, B.dest, [70.0 50.0])
@@ -61,7 +61,7 @@ function animate_positions(B)
         time[] = t
         #println(t)
     end
-
+    
     return F,N
 end
 
@@ -134,10 +134,10 @@ function proj_map(B::NamedTuple)
 #    end
 
     f = Figure()
-    ax = f[1, 1] = Axis(f)
+    ax = f[1, 1] = Axis(f,xticks = [0.0])
 
     surf = surface!(ax,B.x,B.y,0*B.x; color=col, colorrange = B.rng, colormap=:grayC,
-        shading = false, scale_plot = false, axis = (xticks = [0.0],))
+        shading = false)
     #cbar=Colorbar(f,surf, width = 20)
     #f[1, 2] = cbar
 
@@ -170,7 +170,7 @@ end
     background_stuff()
 """
 function background_stuff()
-    Γ=GridLoad(GridSpec("LatLonCap",MeshArrays.GRID_LLC90))
+    Γ=GridLoad(GridSpec("LatLonCap",MeshArrays.GRID_LLC90),option="full")
     
 #Global Ocean
     lo=[collect(20.5:1.0:179.5); collect(-179.5:1.0:19.5)]
@@ -209,7 +209,7 @@ function background_stuff()
     df=[DataFrame()]
     for y=y0:y1
         println("loading $(y)")
-        tmp=DataFrame(CSV.File(pth*"csv/drifters_$(y).csv"))
+        tmp=DataFrame(CSV.File(joinpath(pth,"csv","drifters_$(y).csv")))
         tt=sort(unique(tmp.t))[1:24:end]
         tmp=filter(row -> sum(row.t .== tt)>0 ,tmp)
 
