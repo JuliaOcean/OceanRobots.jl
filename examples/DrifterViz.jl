@@ -11,7 +11,7 @@ export proj_map, animate_positions
 export background_stuff, drifters_load_csv!
 
 """
-    animate_positions()
+    animate_positions(fig1,B, time_axis_method = 1)
 
 Scatter plot of positions from B.df, on top of background map B.z, and generate a movie from loop over time.
 
@@ -22,43 +22,44 @@ B=background_stuff();
 drifters_load_csv!(B;y1=2007);
 
 fig1=proj_map(B)
-file1=animate_positions(fig1,B)
+file1=animate_positions(fig1,B, time_axis_method = 0)
 fig1
+
+B.df[1]
 ```
 """
-function animate_positions(F,B; framerate = 20, time_axis_method = 0)
+function animate_positions(F,B; framerate = 20, time_axis_method = 0, time_stamps=missing)
     if time_axis_method==1
-        timestamps = ( 0.5*876000.0 .+ (1:109)*876000.0 ) / 86400.0
-        time = Observable(timestamps[1])
+        ts=time_stamps
+        #ts = ( 0.5*876000.0 .+ (1:109)*876000.0 ) / 86400.0
+        time = Observable(time_stamps[1])
         dt=3.0
-        ii = @lift(findall( (B.df[1].t/86400.0 .> $time-dt).*(B.df[1].t/86400.0 .< $time+dt) ))
+        ii = @lift(findall( (B.df[1].d .> $time-dt).*(B.df[1].d .< $time+dt) ))
         tt = @lift( string(round($time; sigdigits=2)) )
     else
         time = Observable(0.0)
-        timestamps = 0.0:0.01:3.0
+        ts = 0.0:0.01:3.0
         dt=3.0
         dd=@lift( 360.0*($time-floor.($time)) )
         ii = @lift(findall( (abs.(B.df[1].d .- $dd).<dt).|(abs.(B.df[1].d .- $dd).> 360.0-dt) ))
         tt = @lift( string(Int(floor($dd))) )
     end
     
-    nmax=3*length(unique(B.df[1].ID))
+    nmax=100000 #3*length(unique(B.df[1].ID))
     x = @lift( [B.df[1].x[$ii];fill(NaN,nmax-length($ii))])
     y = @lift( [B.df[1].y[$ii];fill(NaN,nmax-length($ii))])
     c = @lift( [B.df[1].col[$ii] ;fill(0,nmax-length($ii))])
 
     ax = F[1, 1]
     pnts = scatter!(ax, x, y, color=c, 
-           colorrange=B.cr[1], colormap=B.cm[1], markersize=4, strokewidth=0.0)
+           colorrange=B.cr[1], colormap=B.cm[1], markersize=B.ms[1], strokewidth=0.0)
     xy=Proj4.transform(B.source, B.dest, [70.0 50.0])
     txt=text!(ax,tt,position = (xy[1],xy[2]),color=:red) #textsize = 1e6
 
-    record(F, joinpath(tempdir(),"tmp.mp4"), timestamps; framerate = framerate) do t
+    record(F, joinpath(tempdir(),"tmp.mp4"), ts; framerate = framerate) do t
         time[] = t
         #println(t)
     end
-    
-    #return timestamps, time
 end
 
 """
@@ -199,8 +200,9 @@ function background_stuff()
     #speed as color scale
     cr=[(0.0,1.0)]
     cm=[:turbo]
+    ms=[2.0]
 
-    return (;lon,lat,DL,x,y,z,rng,source,dest,df,cm,cr)
+    return (;lon,lat,DL,x,y,z,rng,source,dest,df,cm,cr,ms)
 end
 
 """
