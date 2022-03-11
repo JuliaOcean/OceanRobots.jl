@@ -15,6 +15,8 @@ using Test
     ds=drifters_hourly_read(fil)
     typ=typeof(ds)
     println("ds = $(typ)")
+    show(ds)
+    ds["longitude"]
 
     @test isa(ds["longitude"],OceanRobots.NCDatasets.CFVariable)
 
