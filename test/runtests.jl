@@ -11,7 +11,10 @@ using Test
 
     list_files=drifters_hourly_files()
     fil=drifters_hourly_download(list_files,1)
+    println("fil = $(fil)")
     ds=drifters_hourly_read(fil)
+    typ=typeof(ds)
+    println("ds = $(typ)")
 
     @test isa(ds["longitude"],OceanRobots.NCDatasets.CFVariable)
 
