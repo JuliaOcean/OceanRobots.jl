@@ -15,7 +15,7 @@ using Test
 
     #this fails with NCDatasets v0.12.0
     #@test isa(ds["longitude"],OceanRobots.NCDatasets.CFVariable)
-    @test isa(ds,OceanRobots.NCDatasets)
+    @test isa(ds,OceanRobots.NCDataset)
 
     fil="https://gaelforget.github.io/OceanRobots.jl/dev/examples/Argo_float_files.csv"
     Argo_float_files(fil)
