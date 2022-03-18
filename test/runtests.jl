@@ -13,8 +13,7 @@ using Test
     fil=drifters_hourly_download(list_files,1)
     ds=drifters_hourly_read(fil)
 
-    #this fails with NCDatasets v0.12.0
-    #@test isa(ds["longitude"],OceanRobots.NCDatasets.CFVariable)
+    @test isa(ds["longitude"],OceanRobots.NCDatasets.CFVariable)
     @test isa(ds,OceanRobots.NCDataset)
 
     fil="https://gaelforget.github.io/OceanRobots.jl/dev/examples/Argo_float_files.csv"
