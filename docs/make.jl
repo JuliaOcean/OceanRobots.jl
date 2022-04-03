@@ -13,10 +13,6 @@ makedocs(;
     assets=String[],
 )
 
-list_files=Argo_float_files()
-OceanRobots.CSV.write("Argo_float_files.csv",list_files)
-mv("Argo_float_files.csv",joinpath(@__DIR__,"build", "examples","Argo_float_files.csv"))
-
 lst=("example_NWP_NOAA.jl","example_WHOTS.jl","example_GDP.jl","example_Argo.jl")
 for i in lst
     fil_in=joinpath(@__DIR__,"..", "examples",i)
