@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.17.5
+# v0.18.4
 
 using Markdown
 using InteractiveUtils
@@ -19,8 +19,8 @@ over the Global Ocean. It collectively provides a high-quality and global data s
 central role in climate research. The array has collected temperature and salinity profiles for 
 almost 2 decades (global coverage by the float array was achieved ~ 2005). 
 
-The floats drift at 1000m depth and come back to the surface every ten days, just after 
-collecting profiles, to transmit their data via satellite. For more information about 
+The standard Argo float drifts at 1000m depth and comes back to the surface every ten days, just after 
+collecting profiles, to transmit its data via satellite. For more information about 
 the international Argo program please refer to, for example, <https://argo.ucsd.edu>.
 
 There are two official data repositories which contain the same files:
@@ -35,24 +35,23 @@ TableOfContents()
 # ╔═╡ 9037e2ce-a04a-40d0-945e-ec3f19a4f3c4
 md"""## Download and Open File
 
-First we download one file that corresponds to all profiles collected by float `wmo=6900900`. This Argo float collected profiles for almost seven years. There are thousands of other floats to choose from -- see data repositories.
+First we download the file that contains all profiles collected by float `wmo=6900900`. 
 
 Then we open the Argo file using the `NCDatasets.Dataset` function. The file content is summarized below.
 
 !!! note
-	A list of all Argo floats can be [found here](https://gaelforget.github.io/OceanRobots.jl/dev/examples/Argo_float_files.csv). 
-    A method to download Argo files in bulk & parallel is [provided here](https://github.com/gaelforget/OceanRobots.jl/blob/master/examples/Argo_distributed_download.jl).
+	The chosen Argo float generated data for almost seven years! There are thousands of other floats to choose from -- a full list can be [found here](https://juliaocean.github.io/ArgoData.jl/dev/Argo_float_files.csv). 
+    Methods to download files in bulk & parallel is provided in [ArgoData.jl](https://github.com/JuliaOcean/ArgoData.jl).
 """
 
 # ╔═╡ 2558c88f-7fee-4a91-bfdd-46f1f61795b0
 begin
 	wmo=6900900
 
-	#url="ftp://ftp.ifremer.fr/ifremer/argo/dac/coriolis/$(wmo)/$(wmo)_prof.nc"
-	#url="https://data-argo.ifremer.fr/dac/coriolis/$(wmo)/$(wmo)_prof.nc"
-
 	url0="https://data-argo.ifremer.fr/dac/coriolis/"
-	fil=Downloads.download(url0*"/$(wmo)/$(wmo)_prof.nc")
+	fil=joinpath(tempdir(),"$(wmo)_prof.nc")
+	
+	!isfile(fil) ? Downloads.download(url0*"/$(wmo)/$(wmo)_prof.nc",fil) : nothing
 
 	ds=Dataset(fil)
 end
@@ -84,9 +83,9 @@ end
 # ╔═╡ 1a835449-de37-4d08-9c91-c7affe7084cd
 md"""## Float Trajectory
 
-Here we extract the longitude and latitude time series for plotting, and compute a drift speed estimate based on consecutive float positions (one every 10 days).
+Let's extract the recorded float positions for plotting, and then estimate a drift speed from the difference between consecutive float positions (one every 10 days).
 
-Average estimated speed = $(round(speed_mean; digits=4)) m/s"""
+Average estimated drift speed = $(round(speed_mean; digits=4)) m/s"""
 
 # ╔═╡ f47ef7b4-8e92-44a1-82ad-f8ca0337077b
 begin
@@ -103,11 +102,11 @@ begin
 	fig1
 end
 
-# ╔═╡ e460b83d-1539-43d6-8e7f-f3d9eb139466
-#Mkie.save("Argo_example_traj.png", fig1)
-
 # ╔═╡ a9fd8646-7269-4f70-93cf-0e831d533237
-md"""## Visualize Profile Data"""
+md"""## Visualize Profile Data
+
+Now let's visualize temperature and salinity profiles recorded by the float as a function of time.
+"""
 
 # ╔═╡ 5b814708-292a-45ed-8eab-386a7f097634
 begin
@@ -168,7 +167,7 @@ PlutoUI = "~0.7.30"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.7.0"
+julia_version = "1.7.2"
 manifest_format = "2.0"
 
 [[deps.AbstractFFTs]]
@@ -1291,9 +1290,9 @@ version = "1.8.6+1"
 
 [[deps.libvorbis_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Ogg_jll", "Pkg"]
-git-tree-sha1 = "c45f4e40e7aafe9d086379e5578947ec8b95a8fb"
+git-tree-sha1 = "b910cb81ef3fe6e78bf6acee440bda86fd6ae00c"
 uuid = "f27f6e37-5d2b-51aa-960f-b287f2bc3b7a"
-version = "1.3.7+0"
+version = "1.3.7+1"
 
 [[deps.nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -1320,11 +1319,10 @@ version = "3.5.0+0"
 # ╟─89647c4e-e568-4d3a-af57-bcc541744e38
 # ╟─9d29d0f8-7b1c-11ec-1f16-b313a50cc5e7
 # ╟─9037e2ce-a04a-40d0-945e-ec3f19a4f3c4
-# ╟─2558c88f-7fee-4a91-bfdd-46f1f61795b0
+# ╠═2558c88f-7fee-4a91-bfdd-46f1f61795b0
 # ╟─1a835449-de37-4d08-9c91-c7affe7084cd
 # ╟─3fd610a8-80c1-4acc-b3ef-20883f77e32d
 # ╟─f47ef7b4-8e92-44a1-82ad-f8ca0337077b
-# ╠═e460b83d-1539-43d6-8e7f-f3d9eb139466
 # ╟─a9fd8646-7269-4f70-93cf-0e831d533237
 # ╟─5b814708-292a-45ed-8eab-386a7f097634
 # ╟─1168b742-6f2b-4c44-817a-621321b7d94b
