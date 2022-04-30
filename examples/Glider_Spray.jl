@@ -46,38 +46,19 @@ Spray gliders are a type of autonomous underwater vehicle that were developed at
 - Rudnick, D. (2016). California Underwater Glider Network [Data set]. Scripps Institution of Oceanography, Instrument Development Group. doi: 10.21238/S8SPRAY1618
 - Rudnick, D. (2016). Seasonal-to-Interannual Modulation of Fine-Scale Thermohaline Structure [Data set]. Scripps Institution of Oceanography, Instrument Development Group. doi: 10.21238/S8SPRAY4863
 
-### Typical File Content
-
-```
-	mission_name:long_name = "Mission name of each trajectory." ;
-	depth:long_name = "Depth" ;
-	lat:long_name = "Latitude" ;
-	lon:long_name = "Longitude" ;
-	lat_uv:long_name = "Latitude" ;
-	lon_uv:long_name = "Longitude" ;
-	u_depth_mean:long_name = "Depth-Averaged Eastward Sea Water Velocity" ;
-	v_depth_mean:long_name = "Depth-Averaged Northward Sea Water Velocity" ;
-	temperature:long_name = "Sea Water Temperature" ;
-	salinity:long_name = "Sea Water Salinity" ;
-	time:long_name = "Time" ;
-	time_uv:long_name = "Time" ;
-	u:long_name = "Eastward Sea Water Velocity" ;
-	v:long_name = "Northward Sea Water Velocity" ;
-	acoustic_backscatter_at_1MHz:long_name = "Acoustic Backscatter at 1MHz" ;
-	mission:long_name = "Mission name of each trajectory" ;
-	mission_profile:long_name = "Profile of one mission" ;
-	trajectory_index:long_name = "which mission (trajectory) this profile is part of" ;
-```
 """
 
 # ╔═╡ 4c0b3d2f-d50a-4352-98c4-b705accbf7c7
-md"""## Visualize Mission"""
+md"""## Visualize Mission Data"""
 
 # ╔═╡ 1ab9daac-b631-4f3e-a868-14e95f71962b
 md"""## View Data As Table"""
 
 # ╔═╡ 68028522-205e-4b41-b3c0-2e3b09c2d8a7
-md"""## Appendix"""
+md"""## Appendix
+
+### Julia Packages, etc
+"""
 
 # ╔═╡ 4edad6a6-0468-4443-b878-7c9e26921766
 """
@@ -106,7 +87,7 @@ end
 
 # ╔═╡ 9523dc0d-1758-4e0f-864c-4ab253bf11a9
 begin
-	fil="GS/GulfStream.nc"
+	fil=joinpath(tempdir(),"glider_data/GS/GulfStream.nc")
 	ds=nc.Dataset(fil)
 	df=to_DataFrame(ds)
 	gdf=groupby(df,:ID)
@@ -156,6 +137,31 @@ end
 
 # ╔═╡ d49320f0-06c3-4d82-93d1-6047edc37d47
 gdf[ID]
+
+# ╔═╡ 5748bb5f-528f-42fd-8961-fd7c93d12554
+md"""### Typical File Content
+
+```
+	mission_name:long_name = "Mission name of each trajectory." ;
+	depth:long_name = "Depth" ;
+	lat:long_name = "Latitude" ;
+	lon:long_name = "Longitude" ;
+	lat_uv:long_name = "Latitude" ;
+	lon_uv:long_name = "Longitude" ;
+	u_depth_mean:long_name = "Depth-Averaged Eastward Sea Water Velocity" ;
+	v_depth_mean:long_name = "Depth-Averaged Northward Sea Water Velocity" ;
+	temperature:long_name = "Sea Water Temperature" ;
+	salinity:long_name = "Sea Water Salinity" ;
+	time:long_name = "Time" ;
+	time_uv:long_name = "Time" ;
+	u:long_name = "Eastward Sea Water Velocity" ;
+	v:long_name = "Northward Sea Water Velocity" ;
+	acoustic_backscatter_at_1MHz:long_name = "Acoustic Backscatter at 1MHz" ;
+	mission:long_name = "Mission name of each trajectory" ;
+	mission_profile:long_name = "Profile of one mission" ;
+	trajectory_index:long_name = "which mission (trajectory) this profile is part of" ;
+```
+"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1515,5 +1521,6 @@ version = "3.5.0+0"
 # ╟─0247a51e-c89b-11ec-071f-bb82fe257adc
 # ╟─9523dc0d-1758-4e0f-864c-4ab253bf11a9
 # ╟─4edad6a6-0468-4443-b878-7c9e26921766
+# ╟─5748bb5f-528f-42fd-8961-fd7c93d12554
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
