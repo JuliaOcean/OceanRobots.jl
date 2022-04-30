@@ -12,7 +12,14 @@ In the [Examples](@ref) section you will find:
 - [example\_GDP.jl](examples/example_GDP.html) (➭ [code link](https://raw.githubusercontent.com/gaelforget/OceanRobots.jl/master/examples/example_GDP.jl)) displays a [drifter](https://www.aoml.noaa.gov/phod/gdp/hourly_data.php) time series
 - [example\_Argo.jl](examples/example_Argo.html) (➭ [code link](https://raw.githubusercontent.com/gaelforget/OceanRobots.jl/master/examples/example_Argo.jl)) shows data from an [Argo](https://argo.ucsd.edu) profiling float
 
-For Argo data, please refer to the companion package [ArgoData.jl](https://github.com/JuliaOcean/ArgoData.jl)
+For more Argo data examples, please refer to the companion package [ArgoData.jl](https://github.com/JuliaOcean/ArgoData.jl).
+
+## Under Development
+
+Additional examples:
+
+- [Drifter\_CloudDrift.jl](https://raw.githubusercontent.com/gaelforget/OceanRobots.jl/master/examples/Drifter_CloudDrift.jl) 
+- [Spray\_Glider.jl](https://raw.githubusercontent.com/gaelforget/OceanRobots.jl/master/examples/Spray_Glider.jl) 
 
 ## Graphical Examples
 
