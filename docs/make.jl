@@ -5,7 +5,6 @@ makedocs(;
     format=Documenter.HTML(),
     pages=[
         "Home" => "index.md",
-        "Examples" => "examples.md",
         ],
     repo="https://github.com/gaelforget/OceanRobots.jl/blob/{commit}{path}#L{line}",
     sitename="OceanRobots.jl",

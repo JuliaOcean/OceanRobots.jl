@@ -1,16 +1,7 @@
 
 """
-This modification to e.g. "gdp_v2.00.nc" adds the missing `sample_dimension` attribute. 
-Doing this is needed to used `NCDataset.loadragged` (or it's modified version below).
-"""
-function add_attribute_rowsize(file="gdp_v2.00.nc")
-    ds = NCDataset(file,"a")
-    ds["rowsize"].attrib["sample_dimension"] = "obs"
-    close(ds)
-end
-        
-"""
-This modified version of loadragged has been submitted as a PR to `NCDatasets.jl`.
+This modification to the original "gdp_v2.00.nc" addeed the missing `sample_dimension` 
+attribute. Doing this is needed to use with e.g. `NCDataset.loadragged`.
 
 ```
 ds=Dataset("gdp_v2.00.nc");
@@ -19,40 +10,12 @@ sst=loadragged(ds["sst"],:);
 latitude=loadragged(ds["latitude"],:);
 ```
 """
-function loadragged(ncvar,index::Union{Colon,UnitRange})
-    ds = NCDataset(ncvar)
-
-    dimensionnames = dimnames(ncvar)
-    if length(dimensionnames) !== 1
-        throw(NetCDFError(-1, "NetCDF variable $(name(ncvar)) should have only one dimensions"))
-    end
-    dimname = dimensionnames[1]
-
-    ncvarsizes = varbyattrib(ds,sample_dimension = dimname)
-    if length(ncvarsizes) !== 1
-        throw(NetCDFError(-1, "There should be exactly one NetCDF variable with the attribute 'sample_dimension' equal to '$(dimname)'"))
-    end
-
-    ncvarsize = ncvarsizes[1]
-
-    isa(index,Colon)||(index[1]==1) ? n0=1 : n0=1+sum(ncvarsize[1:index[1]-1])
-    isa(index,Colon) ? n1=sum(ncvarsize[:]) : n1=sum(ncvarsize[1:index[end]])
-    
-    varsize = ncvarsize.var[index]
-
-    istart = 0;
-    tmp = ncvar[n0:n1]
-    #(n0,n1)
-
-    T = typeof(view(tmp,1:varsize[1]))
-    data = Vector{T}(undef,length(varsize))
-
-    for i = 1:length(varsize)
-        data[i] = view(tmp,istart+1:istart+varsize[i]);
-        istart += varsize[i]
-    end
-    return data
+function add_attribute_rowsize(file="gdp_v2.00.nc")
+    ds = NCDataset(file,"a")
+    ds["rowsize"].attrib["sample_dimension"] = "obs"
+    close(ds)
 end
+        
 
 """
     drifters_hourly_files()
