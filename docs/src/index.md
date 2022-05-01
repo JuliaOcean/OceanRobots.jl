@@ -11,15 +11,13 @@ In the [Examples](@ref) section you will find:
 - [example\_WHOTS.jl](examples/example_WHOTS.html) (➭ [code link](https://raw.githubusercontent.com/gaelforget/OceanRobots.jl/master/examples/example_WHOTS.jl)) displays [WHOTS mooring](http://www.soest.hawaii.edu/whots/wh_data.html) data
 - [example\_GDP.jl](examples/example_GDP.html) (➭ [code link](https://raw.githubusercontent.com/gaelforget/OceanRobots.jl/master/examples/example_GDP.jl)) displays a [drifter](https://www.aoml.noaa.gov/phod/gdp/hourly_data.php) time series
 - [example\_Argo.jl](examples/example_Argo.html) (➭ [code link](https://raw.githubusercontent.com/gaelforget/OceanRobots.jl/master/examples/example_Argo.jl)) shows data from an [Argo](https://argo.ucsd.edu) profiling float
+- [Spray\_Glider.jl](examples/Spray_Glider.html) (➭ [code link](https://raw.githubusercontent.com/gaelforget/OceanRobots.jl/master/examples/Spray_Glider.jl)) looks at data from underwater gliders.
 
 For more Argo data examples, please refer to the companion package [ArgoData.jl](https://github.com/JuliaOcean/ArgoData.jl).
 
-## Under Development
-
-Additional examples:
+### Additional examples:
 
 - [Drifter\_CloudDrift.jl](https://raw.githubusercontent.com/gaelforget/OceanRobots.jl/master/examples/Drifter_CloudDrift.jl) 
-- [Spray\_Glider.jl](https://raw.githubusercontent.com/gaelforget/OceanRobots.jl/master/examples/Spray_Glider.jl) 
 
 ## Graphical Examples
 

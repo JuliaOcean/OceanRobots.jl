@@ -35,14 +35,14 @@ Spray gliders are a type of autonomous underwater vehicle that were developed at
 
 - [spraydata.ucsd.edu](http://spraydata.ucsd.edu)
   - <http://spraydata.ucsd.edu/projects/>
-  - <http://spraydata.ucsd.edu/climCUGN/>
   - <http://spraydata.ucsd.edu/GulfStream/>
+  - <http://spraydata.ucsd.edu/climCUGN/>
 - [gliders.whoi.edu](http://gliders.whoi.edu)
   - [gliders.whoi.edu/data](http://gliders.whoi.edu/data/)
 
 ### References 
 
-- Todd, R., &amp; Owens, B. (2016). Gliders in the Gulf Stream [Data set]. Scripps Institution of Oceanography, Instrument Development Group. doi: 10.21238/S8SPRAY2675
+- Todd, R. and Owens, B. (2016). Gliders in the Gulf Stream [Data set]. Scripps Institution of Oceanography, Instrument Development Group. doi: 10.21238/S8SPRAY2675
 - Rudnick, D. (2016). California Underwater Glider Network [Data set]. Scripps Institution of Oceanography, Instrument Development Group. doi: 10.21238/S8SPRAY1618
 - Rudnick, D. (2016). Seasonal-to-Interannual Modulation of Fine-Scale Thermohaline Structure [Data set]. Scripps Institution of Oceanography, Instrument Development Group. doi: 10.21238/S8SPRAY4863
 
@@ -87,8 +87,11 @@ end
 
 # ╔═╡ 9523dc0d-1758-4e0f-864c-4ab253bf11a9
 begin
-	fil=joinpath(tempdir(),"glider_data/GS/GulfStream.nc")
-	ds=nc.Dataset(fil)
+	pth0=joinpath(tempdir(),"tmp_glider_data")
+	fil0=joinpath(pth0,"GulfStream.nc")
+	#fil0=OceanRobots.check_for_file("Spray_Glider")[1]
+
+	ds=nc.Dataset(fil0)
 	df=to_DataFrame(ds)
 	gdf=groupby(df,:ID)
 
@@ -162,6 +165,7 @@ md"""### Typical File Content
 	trajectory_index:long_name = "which mission (trajectory) this profile is part of" ;
 ```
 """
+
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
