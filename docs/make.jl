@@ -11,9 +11,12 @@ makedocs(;
     sitename="OceanRobots.jl",
     authors="gaelforget <gforget@mit.edu>",
     assets=String[],
-)
+    )
 
-lst=("example_NWP_NOAA.jl","example_WHOTS.jl","example_GDP.jl","example_Argo.jl")
+OceanRobots.check_for_file("Spray_Glider","GulfStream.nc")
+OceanRobots.check_for_file("Spray_Glider","CUGN_along.nc")
+
+lst=("Spray_Glider.jl","example_NWP_NOAA.jl","example_WHOTS.jl","example_GDP.jl","example_Argo.jl")
 for i in lst
     fil_in=joinpath(@__DIR__,"..", "examples",i)
     fil_out=joinpath(@__DIR__,"build", "examples",i[1:end-2]*"html")
