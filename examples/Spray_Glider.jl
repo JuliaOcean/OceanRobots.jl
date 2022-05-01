@@ -17,7 +17,7 @@ end
 # ╔═╡ 0247a51e-c89b-11ec-071f-bb82fe257adc
 begin
 	using DataFrames, OceanRobots, PlutoUI
-	import GLMakie as Mkie
+	import CairoMakie as Mkie
 	import NCDatasets as nc
 	"Done with Software Packages"
 end
@@ -25,13 +25,31 @@ end
 # ╔═╡ d9ffd0a8-85e3-4e2a-9d6a-81f3dbd3ee31
 TableOfContents()
 
+# ╔═╡ e5b9772e-cbb5-42f0-bacb-5bae6bc8d5b6
+md"""# Spray Glider Data
+
+_Spray gliders autonomously collect measurements in the upper kilometer of the ocean during missions typically lasting three to four months and covering 2000-3000 km through the water._  ([spraydata.ucsd.edu](http://spraydata.ucsd.edu)).
+"""
+
+# ╔═╡ b8db58ca-ed7a-4174-a6b0-e53925b5887a
+begin
+	MID_bind = @bind MID Select(["CUGN_along.nc", "GulfStream.nc"], default="GulfStream.nc")
+	md"""## Visualize Data
+	
+	- Select data set : $(MID_bind)"""
+end
+
+
+# ╔═╡ 1ab9daac-b631-4f3e-a868-14e95f71962b
+md"""## Data as a Table"""
+
 # ╔═╡ 440e4256-d6eb-4dfa-946b-22fac53432e8
 md"""
-# Spray Glider Data
+## Data Sources
 
-## General Information
+_Spray gliders autonomously collect measurements in the upper kilometer of the ocean during missions typically lasting three to four months and covering 2000-3000 km through the water._ ([spraydata.ucsd.edu](http://spraydata.ucsd.edu)).
 
-Spray gliders are a type of autonomous underwater vehicle that were developed at Scripps and WHOI with funding from the Office of Naval Research (Sherman, et al. 2001). Sprays are designed to autonomously collect measurements in the upper kilometer of the ocean during missions typically lasting three to four months and covering 2000-3000 km through the water.
+### Websites
 
 - [spraydata.ucsd.edu](http://spraydata.ucsd.edu)
   - <http://spraydata.ucsd.edu/projects/>
@@ -48,12 +66,6 @@ Spray gliders are a type of autonomous underwater vehicle that were developed at
 
 """
 
-# ╔═╡ 4c0b3d2f-d50a-4352-98c4-b705accbf7c7
-md"""## Visualize Mission Data"""
-
-# ╔═╡ 1ab9daac-b631-4f3e-a868-14e95f71962b
-md"""## View Data As Table"""
-
 # ╔═╡ 68028522-205e-4b41-b3c0-2e3b09c2d8a7
 md"""## Appendix
 
@@ -61,9 +73,6 @@ md"""## Appendix
 """
 
 # ╔═╡ 4edad6a6-0468-4443-b878-7c9e26921766
-"""
-    to_DataFrame(ds)
-"""
 function to_DataFrame(ds)
 	df=DataFrame(:lon => ds[:lon][:], :lat => ds[:lat][:], :ID => ds[:trajectory_index][:])
 	df.time=ds[:time][:]
@@ -88,27 +97,19 @@ end
 # ╔═╡ 9523dc0d-1758-4e0f-864c-4ab253bf11a9
 begin
 	pth0=joinpath(tempdir(),"tmp_glider_data")
-	fil0=joinpath(pth0,"GulfStream.nc")
-	#fil0=OceanRobots.check_for_file("Spray_Glider")[1]
+	fil0=joinpath(pth0,MID)
 
 	ds=nc.Dataset(fil0)
 	df=to_DataFrame(ds)
 	gdf=groupby(df,:ID)
 
+	ID_bind = @bind ID NumberField(1:gdf.ngroups, default=1)
+
 	"Done with Data Ingestion"
 end
 
 # ╔═╡ 428120da-1542-4265-a369-1273ae4718ac
-begin
-#	ID_bind = @bind ID Select(gdf.idx[:], default=gdf.idx[1])
-	ID_bind = @bind ID NumberField(1:gdf.ngroups, default=1)
-	
-	md"""
-	## Select Glider Mission
-	
-	$(ID_bind)
-	"""
-end
+md"""- Select mission  : $(ID_bind)"""
 
 # ╔═╡ f72d308f-6a74-460d-ae88-cf994477e750
 begin
@@ -1515,12 +1516,13 @@ version = "3.5.0+0"
 
 # ╔═╡ Cell order:
 # ╟─d9ffd0a8-85e3-4e2a-9d6a-81f3dbd3ee31
-# ╟─440e4256-d6eb-4dfa-946b-22fac53432e8
+# ╟─e5b9772e-cbb5-42f0-bacb-5bae6bc8d5b6
+# ╟─b8db58ca-ed7a-4174-a6b0-e53925b5887a
 # ╟─428120da-1542-4265-a369-1273ae4718ac
-# ╟─4c0b3d2f-d50a-4352-98c4-b705accbf7c7
 # ╟─f72d308f-6a74-460d-ae88-cf994477e750
 # ╟─1ab9daac-b631-4f3e-a868-14e95f71962b
 # ╟─d49320f0-06c3-4d82-93d1-6047edc37d47
+# ╟─440e4256-d6eb-4dfa-946b-22fac53432e8
 # ╟─68028522-205e-4b41-b3c0-2e3b09c2d8a7
 # ╟─0247a51e-c89b-11ec-071f-bb82fe257adc
 # ╟─9523dc0d-1758-4e0f-864c-4ab253bf11a9
