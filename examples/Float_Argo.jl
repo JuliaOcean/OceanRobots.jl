@@ -75,8 +75,7 @@ Temperature and salinity profiles recorded by the float as a function of time.
 
 # ╔═╡ 3f5419f1-d131-42eb-86c8-44a385e88d51
 begin
-	files_list="https://raw.githubusercontent.com/JuliaOcean/ArgoData.jl/gh-pages/dev/Argo_float_files.csv"
-	files_list=GDAC.files_list(files_list)
+	files_list=GDAC.files_list()
 	nf=size(files_list,1)
 	files_list[1:2000:nf,:]
 end
@@ -118,39 +117,34 @@ md"""### Files"""
 
 # ╔═╡ 2558c88f-7fee-4a91-bfdd-46f1f61795b0
 begin
-	ii=findall(files_list.wmo.==wmo)[1]
-	folder=files_list.folder[ii]
-
-	url0="https://data-argo.ifremer.fr/dac/$(folder)/"
-	fil=joinpath(tempdir(),"$(wmo)_prof.nc")
-	
-	!isfile(fil) ? Downloads.download(url0*"/$(wmo)/$(wmo)_prof.nc",fil) : nothing
-
-	ds=Dataset(fil)
+	fil=ArgoFiles.download(list_files,wmo)
+	arr=ArgoFiles.read(fil)
 
 	"Done with data ingestion"
 end
 
 # ╔═╡ 3fd610a8-80c1-4acc-b3ef-20883f77e32d
 begin
-	lon=ds["LONGITUDE"][:]
-	lat=ds["LATITUDE"][:]
+	function speed(arr)
+		(lon,lat)=(arr.lon,arr.lat)
+		EarthRadius=6378e3 #in meters
+		gcdist(lo1,lo2,la1,la2) = acos(sind(la1)*sind(la2)+cosd(la1)*cosd(la2)*cosd(lo1-lo2)) #in radians
 
-	lon360=lon; lon[findall(lon.<0)].+=360
-	maximum(lon)-minimum(lon)>maximum(lon360)-minimum(lon360) ? lon=lon360 : nothing
+		dx_net=EarthRadius*gcdist(lon[1],lon[end],lat[1],lat[end])
+		dx=[EarthRadius*gcdist(lon[i],lon[i+1],lat[i],lat[i+1]) for i in 1:length(lon)-1]
+		dt=10.0*86400
 
-	EarthRadius=6378e3 #in meters
-	gcdist(lo1,lo2,la1,la2) = acos(sind(la1)*sind(la2)+cosd(la1)*cosd(la2)*cosd(lo1-lo2)) #in radians
+		dist_tot=sum(dx)/1000 #in km
+		dist_net=dx_net/1000 #in km
+		
+		speed_net=dx_net/dt/(length(lon)-1)
+		speed_mean=mean(dx/dt)
 
-	dx_net=EarthRadius*gcdist(lon[1],lon[end],lat[1],lat[end])
-	dx=[EarthRadius*gcdist(lon[i],lon[i+1],lat[i],lat[i+1]) for i in 1:length(lon)-1]
-	dt=10.0*86400
+		return (dx=dx,dist_tot=dist_tot,dist_net=dist_net,
+		speed_net=speed_net,speed_mean=speed_mean)
+	end
 
-	dist_tot=sum(dx)/1000 #in km
-	dist_net=dx_net/1000 #in km
-	
-	speed_net=dx_net/dt/(length(lon)-1)
-	speed_mean=mean(dx/dt)
+	spd=speed(arr)
 
 	"Done with reading data positions"
 end
@@ -160,10 +154,6 @@ md"""_Average estimated drift speed :_ $(round(speed_mean; digits=4)) m/s"""
 
 # ╔═╡ 5b814708-292a-45ed-8eab-386a7f097634
 begin
-	PRES=ds["PRES_ADJUSTED"][:,:]
-	TEMP=ds["TEMP_ADJUSTED"][:,:]
-	PSAL=ds["PSAL_ADJUSTED"][:,:]
-	TIME=10*ones(size(PRES,1)).* (1:length(lon))' .-10.0
 	"Done reading data arrays"
 end
 
@@ -193,11 +183,11 @@ let
 
 	ttl="Float wmo="*string(wmo)
 	ax=Mkie.Axis(fig1[1,1],title=ttl*", temperature, degree C")
-	hm1=plot_profiles!(ax,TIME,PRES,TEMP,:thermal)
+	hm1=plot_profiles!(ax,arr.TIME,arr.PRES,arr.TEMP,:thermal)
 	Mkie.Colorbar(fig1[1,2], hm1, height=Mkie.Relative(0.65))
 
 	ax=Mkie.Axis(fig1[2,1],title=ttl*", salinity, psu")
-	hm2=plot_profiles!(ax,TIME,PRES,PSAL,:viridis)
+	hm2=plot_profiles!(ax,arr.TIME,arr.PRES,arr.PSAL,:viridis)
 	Mkie.Colorbar(fig1[2,2], hm2, height=Mkie.Relative(0.65))
 
 	fig1
@@ -221,7 +211,7 @@ function plot_trajectory(lon,lat,dx)
 end
 
 # ╔═╡ fb5e783b-6275-411d-b8b5-0f3ff8481961
-	plot_trajectory(lon,lat,dx)
+	plot_trajectory(arr.lon,arr.lat,arr.dx)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """

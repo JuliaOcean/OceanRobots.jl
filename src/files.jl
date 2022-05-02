@@ -178,3 +178,39 @@ read(filename::String) = Dataset(filename)
 
 end #module GDP
 
+##
+
+module ArgoFiles
+
+function download(files_list,wmo)
+    ii=findall(files_list.wmo.==wmo)[1]
+    folder=files_list.folder[ii]
+
+    url0="https://data-argo.ifremer.fr/dac/$(folder)/"
+    fil=joinpath(tempdir(),"$(wmo)_prof.nc")
+
+    !isfile(fil) ? Downloads.download(url0*"/$(wmo)/$(wmo)_prof.nc",fil) : nothing
+
+    return fil
+end
+
+function read(fil)
+    ds=Dataset(fil)
+
+	lon=ds["LONGITUDE"][:]
+	lat=ds["LATITUDE"][:]
+
+	lon360=lon; lon[findall(lon.<0)].+=360
+	maximum(lon)-minimum(lon)>maximum(lon360)-minimum(lon360) ? lon=lon360 : nothing
+
+	PRES=ds["PRES_ADJUSTED"][:,:]
+	TEMP=ds["TEMP_ADJUSTED"][:,:]
+	PSAL=ds["PSAL_ADJUSTED"][:,:]
+	TIME=10*ones(size(PRES,1)).* (1:length(lon))' .-10.0
+
+    close(ds)
+
+    return (lon=lon,lat=lat,PRES=PRES,TEMP=TEMP,PSAL=PSAL,TIME=TIME)
+end
+
+end

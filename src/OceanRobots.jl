@@ -14,7 +14,7 @@ function check_for_file(set::String,args...)
     end
 end
 
-export GDP, NOAA, Spray_Glider
+export GDP, NOAA, Spray_Glider, ArgoFiles
 export check_for_file, parse_thredds_catalog
 
 #to avoid breaking notebooks during transition:
