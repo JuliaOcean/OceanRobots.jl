@@ -115,8 +115,7 @@ begin
 	pth0=joinpath(tempdir(),"tmp_glider_data")
 	fil0=joinpath(pth0,MID)
 
-	ds=nc.Dataset(fil0)
-	df=to_DataFrame(ds)
+	df=Spray_Glider.read(fil0)
 	gdf=groupby(df,:ID)
 
 	ID_bind = @bind ID NumberField(1:gdf.ngroups, default=1)
@@ -132,7 +131,7 @@ begin
 	f=Mkie.Figure()
 	
 	a_traj=Mkie.Axis(f[1,1],title="Positions")
-	p=Mkie.scatter!(a_traj,ds["lon"],ds["lat"],markersize=1)
+	p=Mkie.scatter!(a_traj,df.lon,df.lat,markersize=1)
 	p=Mkie.scatter!(a_traj,gdf[ID].lon,gdf[ID].lat,color=:red)
 
 	a_uv=Mkie.Axis(f[1,2],title="Velocity (m/s, depth mean)")

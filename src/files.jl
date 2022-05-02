@@ -1,7 +1,7 @@
 
 module Spray_Glider
 
-using Downloads, Glob
+using Downloads, Glob, DataFrames, NCDatasets
 
 function check_for_file_Spray_Glider(args...)
     if !isempty(args)
@@ -17,13 +17,36 @@ function check_for_file_Spray_Glider(args...)
     end
 end
 
+function read(fil0)
+    ds=Dataset(fil0)
+    
+	df=DataFrame(:lon => ds[:lon][:], :lat => ds[:lat][:], :ID => ds[:trajectory_index][:])
+	df.time=ds[:time][:]
+
+	df.T10=ds[:temperature][:,1]
+	df.T100=ds[:temperature][:,10]
+	df.T500=ds[:temperature][:,50]
+
+	df.S10=ds[:salinity][:,1]
+	df.S100=ds[:salinity][:,10]
+	df.S500=ds[:salinity][:,50]
+
+	df.u100=ds[:u][:,10]
+	df.v100=ds[:v][:,10]
+
+	df.u=ds[:u_depth_mean][:]
+	df.v=ds[:v_depth_mean][:]
+	
+	df
+end
+
 end #module Spray_Glider
 
 ##
 
 module NOAA
 
-using Downloads
+using Downloads, CSV, DataFrames, Dates
 
 function get_NWP_NOAA(x)
     url0="https://www.ndbc.noaa.gov/data/realtime2/"
@@ -38,6 +61,48 @@ function get_NWP_NOAA(x)
     
     return x
 end
+
+function read(MC,sta)
+    pth0=pathof(MC)
+        
+    fil1=joinpath(pth0,"$sta.txt")
+
+    x=DataFrame(CSV.File(fil1,skipto=3,
+    missingstring="MM",delim=' ',header=1,ignorerepeated=true))
+    rename!(x, Symbol("#YY") => :YY, :Column2 => :MM)
+
+    #time
+    nt=size(x,1)	
+    x.time=[DateTime(x.YY[t],x.MM[t],x.DD[t],x.hh[t],x.mm[t]) for t in 1:nt]
+    dt=x.time.-minimum(x.time)
+    x.dt=[dt[i].value for i in 1:nt]/1000/86400;
+
+    #sort by time
+    sort!(x,:time)
+
+    return x
+end
+
+tmp1=split("YY  MM DD hh mm WDIR WSPD GST  WVHT   DPD   APD MWD   PRES  ATMP  WTMP  DEWP  VIS PTDY  TIDE")
+tmp2=split("yr  mo dy hr mn degT m/s  m/s     m   sec   sec degT   hPa  degC  degC  degC  nmi  hPa    ft")
+units=Dict(tmp1[i] => tmp2[i] for i = 1:length(tmp1))
+
+descriptions=Dict(
+"WDIR"=>"Wind direction (the direction the wind is coming from in degrees clockwise from true N) during the same period used for WSPD. See Wind Averaging Methods",
+"WSPD"=>"Wind speed (m/s) averaged over an eight-minute period for buoys and a two-minute period for land stations. Reported Hourly. See Wind Averaging Methods.",
+"GST"=>"Peak 5 or 8 second gust speed (m/s) measured during the eight-minute or two-minute period. The 5 or 8 second period can be determined by payload, See the Sensor Reporting, Sampling, and Accuracy section.",
+"WVHT"=>"Significant wave height (meters) is calculated as the average of the highest one-third of all of the wave heights during the 20-minute sampling period. See the Wave Measurements section.",
+"DPD"=>"Dominant wave period (seconds) is the period with the maximum wave energy. See the Wave Measurements section.",
+"APD"=>"Average wave period (seconds) of all waves during the 20-minute period. See the Wave Measurements section.",
+"MWD"=>"The direction from which the waves at the dominant period (DPD) are coming. The units are degrees from true North, increasing clockwise, with North as 0 (zero) degrees and East as 90 degrees. See the Wave Measurements section.",
+"PRES"=>"Sea level pressure (hPa). For C-MAN sites and Great Lakes buoys, the recorded pressure is reduced to sea level using the method described in NWS Technical Procedures Bulletin 291 (11/14/80). ( labeled BAR in Historical files)",
+"ATMP"=>"Air temperature (Celsius). For sensor heights on buoys, see Hull Descriptions. For sensor heights at C-MAN stations, see C-MAN Sensor Locations",
+"WTMP"=>"Sea surface temperature (Celsius). For buoys the depth is referenced to the hull's waterline. For fixed platforms it varies with tide, but is referenced to, or near Mean Lower Low Water (MLLW).",
+"DEWP"=>"Dewpoint temperature taken at the same height as the air temperature measurement.",
+"VIS"=>"Station visibility (nautical miles). Note that buoy stations are limited to reports from 0 to 1.6 nmi.",
+"PTDY"=>"Pressure Tendency is the direction (plus or minus) and the amount of pressure change (hPa)for a three hour period ending at the time of observation. (not in Historical files)",
+"TIDE"=>"The water level in feet above or below Mean Lower Low Water (MLLW).",
+)
 
 end #module NOAA
 
