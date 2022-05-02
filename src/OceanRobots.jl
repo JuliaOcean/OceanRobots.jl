@@ -17,4 +17,10 @@ end
 export GDP, NOAA, Spray_Glider
 export check_for_file, parse_thredds_catalog
 
+#to avoid breaking notebooks during transition:
+drifters_hourly_files=GDP.drifters_hourly_files
+drifters_hourly_read=GDP.drifters_hourly_read
+drifters_hourly_download=GDP.drifters_hourly_download
+export drifters_hourly_files, drifters_hourly_read, drifters_hourly_download
+
 end # module

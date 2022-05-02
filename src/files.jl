@@ -1,6 +1,8 @@
 
 module Spray_Glider
 
+using Downloads, Glob
+
 function check_for_file_Spray_Glider(args...)
     if !isempty(args)
         url1="http://spraydata.ucsd.edu/media/data/binnednc/"*basename(args[1])
@@ -21,6 +23,8 @@ end #module Spray_Glider
 
 module NOAA
 
+using Downloads
+
 function get_NWP_NOAA(x)
     url0="https://www.ndbc.noaa.gov/data/realtime2/"
     pth0=pathof(x)
@@ -40,6 +44,8 @@ end #module NOAA
 ##
 
 module GDP
+
+using DataFrames, FTPClient, NCDatasets
 
 """
     drifters_hourly_files()
