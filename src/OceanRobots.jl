@@ -1,8 +1,5 @@
 module OceanRobots
 
-using NCDatasets, Dates, CFTime, CSV, DataFrames, MAT
-using FTPClient, Downloads, LightXML, Glob
-
 include("thredds_servers.jl")
 include("files.jl")
 
@@ -15,7 +12,7 @@ function check_for_file(set::String,args...)
 end
 
 export GDP, NOAA, Spray_Glider, ArgoFiles, WHOTS
-export check_for_file, parse_thredds_catalog
+export check_for_file, THREDDS
 
 #to avoid breaking notebooks during transition:
 drifters_hourly_files=GDP.list_files
