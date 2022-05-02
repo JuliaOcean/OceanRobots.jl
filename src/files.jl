@@ -182,6 +182,8 @@ end #module GDP
 
 module ArgoFiles
 
+using NCDatasets
+
 function download(files_list,wmo)
     ii=findall(files_list.wmo.==wmo)[1]
     folder=files_list.folder[ii]

@@ -117,7 +117,7 @@ md"""### Files"""
 
 # ╔═╡ 2558c88f-7fee-4a91-bfdd-46f1f61795b0
 begin
-	fil=ArgoFiles.download(list_files,wmo)
+	fil=ArgoFiles.download(files_list,wmo)
 	arr=ArgoFiles.read(fil)
 
 	"Done with data ingestion"
@@ -211,7 +211,7 @@ function plot_trajectory(lon,lat,dx)
 end
 
 # ╔═╡ fb5e783b-6275-411d-b8b5-0f3ff8481961
-	plot_trajectory(arr.lon,arr.lat,arr.dx)
+	plot_trajectory(arr.lon,arr.lat,spd.dx)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
