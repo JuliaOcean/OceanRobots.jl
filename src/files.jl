@@ -216,3 +216,30 @@ function read(fil)
 end
 
 end
+
+##
+
+module WHOTS
+
+using NCDatasets
+
+function read()
+    fil="http://tds0.ifremer.fr/thredds/dodsC/CORIOLIS-OCEANSITES-GDAC-OBS/long_timeseries/WHOTS/OS_WHOTS_200408-201809_D_MLTS-1H.nc"
+        
+    ds=NCDataset(fil)
+    TIME = ds["TIME"][:,:]; uTIME=ds["TIME"].attrib["units"]
+    AIRT = ds["AIRT"][:,:]; uAIRT=ds["AIRT"].attrib["units"]
+    TEMP = ds["TEMP"][:,:]; uTEMP=ds["TEMP"].attrib["units"]
+    PSAL = ds["PSAL"][:,:]; uPSAL=ds["PSAL"].attrib["units"]
+    RAIN = ds["RAIN"][:,:]; uRAIN=ds["RAIN"].attrib["units"]
+    RELH = ds["RELH"][:,:]; uRELH=ds["RELH"].attrib["units"]
+    wspeed = sqrt.(ds["UWND"][:,:].^2+ds["VWND"][:,:].^2); uwspeed=ds["UWND"].attrib["units"]
+    close(ds)
+
+    arr=(TIME=TIME,AIRT=AIRT,TEMP=TEMP,PSAL=PSAL,RAIN=RAIN,RELH=RELH,wspeed=wspeed)
+    units=(TIME=uTIME,AIRT=uAIRT,TEMP=uTEMP,PSAL=uPSAL,RAIN=uRAIN,RELH=uRELH,wspeed=uwspeed)
+
+    return arr,units
+end
+
+end
