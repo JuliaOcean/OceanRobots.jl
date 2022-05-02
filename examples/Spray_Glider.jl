@@ -26,10 +26,26 @@ end
 TableOfContents()
 
 # ╔═╡ e5b9772e-cbb5-42f0-bacb-5bae6bc8d5b6
-md"""# Spray Glider Data
+md"""# Spray Gliders
 
 _Spray gliders autonomously collect measurements in the upper kilometer of the ocean during missions typically lasting three to four months and covering 2000-3000 km through the water._  ([spraydata.ucsd.edu](http://spraydata.ucsd.edu)).
 """
+
+# ╔═╡ 0a016d12-de41-45f5-800d-af8f953720e4
+begin
+	url1="https://timesofsandiego.com/wp-content/uploads/2014/06/Spray-Glider.jpg"
+	url2="https://www.whoi.edu/wp-content/uploads/2019/01/GP020002-1-14_506075_510753-1.jpg"
+	url3="http://spraydata.ucsd.edu/media/GulfStream/GS_KE_for_web.png"
+	url4="http://spraydata.ucsd.edu/cugnclim-figs/66/meanmap/66_meanmap_xz_geov.png"
+	md"""
+	$(Resource(url2,:height => 100))
+	$(Resource(url1,:height => 100))
+	$(Resource(url4,:height => 100))
+	$(Resource(url3,:height => 100))
+
+	_Image Credits : WHOI, UCSD._
+	"""
+end
 
 # ╔═╡ b8db58ca-ed7a-4174-a6b0-e53925b5887a
 begin
@@ -1463,6 +1479,7 @@ version = "3.5.0+0"
 # ╔═╡ Cell order:
 # ╟─d9ffd0a8-85e3-4e2a-9d6a-81f3dbd3ee31
 # ╟─e5b9772e-cbb5-42f0-bacb-5bae6bc8d5b6
+# ╟─0a016d12-de41-45f5-800d-af8f953720e4
 # ╟─b8db58ca-ed7a-4174-a6b0-e53925b5887a
 # ╟─428120da-1542-4265-a369-1273ae4718ac
 # ╟─f72d308f-6a74-460d-ae88-cf994477e750
