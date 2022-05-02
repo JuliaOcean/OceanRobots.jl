@@ -21,18 +21,15 @@ end
     drifters_hourly_files()
 
 Get list of drifter files from NOAA ftp server     
-<ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v1.04/netcdf/>
+<ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/>
+or the corresponding webpage 
+<https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/>.
 """
 function drifters_hourly_files()
     list_files=DataFrame("folder" => [],"filename" => [])
-    list_folders=["gps",["argos_block$i" for i in 1:8]...]
-    for pth in list_folders
-        ftp=FTP("ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v1.04/netcdf/")
-        cd(ftp,pth)
-        tmp=readdir(ftp)
-        append!(list_files,DataFrame("folder" => pth,"filename" => tmp))
-        cd(ftp,"..")
-    end
+    ftp=FTP("ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/")
+    tmp=readdir(ftp)
+    append!(list_files,DataFrame("folder" => "","filename" => tmp))
     list_files
 end
 
@@ -44,7 +41,9 @@ end
     drifters_hourly_download(list_files,ii=1)
 
 Download one drifter file from NOAA ftp server     
-<ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v1.04/netcdf/>
+<ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/>
+or the corresponding webpage 
+<https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/>.
 
 ```
 list_files=drifters_hourly_files()
@@ -52,7 +51,7 @@ fil=drifters_hourly_download(list_files,1)
 ```
 """
 function drifters_hourly_download(list_files,ii=1)
-    url0="ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v1.04/netcdf/"
+    url0="ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/"
     url1=joinpath(url0,list_files[ii,"folder"])
     ftp=FTP(url1)
 
@@ -70,7 +69,9 @@ end
     drifters_hourly_read(filename::String)
 
 Download one drifter file from NOAA ftp server     
-<ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v1.04/netcdf/>
+<ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/>
+or the corresponding webpage 
+<https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/>.
 
 ```
 list_files=drifters_hourly_files()
