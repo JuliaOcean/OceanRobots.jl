@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.17.5
+# v0.19.0
 
 using Markdown
 using InteractiveUtils
@@ -22,49 +22,32 @@ begin
 	"Done with packages"
 end
 
-# ╔═╡ d6feeecc-87db-4bfd-8341-adede2df8ea0
-md"""# Plotting Time Series From NOAA mooring
-
-###
-
-For more information about the data being plotted, please refer to
-
-- <https://www.ndbc.noaa.gov/>
-- <https://www.ndbc.noaa.gov/measdes.shtml>
-"""
-
 # ╔═╡ 6b5ffee8-a230-42d4-8c49-ff14e65f52b7
 	TableOfContents()
 
-# ╔═╡ 06d96eef-f99d-44fe-8c6f-344ab29f3a48
-md"""## Samples
+# ╔═╡ d6feeecc-87db-4bfd-8341-adede2df8ea0
+begin
+	img_url="https://nosc.noaa.gov/OSC/images/Kukui_and_NOAA_buoy_1.177308.JPG"
+	md"""# NOAA Buoys
+	
+	$(Resource(img_url,:width => 250))
 
-Here is a set of weblinks for one station's data sets and docs.
-
-- <https://www.ndbc.noaa.gov/station_page.php?station=41048>
-- <https://www.ndbc.noaa.gov/station_history.php?station=41048>
-- <https://www.ndbc.noaa.gov/station_realtime.php?station=41048>
-- <https://www.ndbc.noaa.gov/data/historical/stdmet/41048h2015.txt.gz>
-- <https://www.ndbc.noaa.gov/data/realtime2/41048.txt>
-"""
-
-# ╔═╡ 38a48b6b-4e07-4965-8947-6b758318462b
-md"""
-```
-#YY  MM DD hh mm WDIR WSPD GST  WVHT   DPD   APD MWD   PRES  ATMP  WTMP  DEWP  VIS PTDY  TIDE
-#yr  mo dy hr mn degT m/s  m/s     m   sec   sec degT   hPa  degC  degC  degC  nmi  hPa    ft
-2022 01 13 03 00 250  9.0 11.0    MM    MM    MM  MM 1020.6   8.2    MM   2.6   MM   MM    MM
-2022 01 13 02 50 250  9.0 11.0   2.2     8   5.6 225 1020.5   8.2  11.3   2.9   MM   MM    MM
-```
-"""
+	!!! note 
+	    For more information about NOAA Buoys, visit <https://www.ndbc.noaa.gov/>
+	
+	"""
+end
 
 # ╔═╡ 8b610dbe-f9ab-4498-8c98-fc8e83474981
 begin
-	md"""## Select To Plot"""
+	md"""## Visualize Data"""
 end
 
 # ╔═╡ 46ff94e2-1b1e-454d-ab92-89be94123a47
-md"""## Appendices"""
+md"""## Appendix
+
+### Code and Data
+"""
 
 # ╔═╡ db662fb4-7413-11ec-1af6-43b18c0c15a9
 begin
@@ -96,16 +79,8 @@ end
 # ╔═╡ 04354f30-e857-4c77-ad57-9e84c4356e4f
 begin
 	sta_b = @bind sta Select(parameters["stations"], default=parameters["stations"][1])
-	md"""Select buoy : $(sta_b)"""
-end
-
-# ╔═╡ 7a9b1432-7e21-4afd-8f35-56f2575f90c8
-begin
-	#mysta=parameters["stations"][2]
 	myurl="https://www.ndbc.noaa.gov/station_page.php?station=$(sta)"
-	md"""Information on buoy $(sta) please visit : 
-	###
-	$(myurl)"""
+	md"""Select buoy : $(sta_b)"""
 end
 
 # ╔═╡ a1698e0e-db0d-4cd2-91b3-d530f77cd609
@@ -117,13 +92,16 @@ begin
 	x=DataFrame(CSV.File(fil1,skipto=3,
 	missingstring="MM",delim=' ',header=1,ignorerepeated=true))
 	rename!(x, Symbol("#YY") => :YY, :Column2 => :MM)
-	
-	nt=size(x,1)
-	
-	t=[DateTime(x.YY[t],x.MM[t],x.DD[t],x.hh[t],x.mm[t]) for t in 1:nt]
-	dt=t.-t[1]; dt=[dt[i].value for i in 1:nt]/1000/86400;
-	z=x.PRES[:]
 
+	#time
+	nt=size(x,1)	
+	x.time=[DateTime(x.YY[t],x.MM[t],x.DD[t],x.hh[t],x.mm[t]) for t in 1:nt]
+	dt=x.time.-minimum(x.time)
+	x.dt=[dt[i].value for i in 1:nt]/1000/86400;
+
+	#sort by time
+	sort!(x,:time)
+	
 	"Done with reading data"
 end
 
@@ -133,8 +111,69 @@ begin
 	md"""Select variable : $(var_b)"""
 end
 
+# ╔═╡ 93df622b-a397-4204-a765-87a426c36d12
+begin
+	tmp1=split("YY  MM DD hh mm WDIR WSPD GST  WVHT   DPD   APD MWD   PRES  ATMP  WTMP  DEWP  VIS PTDY  TIDE")
+	tmp2=split("yr  mo dy hr mn degT m/s  m/s     m   sec   sec degT   hPa  degC  degC  degC  nmi  hPa    ft")
+	units=Dict(tmp1[i] => tmp2[i] for i = 1:length(tmp1))
+
+	descriptions=Dict(
+	"WDIR"=>"Wind direction (the direction the wind is coming from in degrees clockwise from true N) during the same period used for WSPD. See Wind Averaging Methods",
+	"WSPD"=>"Wind speed (m/s) averaged over an eight-minute period for buoys and a two-minute period for land stations. Reported Hourly. See Wind Averaging Methods.",
+	"GST"=>"Peak 5 or 8 second gust speed (m/s) measured during the eight-minute or two-minute period. The 5 or 8 second period can be determined by payload, See the Sensor Reporting, Sampling, and Accuracy section.",
+	"WVHT"=>"Significant wave height (meters) is calculated as the average of the highest one-third of all of the wave heights during the 20-minute sampling period. See the Wave Measurements section.",
+	"DPD"=>"Dominant wave period (seconds) is the period with the maximum wave energy. See the Wave Measurements section.",
+	"APD"=>"Average wave period (seconds) of all waves during the 20-minute period. See the Wave Measurements section.",
+	"MWD"=>"The direction from which the waves at the dominant period (DPD) are coming. The units are degrees from true North, increasing clockwise, with North as 0 (zero) degrees and East as 90 degrees. See the Wave Measurements section.",
+	"PRES"=>"Sea level pressure (hPa). For C-MAN sites and Great Lakes buoys, the recorded pressure is reduced to sea level using the method described in NWS Technical Procedures Bulletin 291 (11/14/80). ( labeled BAR in Historical files)",
+	"ATMP"=>"Air temperature (Celsius). For sensor heights on buoys, see Hull Descriptions. For sensor heights at C-MAN stations, see C-MAN Sensor Locations",
+	"WTMP"=>"Sea surface temperature (Celsius). For buoys the depth is referenced to the hull's waterline. For fixed platforms it varies with tide, but is referenced to, or near Mean Lower Low Water (MLLW).",
+	"DEWP"=>"Dewpoint temperature taken at the same height as the air temperature measurement.",
+	"VIS"=>"Station visibility (nautical miles). Note that buoy stations are limited to reports from 0 to 1.6 nmi.",
+	"PTDY"=>"Pressure Tendency is the direction (plus or minus) and the amount of pressure change (hPa)for a three hour period ending at the time of observation. (not in Historical files)",
+	"TIDE"=>"The water level in feet above or below Mean Lower Low Water (MLLW).",
+	)
+	
+	"Done with meta data"
+end
+
+# ╔═╡ 711e604d-ddfe-4328-a663-93dd49ff64c4
+md"""
+- `Buoy information page :` $(myurl)
+- `Variable Units.       :` $(units[var])
+- `Variable Description  :` $(descriptions[var])"""
+
 # ╔═╡ 15ecca6a-69af-4700-b20f-d08a4b6c9492
-lines(dt,x[!,Symbol(var)])
+let
+	haskey(units,var) ? u=units[var] : u=""
+	
+	f=Figure()
+	ax=Axis(f[1,1],title="Station $(sta), Variable $(var), Units $(u)",ylabel=u,xlabel="days")
+	lines!(ax,x.dt,x[!,Symbol(var)])
+	f
+end
+
+# ╔═╡ 06d96eef-f99d-44fe-8c6f-344ab29f3a48
+md"""### Data Information
+
+Here is a set of weblinks for one station's data sets and docs.
+
+- <https://www.ndbc.noaa.gov/station_page.php?station=41048>
+- <https://www.ndbc.noaa.gov/station_history.php?station=41048>
+- <https://www.ndbc.noaa.gov/station_realtime.php?station=41048>
+- <https://www.ndbc.noaa.gov/data/historical/stdmet/41048h2015.txt.gz>
+- <https://www.ndbc.noaa.gov/data/realtime2/41048.txt>
+"""
+
+# ╔═╡ 38a48b6b-4e07-4965-8947-6b758318462b
+md"""
+```
+#YY  MM DD hh mm WDIR WSPD GST  WVHT   DPD   APD MWD   PRES  ATMP  WTMP  DEWP  VIS PTDY  TIDE
+#yr  mo dy hr mn degT m/s  m/s     m   sec   sec degT   hPa  degC  degC  degC  nmi  hPa    ft
+2022 01 13 03 00 250  9.0 11.0    MM    MM    MM  MM 1020.6   8.2    MM   2.6   MM   MM    MM
+2022 01 13 02 50 250  9.0 11.0   2.2     8   5.6 225 1020.5   8.2  11.3   2.9   MM   MM    MM
+```
+"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -150,7 +189,7 @@ PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 [compat]
 CSV = "~0.9.11"
 CairoMakie = "~0.7.0"
-ClimateModels = "~0.2.2"
+ClimateModels = "~0.2.3"
 DataFrames = "~1.3.1"
 PlutoUI = "~0.7.29"
 """
@@ -159,7 +198,7 @@ PlutoUI = "~0.7.29"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.7.0"
+julia_version = "1.7.2"
 manifest_format = "2.0"
 
 [[deps.AWS]]
@@ -226,9 +265,9 @@ uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
 [[deps.Blosc]]
 deps = ["Blosc_jll"]
-git-tree-sha1 = "575bdd70552dd9a7eaeba08ef2533226cdc50779"
+git-tree-sha1 = "310b77648d38c223d947ff3f50f511d08690b8d5"
 uuid = "a74b3585-a348-5f62-a45c-50e91977d574"
-version = "0.7.2"
+version = "0.7.3"
 
 [[deps.Blosc_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Lz4_jll", "Pkg", "Zlib_jll", "Zstd_jll"]
@@ -249,9 +288,9 @@ version = "0.4.1"
 
 [[deps.CFTime]]
 deps = ["Dates", "Printf"]
-git-tree-sha1 = "bca6cb6ee746e6485ca4535f6cc29cf3579a0f20"
+git-tree-sha1 = "ed2e76c1c3c43fd9d0cb9248674620b29d71f2d1"
 uuid = "179af706-886a-5703-950a-314cd64e0468"
-version = "0.1.1"
+version = "0.1.2"
 
 [[deps.CSV]]
 deps = ["CodecZlib", "Dates", "FilePathsBase", "InlineStrings", "Mmap", "Parsers", "PooledArrays", "SentinelArrays", "Tables", "Unicode", "WeakRefStrings"]
@@ -291,9 +330,9 @@ version = "0.1.2"
 
 [[deps.ClimateModels]]
 deps = ["AWS", "CFTime", "CSV", "DataFrames", "Dates", "Downloads", "Git", "NetCDF", "OrderedCollections", "Pkg", "Statistics", "Suppressor", "TOML", "Test", "UUIDs", "Zarr"]
-git-tree-sha1 = "7e9ebc6da08f73d6fc16e7805245ec03b7efc3fd"
+git-tree-sha1 = "ffeb827b1ea7b9a1c29a7deafb10f9c2b7a9b0f1"
 uuid = "f6adb021-9183-4f40-84dc-8cea6f651bb0"
-version = "0.2.2"
+version = "0.2.3"
 
 [[deps.CodecZlib]]
 deps = ["TranscodingStreams", "Zlib_jll"]
@@ -389,9 +428,10 @@ uuid = "b429d917-457f-4dbc-8f4c-0cc954292b1d"
 version = "0.4.0"
 
 [[deps.DiskArrays]]
-git-tree-sha1 = "cfca3b5d0df57f6315b5187482ab8eae4a5beb0e"
+deps = ["OffsetArrays"]
+git-tree-sha1 = "ba4bd0a662b6dd94841d5b71ab5e2945bbe6e485"
 uuid = "3c3547ce-8d99-4f5e-a174-61eb10b00ae3"
-version = "0.2.13"
+version = "0.3.3"
 
 [[deps.Distributed]]
 deps = ["Random", "Serialization", "Sockets"]
@@ -432,9 +472,9 @@ uuid = "2e619515-83b5-522b-bb60-26c02a35a201"
 version = "2.2.10+0"
 
 [[deps.ExprTools]]
-git-tree-sha1 = "24565044e60bc48a7562e75bcf14f084901dc0b6"
+git-tree-sha1 = "56559bbef6ca5ea0c0818fa5c90320398a6fbf8d"
 uuid = "e2ba6199-217a-4e67-a87a-7c52f15ade04"
-version = "0.1.7"
+version = "0.1.8"
 
 [[deps.EzXML]]
 deps = ["Printf", "XML2_jll"]
@@ -550,9 +590,9 @@ version = "1.2.1"
 
 [[deps.GitHub]]
 deps = ["Base64", "Dates", "HTTP", "JSON", "MbedTLS", "Sockets", "SodiumSeal", "URIs"]
-git-tree-sha1 = "c7002c974666baa263d15fe42ec723da19a3c063"
+git-tree-sha1 = "056781ae7b953289778408b136f8708a46837979"
 uuid = "bc5e4493-9b4d-5f90-b8aa-2b2bcaad7a26"
-version = "5.7.1"
+version = "5.7.2"
 
 [[deps.Git_jll]]
 deps = ["Artifacts", "Expat_jll", "Gettext_jll", "JLLWrappers", "LibCURL_jll", "Libdl", "Libiconv_jll", "OpenSSL_jll", "PCRE2_jll", "Pkg", "Zlib_jll"]
@@ -591,9 +631,9 @@ version = "1.0.2"
 
 [[deps.HDF5_jll]]
 deps = ["Artifacts", "JLLWrappers", "LibCURL_jll", "Libdl", "OpenSSL_jll", "Pkg", "Zlib_jll"]
-git-tree-sha1 = "fd83fa0bde42e01952757f01149dd968c06c4dba"
+git-tree-sha1 = "bab67c0d1c4662d2c4be8c6007751b0b6111de5c"
 uuid = "0234f1f7-429e-5d53-9886-15a909be8d59"
-version = "1.12.0+1"
+version = "1.12.1+0"
 
 [[deps.HTTP]]
 deps = ["Base64", "Dates", "IniFile", "Logging", "MbedTLS", "NetworkOptions", "Sockets", "URIs"]
@@ -658,10 +698,9 @@ uuid = "d25df0c9-e2be-5dd7-82c8-3ad0b3e990b9"
 version = "0.1.2"
 
 [[deps.IniFile]]
-deps = ["Test"]
-git-tree-sha1 = "098e4d2c533924c921f9f9847274f2ad89e018b8"
+git-tree-sha1 = "f550e6e32074c939295eb5ea6de31849ac2c9625"
 uuid = "83e8ac13-25f8-5344-8a64-a9f2b223428f"
-version = "0.5.0"
+version = "0.5.1"
 
 [[deps.InlineStrings]]
 deps = ["Parsers"]
@@ -920,15 +959,15 @@ version = "0.3.6"
 
 [[deps.NetCDF]]
 deps = ["DiskArrays", "Formatting", "NetCDF_jll"]
-git-tree-sha1 = "23b0e32fde256a4e2e497e678abcf956ed26204b"
+git-tree-sha1 = "8aca90c1a0f6c3bb65be11d307d8aad6b200087b"
 uuid = "30363a11-5582-574a-97bb-aa9a979735b9"
-version = "0.11.3"
+version = "0.11.4"
 
 [[deps.NetCDF_jll]]
 deps = ["Artifacts", "HDF5_jll", "JLLWrappers", "LibCURL_jll", "LibSSH2_jll", "Libdl", "MbedTLS_jll", "Pkg", "Zlib_jll", "nghttp2_jll"]
-git-tree-sha1 = "0cf4d1bf2ef45156aed85c9ac5f8c7e697d9288c"
+git-tree-sha1 = "598f1a5e9829b3e57f233f98b34a22b376dff373"
 uuid = "7243133f-43d8-5620-bbf4-c2c921802cf3"
-version = "400.702.400+0"
+version = "400.702.402+0"
 
 [[deps.Netpbm]]
 deps = ["FileIO", "ImageCore"]
@@ -1292,9 +1331,9 @@ deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
 uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
 
 [[deps.Suppressor]]
-git-tree-sha1 = "a819d77f31f83e5792a76081eee1ea6342ab8787"
+git-tree-sha1 = "c6ed566db2fe3931292865b966d6d140b7ef32a9"
 uuid = "fd094767-a336-5f1f-9728-57cf17d0bbfb"
-version = "0.2.0"
+version = "0.2.1"
 
 [[deps.TOML]]
 deps = ["Dates"]
@@ -1436,9 +1475,9 @@ version = "1.4.0+3"
 
 [[deps.Zarr]]
 deps = ["AWS", "Blosc", "CodecZlib", "DataStructures", "Dates", "DiskArrays", "HTTP", "JSON", "LRUCache", "OffsetArrays", "Pkg", "URIs"]
-git-tree-sha1 = "7238cf588d2def313a65b63ea9bba07aa762f26b"
+git-tree-sha1 = "47a53313f4493879345f217e20146c4c40774520"
 uuid = "0a941bbe-ad1d-11e8-39d9-ab76183a1d99"
-version = "0.7.0"
+version = "0.7.1"
 
 [[deps.Zlib_jll]]
 deps = ["Libdl"]
@@ -1446,9 +1485,9 @@ uuid = "83775a58-1f1d-513f-b197-d71354ab007a"
 
 [[deps.Zstd_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "cc4bf3fdde8b7e3e9fa0351bdeedba1cf3b7f6e6"
+git-tree-sha1 = "e45044cd873ded54b6a5bac0eb5c971392cf1927"
 uuid = "3161d3a3-bdf6-5164-811a-617609db77b4"
-version = "1.5.0+0"
+version = "1.5.2+0"
 
 [[deps.isoband_jll]]
 deps = ["Libdl", "Pkg"]
@@ -1492,9 +1531,9 @@ version = "1.0.20+0"
 
 [[deps.libvorbis_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Ogg_jll", "Pkg"]
-git-tree-sha1 = "c45f4e40e7aafe9d086379e5578947ec8b95a8fb"
+git-tree-sha1 = "b910cb81ef3fe6e78bf6acee440bda86fd6ae00c"
 uuid = "f27f6e37-5d2b-51aa-960f-b287f2bc3b7a"
-version = "1.3.7+0"
+version = "1.3.7+1"
 
 [[deps.nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -1518,18 +1557,19 @@ version = "3.5.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╟─d6feeecc-87db-4bfd-8341-adede2df8ea0
 # ╟─6b5ffee8-a230-42d4-8c49-ff14e65f52b7
-# ╟─06d96eef-f99d-44fe-8c6f-344ab29f3a48
-# ╟─38a48b6b-4e07-4965-8947-6b758318462b
+# ╟─d6feeecc-87db-4bfd-8341-adede2df8ea0
 # ╟─8b610dbe-f9ab-4498-8c98-fc8e83474981
 # ╟─04354f30-e857-4c77-ad57-9e84c4356e4f
 # ╟─c0a3ec23-2e76-40e6-bdf8-b6b774dabae5
-# ╟─7a9b1432-7e21-4afd-8f35-56f2575f90c8
+# ╟─711e604d-ddfe-4328-a663-93dd49ff64c4
 # ╟─15ecca6a-69af-4700-b20f-d08a4b6c9492
 # ╟─46ff94e2-1b1e-454d-ab92-89be94123a47
 # ╟─c8d36a50-0473-410a-91fa-102f3d071388
 # ╟─db662fb4-7413-11ec-1af6-43b18c0c15a9
 # ╟─a1698e0e-db0d-4cd2-91b3-d530f77cd609
+# ╟─93df622b-a397-4204-a765-87a426c36d12
+# ╟─06d96eef-f99d-44fe-8c6f-344ab29f3a48
+# ╟─38a48b6b-4e07-4965-8947-6b758318462b
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
