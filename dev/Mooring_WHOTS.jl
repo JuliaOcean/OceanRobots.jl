@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.17.5
+# v0.19.0
 
 using Markdown
 using InteractiveUtils
@@ -17,17 +17,48 @@ end
 # ╔═╡ 5fc8cc85-7bd4-4fea-8c6f-01dabee6eb5f
 using NCDatasets, Dates, CairoMakie, PlutoUI
 
-# ╔═╡ 720e1461-81b9-42b6-88be-0115a17268c0
-md"""# Plotting Time Series From WHOTS mooring
-
-Here we plot time series from the [WHOTS mooring](http://www.soest.hawaii.edu/whots/wh_data.html) which measures both Ocean and Atmosphere variables. This is one of the long time series that serve to study Climate.
-"""
-
 # ╔═╡ 538ddc08-85bd-426b-92bc-f5dd78d38d5d
 TableOfContents()
 
+# ╔═╡ 720e1461-81b9-42b6-88be-0115a17268c0
+md"""# WHOTS mooring
+
+Here we plot time series from the [WHOTS mooring](http://www.soest.hawaii.edu/whots/wh_data.html) which measures both Ocean and Atmosphere variables. This is one of the long time series available to study Climate. See <http://www.oceansites.org/> for more data like this.
+"""
+
+# ╔═╡ e7dc453e-3bf2-4289-b55d-66eab3636d7b
+begin
+	url0="https://insideclimatenews.org/wp-content/uploads/2020/07/ohcean-mooring_noaa.jpg"
+	url1="https://aco-ssds.soest.hawaii.edu/ALOHA/img/slideshow3.jpg"
+	url2="https://www.researchgate.net/profile/Andrew-Dickson-6/publication/228352615/figure/fig1/AS:301928941670405@1448996877577/Time-series-of-atmospheric-CO-2-at-Mauna-Loa-in-ppm-mole-fraction-in-dry-air-and.png"
+	md"""
+	$(Resource(url0,:height => 100))
+	$(Resource(url1,:height => 100))
+	$(Resource(url2,:height => 100))
+
+	_Image credits: NOAA, SOEST, WHOI, Dickson._
+	"""	
+end
+
+# ╔═╡ 54768410-2886-4d72-a691-eea72aee6b67
+begin
+	y0_b = @bind y0 NumberField(2004:2018, default=2005)
+	m0_b = @bind m0 NumberField(1:12, default=1)
+	d0_b = @bind d0 NumberField(1:31, default=1)
+	y1_b = @bind y1 NumberField(2004:2018, default=2005)
+	m1_b = @bind m1 NumberField(1:12, default=2)
+	d1_b = @bind d1 NumberField(1:31, default=1)
+	md"""## Data Visualisation
+	
+	Select initial and final time here;
+	
+	- year,month,day = $(y0_b) $(m0_b) $(d0_b)
+	- year,month,day = $(y1_b) $(m1_b) $(d1_b)
+	"""
+end
+
 # ╔═╡ 7702cf82-f5fa-4b04-8147-043a4b049179
-md"""## Data Source
+md"""## Data Sources
 
 For more on the data being plotted in this notebook please refer to the websites listed below.
 
@@ -52,28 +83,10 @@ Oceansites provides many more time series in addition to the WHOTS timeseries. F
 ```
 """
 
-# ╔═╡ 54768410-2886-4d72-a691-eea72aee6b67
-begin
-	y0_b = @bind y0 NumberField(2004:2018, default=2005)
-	m0_b = @bind m0 NumberField(1:12, default=1)
-	d0_b = @bind d0 NumberField(1:31, default=1)
-	y1_b = @bind y1 NumberField(2004:2018, default=2005)
-	m1_b = @bind m1 NumberField(1:12, default=2)
-	d1_b = @bind d1 NumberField(1:31, default=1)
-	md"""## Plotting
-	
-	Select initial and final time
-	
-	- year,month,day = $(y0_b) $(m0_b) $(d0_b)
-	- year,month,day = $(y1_b) $(m1_b) $(d1_b)
-	"""
-end
-
-# ╔═╡ 15d2fe7b-1614-4eb3-acc2-a961ced5ebb7
-#save("mooring_WHOTS_200501.png",fig1)
-
 # ╔═╡ 39b3119d-1096-4e26-a171-f24d82000f94
-md"""## Netcdf File Content
+md"""## Appendix
+
+### Data Files
 
 In this next cell we also read a selection of variables to make them available for e.g. plotting."""
 
@@ -89,13 +102,12 @@ begin
 	RAIN = ds["RAIN"][:,:]; uRAIN=ds["RAIN"].attrib["units"]
 	RELH = ds["RELH"][:,:]; uRELH=ds["RELH"].attrib["units"]
 	wspeed = sqrt.(ds["UWND"][:,:].^2+ds["VWND"][:,:].^2); uwspeed=ds["UWND"].attrib["units"]
-	with_terminal() do 
-		show(ds)
-	end
+
+	ds
 end
 
 # ╔═╡ afbd09fa-c013-4dc8-866e-3315c5631a58
-md"""## Code"""
+md"""### Julia Tools"""
 
 # ╔═╡ a8b006e1-90cd-4e51-b87b-fe02d983376f
 function plot_timeseries(d0,d1)
@@ -125,7 +137,7 @@ function plot_timeseries(d0,d1)
 end
 
 # ╔═╡ fc87b8e9-6863-4077-8435-80e74f1536c3
-fig1=plot_timeseries(DateTime(y0,m0,d0),DateTime(y1,m1,d1))
+plot_timeseries(DateTime(y0,m0,d0),DateTime(y1,m1,d1))
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -145,7 +157,7 @@ PlutoUI = "~0.7.29"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.7.0"
+julia_version = "1.7.2"
 manifest_format = "2.0"
 
 [[deps.AbstractFFTs]]
@@ -1268,9 +1280,9 @@ version = "1.8.6+1"
 
 [[deps.libvorbis_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Ogg_jll", "Pkg"]
-git-tree-sha1 = "c45f4e40e7aafe9d086379e5578947ec8b95a8fb"
+git-tree-sha1 = "b910cb81ef3fe6e78bf6acee440bda86fd6ae00c"
 uuid = "f27f6e37-5d2b-51aa-960f-b287f2bc3b7a"
-version = "1.3.7+0"
+version = "1.3.7+1"
 
 [[deps.nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -1294,16 +1306,16 @@ version = "3.5.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╟─720e1461-81b9-42b6-88be-0115a17268c0
 # ╟─538ddc08-85bd-426b-92bc-f5dd78d38d5d
-# ╟─7702cf82-f5fa-4b04-8147-043a4b049179
+# ╟─720e1461-81b9-42b6-88be-0115a17268c0
+# ╟─e7dc453e-3bf2-4289-b55d-66eab3636d7b
 # ╟─54768410-2886-4d72-a691-eea72aee6b67
 # ╟─fc87b8e9-6863-4077-8435-80e74f1536c3
-# ╟─15d2fe7b-1614-4eb3-acc2-a961ced5ebb7
+# ╟─7702cf82-f5fa-4b04-8147-043a4b049179
 # ╟─39b3119d-1096-4e26-a171-f24d82000f94
 # ╟─cfd3a864-73de-11ec-3f98-55bc2b29050c
 # ╟─afbd09fa-c013-4dc8-866e-3315c5631a58
 # ╠═5fc8cc85-7bd4-4fea-8c6f-01dabee6eb5f
-# ╠═a8b006e1-90cd-4e51-b87b-fe02d983376f
+# ╟─a8b006e1-90cd-4e51-b87b-fe02d983376f
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
