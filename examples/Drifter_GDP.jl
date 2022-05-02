@@ -21,51 +21,45 @@ begin
 	"Done with packages"
 end
 
-# ╔═╡ 84964782-cdd1-4773-a134-04d486e69856
-md"""# Drifting Buoys
+# ╔═╡ e6d47534-3bdb-401f-8758-12ebce4232f6
+TableOfContents()
 
-Download, read, and plot one hourly drifter data file from [NOAA webpage](https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/) or its [ftp server](ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/). 
+# ╔═╡ 84964782-cdd1-4773-a134-04d486e69856
+md"""# Surface Drifters
+
+Here we learn to download, read, and plot one hourly drifter data file from [NOAA webpage](https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/) or its [ftp server](ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/). 
 
 See [global drifter website](https://www.aoml.noaa.gov/phod/gdp/hourly_data.php) and [Elipot et al 2016](http://www.aoml.noaa.gov/phod/gdp/papers/Elipot_et_al-2016.pdf) for more information about this data set.
 """
 
-# ╔═╡ 4ada19d2-b4ce-463c-b771-f067b2982db0
-md"""## Interactive Display"""
-
-# ╔═╡ 505b7aa1-d598-4e58-bc5a-1fb435c5c476
+# ╔═╡ 568d54ae-19a6-4ff4-ae0b-e131693029e5
 begin
-	ii_select = @bind ii Select(1:4, default=1)
-	md"""Select one of the drifting buoys $(ii_select)
+	url0="https://globalocean.noaa.gov/portals/0/Images/Modified/GDP%20map-resize922x621.png?ver=2020-04-01-214715-730"
+	url1="https://www.aoml.noaa.gov/wp-content/uploads/2020/07/Global-Drifter-Program-300x300.jpg"
+	url2="https://www.hidrografico.pt/recursos/imagens/noticias/2021/01/20210108-NOAA-GDP-1.jpg"
+	url3="https://www.aoml.noaa.gov/wp-content/uploads/2020/08/GlobalDrifterProgram.jpg"
+	
+	#	http://www.aoml.noaa.gov/phod/gdp/interactive/drifter_array.html"
+	md"""
+	
+	$(Resource(url2,:height => 100))
+	$(Resource(url1,:height => 100))
+	$(Resource(url3,:height => 100))
+	$(Resource(url0,:height => 100))
 	"""
 end
 
-# ╔═╡ e6d47534-3bdb-401f-8758-12ebce4232f6
-TableOfContents()
+# ╔═╡ 4ada19d2-b4ce-463c-b771-f067b2982db0
+md"""## Interactive Display"""
 
 # ╔═╡ 760bc397-cdd3-49eb-80ef-7e4bc73885ce
 md"""## Appendix"""
 
-# ╔═╡ 1a5bf0e8-669b-47b7-ad1e-72a39d86e69e
-md"""### Netcdf File Content"""
+# ╔═╡ 37186681-41f5-4bbc-b8f6-fde37c7b5130
+md"""### Julia"""
 
-# ╔═╡ 1af8da1e-8906-4042-91b0-bad3632d02bf
-begin
-	list_files=drifters_hourly_files()
-	#jj=rand(1:size(list_files,1),4)
-	jj=[1,5000,10000,15000]
-	kk=jj[ii]
-
-	fil=drifters_hourly_download(list_files,kk)
-	ds=drifters_hourly_read(fil)
-	with_terminal() do 
-		show(ds)
-	end
-end
-
-# ╔═╡ 32810c75-efaf-4bb6-8e54-19077b4e5a00
-begin
-	
-	WMO=ds["WMO"][1]
+# ╔═╡ 156ff1f1-ca05-4ac6-8351-69b6c19ed8fa
+function plot_drifter(ds)	
 	la=Float64.(ds["latitude"][:])
 	tst=maximum(ds["longitude"])-minimum(ds["longitude"])>maximum(ds["lon360"])-minimum(ds["lon360"])
 	tst ? lo=Float64.(ds["lon360"][:]) : lo=Float64.(ds["longitude"][:])
@@ -75,17 +69,59 @@ begin
 	vn=Float64.(ds["vn"][:])
 		
 	fig1 = Mkie.Figure()
-	ax1 = Mkie.Axis(fig1[1,1], title="Drifter WMO # $(WMO)", xlabel="longitude",ylabel="latitude")
+	ax1 = Mkie.Axis(fig1[1,1], title="positions", xlabel="longitude",ylabel="latitude")
 	Mkie.lines!(ax1,lo[:],la[:])
-	ax2 = Mkie.Axis(fig1[1,2], title="Drifter WMO # $(WMO)", xlabel="time",ylabel="velocity")
+	ax2 = Mkie.Axis(fig1[1,2], title="velocities", xlabel="time",ylabel="m/s")
 	Mkie.lines!(ax2,vel[:],color=:red,linewidth=2)
 	Mkie.lines!(ax2,ve[:],color=:blue)
 	Mkie.lines!(ax2,vn[:],color=:green)
 	
 	fig1
-	#ds["time"][:]
-	
 end
+
+# ╔═╡ 1a5bf0e8-669b-47b7-ad1e-72a39d86e69e
+md"""### Files
+
+A subset of the drifter files is used for illustration in this notebook.
+"""
+
+# ╔═╡ e8f3749c-e009-45be-9f25-71354352c8ee
+begin
+	list_files=drifters_hourly_files()
+	jj=[1,5000,10000,15000] #subset of the files
+	list_files[jj,:]
+end
+
+# ╔═╡ 505b7aa1-d598-4e58-bc5a-1fb435c5c476
+begin
+	ii_select = @bind ii_txt Select(list_files.filename[jj])
+	md"""Select one of the drifting buoys $(ii_select)
+	"""
+end
+
+# ╔═╡ 1af8da1e-8906-4042-91b0-bad3632d02bf
+begin
+	kk=findall(list_files.filename.==ii_txt)[1]
+	fil=drifters_hourly_download(list_files,kk)
+	ds=drifters_hourly_read(fil)
+	with_terminal() do 
+		show(ds)
+	end
+end
+
+# ╔═╡ b39d9b80-4674-424b-ad52-091033b07ce2
+begin
+	wmo=ds[:WMO][1]
+	ID=parse(Int,string(ds["ID"][ds["ID"][:].!=='\0']...))
+	md""" Selected Buoy identifiers:
+	
+	- `GDP ID`=$(ID)
+	- `WMO ID` =$(wmo)
+	"""
+end
+
+# ╔═╡ 32810c75-efaf-4bb6-8e54-19077b4e5a00
+plot_drifter(ds)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1381,14 +1417,19 @@ version = "3.5.0+0"
 """
 
 # ╔═╡ Cell order:
+# ╟─e6d47534-3bdb-401f-8758-12ebce4232f6
 # ╟─84964782-cdd1-4773-a134-04d486e69856
+# ╟─568d54ae-19a6-4ff4-ae0b-e131693029e5
 # ╟─4ada19d2-b4ce-463c-b771-f067b2982db0
 # ╟─505b7aa1-d598-4e58-bc5a-1fb435c5c476
-# ╟─e6d47534-3bdb-401f-8758-12ebce4232f6
+# ╟─b39d9b80-4674-424b-ad52-091033b07ce2
 # ╟─32810c75-efaf-4bb6-8e54-19077b4e5a00
 # ╟─760bc397-cdd3-49eb-80ef-7e4bc73885ce
+# ╟─37186681-41f5-4bbc-b8f6-fde37c7b5130
 # ╟─d61376ca-76f2-11ec-0393-83d9b38831ca
+# ╟─156ff1f1-ca05-4ac6-8351-69b6c19ed8fa
 # ╟─1a5bf0e8-669b-47b7-ad1e-72a39d86e69e
+# ╟─e8f3749c-e009-45be-9f25-71354352c8ee
 # ╟─1af8da1e-8906-4042-91b0-bad3632d02bf
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
