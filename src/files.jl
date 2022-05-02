@@ -113,14 +113,14 @@ module GDP
 using DataFrames, FTPClient, NCDatasets
 
 """
-    drifters_hourly_files()
+    list_files()
 
 Get list of drifter files from NOAA ftp server     
 <ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/>
 or the corresponding webpage 
 <https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/>.
 """
-function drifters_hourly_files()
+function list_files()
     list_files=DataFrame("folder" => [],"filename" => [])
     ftp=FTP("ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/")
     tmp=readdir(ftp)
@@ -133,7 +133,7 @@ end
 # url="https://www.ncei.noaa.gov/thredds-ocean/fileServer/aoml/gdp/1982/drifter_7702192.nc"
 
 """
-    drifters_hourly_download(list_files,ii=1)
+    download(list_files,ii=1)
 
 Download one drifter file from NOAA ftp server     
 <ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/>
@@ -141,11 +141,11 @@ or the corresponding webpage
 <https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/>.
 
 ```
-list_files=drifters_hourly_files()
-fil=drifters_hourly_download(list_files,1)
+list_files=GDP.list_files()
+fil=GDP.download(list_files,1)
 ```
 """
-function drifters_hourly_download(list_files,ii=1)
+function download(list_files,ii=1)
     url0="ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/"
     url1=joinpath(url0,list_files[ii,"folder"])
     ftp=FTP(url1)
@@ -161,7 +161,7 @@ function drifters_hourly_download(list_files,ii=1)
 end
 
 """
-    drifters_hourly_read(filename::String)
+    read(filename::String)
 
 Download one drifter file from NOAA ftp server     
 <ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/>
@@ -169,12 +169,12 @@ or the corresponding webpage
 <https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/>.
 
 ```
-list_files=drifters_hourly_files()
-fil=drifters_hourly_download(list_files,1)
-ds=drifters_hourly_read(fil)
+list_files=GDP.list_files()
+fil=GDP.download(list_files,1)
+ds=GDP.read(fil)
 ```
 """
-drifters_hourly_read(filename::String) = Dataset(filename)
+read(filename::String) = Dataset(filename)
 
 end #module GDP
 

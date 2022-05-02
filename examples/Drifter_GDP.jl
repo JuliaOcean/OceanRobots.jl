@@ -87,7 +87,7 @@ A subset of the drifter files is used for illustration in this notebook.
 
 # ╔═╡ e8f3749c-e009-45be-9f25-71354352c8ee
 begin
-	list_files=drifters_hourly_files()
+	list_files=GDP.list_files()
 	jj=[1,5000,10000,15000] #subset of the files
 	list_files[jj,:]
 end
@@ -102,8 +102,8 @@ end
 # ╔═╡ 1af8da1e-8906-4042-91b0-bad3632d02bf
 begin
 	kk=findall(list_files.filename.==ii_txt)[1]
-	fil=drifters_hourly_download(list_files,kk)
-	ds=drifters_hourly_read(fil)
+	fil=GDP.download(list_files,kk)
+	ds=GDP.read(fil)
 	with_terminal() do 
 		show(ds)
 	end

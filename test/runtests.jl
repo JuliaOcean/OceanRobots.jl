@@ -9,11 +9,10 @@ using Test
     @test isa(files[1],String)
     @test isempty(folders)
 
-    list_files=drifters_hourly_files()
-    fil=drifters_hourly_download(list_files,1)
-    ds=drifters_hourly_read(fil)
+    list_files=GDP.list_files()
+    fil=GDP.download(list_files,1)
+    ds=GDP.read(fil)
 
-    @test isa(ds["longitude"],OceanRobots.NCDatasets.CFVariable)
     @test isa(ds,OceanRobots.NCDataset)
 
 end
