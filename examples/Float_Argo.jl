@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.18.4
+# v0.19.0
 
 using Markdown
 using InteractiveUtils
@@ -22,20 +22,26 @@ almost 2 decades (global coverage by the float array was achieved ~ 2005).
 The standard Argo float drifts at 1000m depth and comes back to the surface every ten days, just after 
 collecting profiles, to transmit its data via satellite. For more information about 
 the international Argo program please refer to, for example, <https://argo.ucsd.edu>.
-
-There are two official data repositories which contain the same files:
-
-- France Coriolis: <ftp://ftp.ifremer.fr/ifremer/argo>
-- US GODAE: <ftp://usgodae.org/pub/outgoing/argo>
 """
 
 # ╔═╡ 9d29d0f8-7b1c-11ec-1f16-b313a50cc5e7
 TableOfContents()
 
-# ╔═╡ 9037e2ce-a04a-40d0-945e-ec3f19a4f3c4
-md"""## Download and Open File
+# ╔═╡ a9fd8646-7269-4f70-93cf-0e831d533237
+md"""## Visualize Profile Data
 
-First we download the file that contains all profiles collected by float `wmo=6900900`. 
+Temperature and salinity profiles recorded by the float as a function of time.
+"""
+
+# ╔═╡ 9037e2ce-a04a-40d0-945e-ec3f19a4f3c4
+md"""## Download and Open Files
+
+There are two official data repositories which contain the same files:
+
+- France Coriolis: <ftp://ftp.ifremer.fr/ifremer/argo>
+- US GODAE: <ftp://usgodae.org/pub/outgoing/argo>
+
+Here we first download the file that contains all profiles collected by float `wmo=6900900`. 
 
 Then we open the Argo file using the `NCDatasets.Dataset` function. The file content is summarized below.
 
@@ -54,6 +60,8 @@ begin
 	!isfile(fil) ? Downloads.download(url0*"/$(wmo)/$(wmo)_prof.nc",fil) : nothing
 
 	ds=Dataset(fil)
+
+	"Done with data ingestion"
 end
 
 # ╔═╡ 3fd610a8-80c1-4acc-b3ef-20883f77e32d
@@ -102,11 +110,8 @@ begin
 	fig1
 end
 
-# ╔═╡ a9fd8646-7269-4f70-93cf-0e831d533237
-md"""## Visualize Profile Data
-
-Now let's visualize temperature and salinity profiles recorded by the float as a function of time.
-"""
+# ╔═╡ 533ea412-76ae-4060-bbc8-2650ee0d2774
+md"""## Appendix"""
 
 # ╔═╡ 5b814708-292a-45ed-8eab-386a7f097634
 begin
@@ -116,9 +121,6 @@ begin
 	TIME=10*ones(size(PRES,1)).* (1:length(lon))' .-10.0
 	"Done reading data arrays"
 end
-
-# ╔═╡ 533ea412-76ae-4060-bbc8-2650ee0d2774
-md"""## Appendix"""
 
 # ╔═╡ 653ad467-1efd-4f0b-8224-442ca04b89af
 function plot_samples(TIME,PRES,TEMP,ttl)
@@ -130,22 +132,44 @@ function plot_samples(TIME,PRES,TEMP,ttl)
 	rng=extrema(co)
 
 	fig1=Mkie.Figure()
-	ax,li=Mkie.scatter(fig1[1,1], x , y ,color=co)
-	ax.xlabel="time (day)"
-	ax.ylabel="depth (m)"
-	ax.title="Float #"*string(wmo)*", "*ttl
-	Mkie.Colorbar(fig1[1,2], limits = extrema(co), height=Mkie.Relative(0.65))
+	ax=Mkie.Axis(fig1[1,1])
+	hm1=plot_samples(ax,TIME,PRES,TEMP,ttl)
+	Mkie.Colorbar(fig1[1,2], hm1, height=Mkie.Relative(0.65))
 
 	fig1
 end
 
-# ╔═╡ 1168b742-6f2b-4c44-817a-621321b7d94b
-plot_samples(TIME,PRES,TEMP,"temperature (TEMP_ADJUSTED)")
+# ╔═╡ ce6b8cf0-2589-431b-a551-980f9ee763af
+function plot_samples(ax,TIME,PRES,TEMP,ttl)
+	ii=findall(((!ismissing).(PRES)).*((!ismissing).(TEMP)))
 
-# ╔═╡ 7ca6e8a0-2398-495a-aded-e5a99807e1ed
-begin
-	fig_S=plot_samples(TIME,PRES,PSAL,"salinity (PSAL_ADJUSTED)")
-	#Mkie.save("Argo_example_S.png", fig_S)
+	x=TIME[ii]
+	y=-PRES[ii] #pressure in decibars ~ depth in meters
+	co=Float64.(TEMP[ii])
+	rng=extrema(co)
+
+	sca=Mkie.scatter!(ax, x , y ,color=co)
+
+	ax.xlabel="time (day)"
+	ax.ylabel="depth (m)"
+	ax.title="Float #"*string(wmo)*", "*ttl
+
+	sca
+end
+
+# ╔═╡ c176fd5e-b2f2-47e3-8145-a4c152389344
+let	
+	fig1=Mkie.Figure()
+	
+	ax=Mkie.Axis(fig1[1,1])
+	hm1=plot_samples(ax,TIME,PRES,TEMP,"temperature (TEMP_ADJUSTED)")
+	Mkie.Colorbar(fig1[1,2], hm1, height=Mkie.Relative(0.65))
+
+	ax=Mkie.Axis(fig1[2,1])
+	hm2=plot_samples(ax,TIME,PRES,PSAL,"salinity (PSAL_ADJUSTED)")
+	Mkie.Colorbar(fig1[2,2], hm2, height=Mkie.Relative(0.65))
+
+	fig1
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -1318,17 +1342,17 @@ version = "3.5.0+0"
 # ╔═╡ Cell order:
 # ╟─89647c4e-e568-4d3a-af57-bcc541744e38
 # ╟─9d29d0f8-7b1c-11ec-1f16-b313a50cc5e7
-# ╟─9037e2ce-a04a-40d0-945e-ec3f19a4f3c4
-# ╠═2558c88f-7fee-4a91-bfdd-46f1f61795b0
 # ╟─1a835449-de37-4d08-9c91-c7affe7084cd
 # ╟─3fd610a8-80c1-4acc-b3ef-20883f77e32d
 # ╟─f47ef7b4-8e92-44a1-82ad-f8ca0337077b
 # ╟─a9fd8646-7269-4f70-93cf-0e831d533237
-# ╟─5b814708-292a-45ed-8eab-386a7f097634
-# ╟─1168b742-6f2b-4c44-817a-621321b7d94b
-# ╟─7ca6e8a0-2398-495a-aded-e5a99807e1ed
+# ╟─c176fd5e-b2f2-47e3-8145-a4c152389344
+# ╟─9037e2ce-a04a-40d0-945e-ec3f19a4f3c4
+# ╟─2558c88f-7fee-4a91-bfdd-46f1f61795b0
 # ╟─533ea412-76ae-4060-bbc8-2650ee0d2774
 # ╟─8539e67f-6361-409a-9dbe-e8dcb2c7e10d
+# ╟─5b814708-292a-45ed-8eab-386a7f097634
 # ╟─653ad467-1efd-4f0b-8224-442ca04b89af
+# ╟─ce6b8cf0-2589-431b-a551-980f9ee763af
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
