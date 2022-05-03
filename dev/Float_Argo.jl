@@ -21,6 +21,32 @@ begin
 	"Done with packages"
 end
 
+# ╔═╡ 77f8bb70-68f1-44dc-8ada-6103101a3f56
+#temporary fix -- until next release for ArgoFiles.download
+
+module ArgoFiles_tmp
+
+using NCDatasets, Downloads
+
+"""
+    ArgoFiles.download(files_list,wmo)
+
+Download an Argo profiler file.    
+"""
+function download(files_list,wmo)
+    ii=findall(files_list.wmo.==wmo)[1]
+    folder=files_list.folder[ii]
+
+    url0="https://data-argo.ifremer.fr/dac/$(folder)/"
+    fil=joinpath(tempdir(),"$(wmo)_prof.nc")
+
+    !isfile(fil) ? Downloads.download(url0*"/$(wmo)/$(wmo)_prof.nc",fil) : nothing
+
+    return fil
+end
+
+end
+
 # ╔═╡ 89647c4e-e568-4d3a-af57-bcc541744e38
 md"""# Argo Floats
 
@@ -116,7 +142,8 @@ md"""### Files"""
 
 # ╔═╡ 2558c88f-7fee-4a91-bfdd-46f1f61795b0
 begin
-	fil=ArgoFiles.download(files_list,wmo)
+	#fil=ArgoFiles.download(files_list,wmo)
+	fil=ArgoFiles_tmp.download(files_list,wmo)
 	arr=ArgoFiles.read(fil)
 
 	"Done with data ingestion"
@@ -218,6 +245,8 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 ArgoData = "9eb831cf-c491-48dc-bed4-6aca718df73c"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
+NCDatasets = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
 OceanRobots = "0b51df41-3294-4961-8d23-db645e32016d"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
@@ -225,6 +254,7 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 [compat]
 ArgoData = "~0.1.13"
 CairoMakie = "~0.7.5"
+NCDatasets = "~0.12.4"
 OceanRobots = "~0.1.8"
 PlutoUI = "~0.7.38"
 """
@@ -1733,6 +1763,7 @@ version = "3.5.0+0"
 # ╟─2558c88f-7fee-4a91-bfdd-46f1f61795b0
 # ╟─5b814708-292a-45ed-8eab-386a7f097634
 # ╟─3fd610a8-80c1-4acc-b3ef-20883f77e32d
+# ╟─77f8bb70-68f1-44dc-8ada-6103101a3f56
 # ╟─66e41568-7825-4383-80cb-cc48bdf56397
 # ╟─ce6b8cf0-2589-431b-a551-980f9ee763af
 # ╟─f47ef7b4-8e92-44a1-82ad-f8ca0337077b
