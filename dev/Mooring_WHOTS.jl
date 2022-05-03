@@ -15,7 +15,7 @@ macro bind(def, element)
 end
 
 # ╔═╡ 5fc8cc85-7bd4-4fea-8c6f-01dabee6eb5f
-using NCDatasets, Dates, CairoMakie, PlutoUI
+using OceanRobots, Dates, CairoMakie, PlutoUI
 
 # ╔═╡ 538ddc08-85bd-426b-92bc-f5dd78d38d5d
 TableOfContents()
@@ -92,18 +92,7 @@ In this next cell we also read a selection of variables to make them available f
 
 # ╔═╡ cfd3a864-73de-11ec-3f98-55bc2b29050c
 begin
-	fil="http://tds0.ifremer.fr/thredds/dodsC/CORIOLIS-OCEANSITES-GDAC-OBS/long_timeseries/WHOTS/OS_WHOTS_200408-201809_D_MLTS-1H.nc"
-	
-	ds=NCDataset(fil)
-	TIME = ds["TIME"][:,:]; uTIME=ds["TIME"].attrib["units"]
-	AIRT = ds["AIRT"][:,:]; uAIRT=ds["AIRT"].attrib["units"]
-	TEMP = ds["TEMP"][:,:]; uTEMP=ds["TEMP"].attrib["units"]
-	PSAL = ds["PSAL"][:,:]; uPSAL=ds["PSAL"].attrib["units"]
-	RAIN = ds["RAIN"][:,:]; uRAIN=ds["RAIN"].attrib["units"]
-	RELH = ds["RELH"][:,:]; uRELH=ds["RELH"].attrib["units"]
-	wspeed = sqrt.(ds["UWND"][:,:].^2+ds["VWND"][:,:].^2); uwspeed=ds["UWND"].attrib["units"]
-
-	ds
+	(arr,units)=WHOTS.read()
 end
 
 # ╔═╡ afbd09fa-c013-4dc8-866e-3315c5631a58
@@ -112,26 +101,26 @@ md"""### Julia Tools"""
 # ╔═╡ a8b006e1-90cd-4e51-b87b-fe02d983376f
 function plot_timeseries(d0,d1)
 	
-    tt=findall((TIME.>d0).*(TIME.<=d1))
-    t=Dates.value.(TIME.-d0)/1000.0/86400.0
+    tt=findall((arr.TIME.>d0).*(arr.TIME.<=d1))
+    t=Dates.value.(arr.TIME.-d0)/1000.0/86400.0
 	#or, e.g.:
-    #t=Dates.value.(TIME.-TIME[1])/1000.0/86400.0
+    #t=Dates.value.(arr.TIME.-TIME[1])/1000.0/86400.0
     #tt=findall((t.>110).*(t.<140))
 
     f=Figure()
-	ax1=Axis(f[1,1],xlabel="days",ylabel=uwspeed,title="wspeed")
-    lines!(ax1,t[tt],wspeed[tt])
-	ax1=Axis(f[2,1],xlabel="days",ylabel=uAIRT,title="AIRT")
-    lines!(ax1,t[tt],AIRT[tt])
-	ax1=Axis(f[3,1],xlabel="days",ylabel=uTEMP,title="TEMP")
-    lines!(ax1,t[tt],TEMP[tt])
+	ax1=Axis(f[1,1],xlabel="days",ylabel=units.wspeed,title="wspeed")
+    lines!(ax1,t[tt],arr.wspeed[tt])
+	ax1=Axis(f[2,1],xlabel="days",ylabel=units.AIRT,title="AIRT")
+    lines!(ax1,t[tt],arr.AIRT[tt])
+	ax1=Axis(f[3,1],xlabel="days",ylabel=units.TEMP,title="TEMP")
+    lines!(ax1,t[tt],arr.TEMP[tt])
 	
-	ax1=Axis(f[1,2],xlabel="days",ylabel=uRAIN,title="RAIN")
-    lines!(ax1,t[tt],RAIN[tt])
-	ax1=Axis(f[2,2],xlabel="days",ylabel=uRELH,title="RELH")
-    lines!(ax1,t[tt],RELH[tt])
-	ax1=Axis(f[3,2],xlabel="days",ylabel="x0"*uPSAL,title="PSAL")
-    lines!(ax1,t[tt],PSAL[tt])
+	ax1=Axis(f[1,2],xlabel="days",ylabel=units.RAIN,title="RAIN")
+    lines!(ax1,t[tt],arr.RAIN[tt])
+	ax1=Axis(f[2,2],xlabel="days",ylabel=units.RELH,title="RELH")
+    lines!(ax1,t[tt],arr.RELH[tt])
+	ax1=Axis(f[3,2],xlabel="days",ylabel="x0"*units.PSAL,title="PSAL")
+    lines!(ax1,t[tt],arr.PSAL[tt])
 	
     f
 end
