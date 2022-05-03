@@ -39,5 +39,5 @@ Surface Drifter Track | Mooring Time series
 ```
 
 ```@autodocs
-Modules = [OceanRobots, GDP, NOAA, Spray_Glider, ArgoFiles, WHOTS, THREDDS]
+Modules = [GDP, NOAA, Spray_Glider, ArgoFiles, WHOTS, THREDDS]
 ```
