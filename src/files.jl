@@ -17,8 +17,13 @@ function check_for_file_Spray_Glider(args...)
     end
 end
 
-function read(fil0)
-    ds=Dataset(fil0)
+"""
+    Spray_Glider.read(file::String)
+
+Read a Spray Glider file.    
+"""
+function read(file::String)
+    ds=Dataset(file)
     
 	df=DataFrame(:lon => ds[:lon][:], :lat => ds[:lat][:], :ID => ds[:trajectory_index][:])
 	df.time=ds[:time][:]
@@ -48,20 +53,30 @@ module NOAA
 
 using Downloads, CSV, DataFrames, Dates
 
-function get_NWP_NOAA(x)
-    url0="https://www.ndbc.noaa.gov/data/realtime2/"
-    pth0=pathof(x)
+"""
+    NOAA.get_NWP_NOAA(MC::ModelConfig)
 
-    for f in x.inputs["stations"]
+Download files listed in `MC.inputs["stations"]` from `ndbc.noaa.gov` to `pathof(MC)`.
+"""
+function get_NWP_NOAA(MC)
+    url0="https://www.ndbc.noaa.gov/data/realtime2/"
+    pth0=pathof(MC)
+
+    for f in MC.inputs["stations"]
         fil="$f.txt"
         url1=url0*fil
         fil1=joinpath(pth0,fil)
         Downloads.download(url1,fil1)
     end
     
-    return x
+    return MC
 end
 
+"""
+    NOAA.read(MC,sta)
+
+Read station `sta` file from `pathof(MC)`. Meta-data is provided in `NOAA.units` and `NOAA.descriptions`.
+"""
 function read(MC,sta)
     pth0=pathof(MC)
         
@@ -184,6 +199,11 @@ module ArgoFiles
 
 using NCDatasets
 
+"""
+    ArgoFiles.download(files_list,wmo)
+
+Download an Argo profiler file.    
+"""
 function download(files_list,wmo)
     ii=findall(files_list.wmo.==wmo)[1]
     folder=files_list.folder[ii]
@@ -196,6 +216,11 @@ function download(files_list,wmo)
     return fil
 end
 
+"""
+    ArgoFiles.read(fil)
+
+Read an Argo profiler file.    
+"""
 function read(fil)
     ds=Dataset(fil)
 
@@ -221,8 +246,13 @@ end
 
 module WHOTS
 
-using NCDatasets
+using NCDatasets, FTPClient, CSV, DataFrames
 
+"""
+    WHOTS.read()
+
+Read an WHOTS file.    
+"""
 function read()
     fil="http://tds0.ifremer.fr/thredds/dodsC/CORIOLIS-OCEANSITES-GDAC-OBS/long_timeseries/WHOTS/OS_WHOTS_200408-201809_D_MLTS-1H.nc"
         
@@ -240,6 +270,43 @@ function read()
     units=(TIME=uTIME,AIRT=uAIRT,TEMP=uTEMP,PSAL=uPSAL,RAIN=uRAIN,RELH=uRELH,wspeed=uwspeed)
 
     return arr,units
+end
+
+"""
+    oceansites_index()
+
+Download, read and process the `oceansites_index.txt` file. Return a DataFrame.
+
+```
+oceansites_index=WHOTS.oceansites_index()
+```
+"""
+function oceansites_index()
+    url="ftp://ftp.ifremer.fr/ifremer/oceansites/"
+    fil=joinpath(tempdir(),"oceansites_index.txt")
+    ftp=FTP(url)
+    !isfile(fil) ? FTPClient.download(ftp, "oceansites_index.txt",fil) : nothing
+
+    #main table
+    oceansites_index=DataFrame(CSV.File(fil; header=false, skipto=9))
+
+    #treat lines which seem mis-formatted
+    aa=findall((ismissing).(oceansites_index.Column17))
+    oceansites_index=oceansites_index[aa,:]
+
+    test=sum([sum((!ismissing).(oceansites_index[:,i])) for i in 17:22])
+    test>0 ? error("unclear lines remain") : oceansites_index=oceansites_index[!,1:16]
+
+    #column names
+    tmp=readlines(fil)[7]
+    list=split(tmp,',')
+    list=[split(list[i])[1] for i in 1:length(list)]
+    list[1]="FILE"
+
+    #rename column
+    rename!(oceansites_index,list)
+
+    return oceansites_index
 end
 
 end
