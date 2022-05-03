@@ -221,7 +221,7 @@ end
 
 module WHOTS
 
-using NCDatasets
+using NCDatasets, FTPClient, CSV, DataFrames
 
 function read()
     fil="http://tds0.ifremer.fr/thredds/dodsC/CORIOLIS-OCEANSITES-GDAC-OBS/long_timeseries/WHOTS/OS_WHOTS_200408-201809_D_MLTS-1H.nc"
@@ -240,6 +240,43 @@ function read()
     units=(TIME=uTIME,AIRT=uAIRT,TEMP=uTEMP,PSAL=uPSAL,RAIN=uRAIN,RELH=uRELH,wspeed=uwspeed)
 
     return arr,units
+end
+
+"""
+    oceansites_index()
+
+Download, read and process the `oceansites_index.txt` file. Return a DataFrame.
+
+```
+oceansites_index=WHOTS.oceansites_index()
+```
+"""
+function oceansites_index()
+    url="ftp://ftp.ifremer.fr/ifremer/oceansites/"
+    fil=joinpath(tempdir(),"oceansites_index.txt")
+    ftp=FTP(url)
+    !isfile(fil) ? FTPClient.download(ftp, "oceansites_index.txt",fil) : nothing
+
+    #main table
+    oceansites_index=DataFrame(CSV.File(fil; header=false, skipto=9))
+
+    #treat lines which seem mis-formatted
+    aa=findall((ismissing).(oceansites_index.Column17))
+    oceansites_index=oceansites_index[aa,:]
+
+    test=sum([sum((!ismissing).(oceansites_index[:,i])) for i in 17:22])
+    test>0 ? error("unclear lines remain") : oceansites_index=oceansites_index[!,1:16]
+
+    #column names
+    tmp=readlines(fil)[7]
+    list=split(tmp,',')
+    list=[split(list[i])[1] for i in 1:length(list)]
+    list[1]="FILE"
+
+    #rename column
+    rename!(oceansites_index,list)
+
+    return oceansites_index
 end
 
 end

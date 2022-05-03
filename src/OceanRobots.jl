@@ -14,10 +14,4 @@ end
 export GDP, NOAA, Spray_Glider, ArgoFiles, WHOTS
 export check_for_file, THREDDS
 
-#to avoid breaking notebooks during transition:
-drifters_hourly_files=GDP.list_files
-drifters_hourly_read=GDP.read
-drifters_hourly_download=GDP.download
-export drifters_hourly_files, drifters_hourly_read, drifters_hourly_download
-
 end # module

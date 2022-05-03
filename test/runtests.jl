@@ -15,4 +15,7 @@ using Test
 
     @test haskey(ds,"ve")
 
+    oceansites_index=WHOTS.oceansites_index()
+    @test !isempty(oceansites_index)
+
 end
