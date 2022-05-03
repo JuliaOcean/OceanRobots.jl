@@ -197,7 +197,7 @@ end #module GDP
 
 module ArgoFiles
 
-using NCDatasets
+using NCDatasets, Downloads
 
 """
     ArgoFiles.download(files_list,wmo)
