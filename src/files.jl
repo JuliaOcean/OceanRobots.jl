@@ -1,9 +1,9 @@
 
-module Spray_Glider
+module GliderFiles
 
 using Downloads, Glob, DataFrames, NCDatasets
 
-function check_for_file_Spray_Glider(args...)
+function check_for_file_Spray(args...)
     if !isempty(args)
         url1="http://spraydata.ucsd.edu/media/data/binnednc/"*basename(args[1])
         pth0=dirname(args[1])
@@ -18,7 +18,7 @@ function check_for_file_Spray_Glider(args...)
 end
 
 """
-    Spray_Glider.read(file::String)
+    GliderFiles.read(file::String)
 
 Read a Spray Glider file.    
 """
@@ -45,7 +45,7 @@ function read(file::String)
 	df
 end
 
-end #module Spray_Glider
+end #module GliderFiles
 
 ##
 
@@ -54,11 +54,11 @@ module NOAA
 using Downloads, CSV, DataFrames, Dates
 
 """
-    NOAA.get_NWP_NOAA(MC::ModelConfig)
+    NOAA.download(MC::ModelConfig)
 
 Download files listed in `MC.inputs["stations"]` from `ndbc.noaa.gov` to `pathof(MC)`.
 """
-function get_NWP_NOAA(MC)
+function download(MC)
     url0="https://www.ndbc.noaa.gov/data/realtime2/"
     pth0=pathof(MC)
 
@@ -130,10 +130,10 @@ using DataFrames, FTPClient, NCDatasets
 """
     list_files()
 
-Get list of drifter files from NOAA ftp server     
-<ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/>
-or the corresponding webpage 
-<https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/>.
+Get list of drifter files from NOAA ftp server or the corresponding webpage.
+
+- <ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/>
+- <https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/>
 """
 function list_files()
     list_files=DataFrame("folder" => [],"filename" => [])
@@ -143,17 +143,16 @@ function list_files()
     list_files
 end
 
-# 6-hourly interpolated data product
+# 6-hourly interpolated data product if available via thredds server
 # https://www.ncei.noaa.gov/access/metadata/landing-page/bin/iso?id=gov.noaa.nodc:AOML-GDP
 # url="https://www.ncei.noaa.gov/thredds-ocean/fileServer/aoml/gdp/1982/drifter_7702192.nc"
 
 """
     download(list_files,ii=1)
 
-Download one drifter file from NOAA ftp server     
+Download one drifter file from NOAA ftp server.
+
 <ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/>
-or the corresponding webpage 
-<https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/>.
 
 ```
 list_files=GDP.list_files()
@@ -178,10 +177,10 @@ end
 """
     read(filename::String)
 
-Download one drifter file from NOAA ftp server     
+Open file from NOAA ftp server using `NCDatasets.Dataset`.
+
 <ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/>
 or the corresponding webpage 
-<https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/>.
 
 ```
 list_files=GDP.list_files()
@@ -244,19 +243,25 @@ end
 
 ##
 
-module WHOTS
+module OceanSites
 
-using NCDatasets, FTPClient, CSV, DataFrames
+using NCDatasets, FTPClient, CSV, DataFrames, Dates
 
 """
-    WHOTS.read()
+    read_WHOTS(fil)
 
 Read an WHOTS file.    
+
+```
+file="DATA_GRIDDED/WHOTS/OS_WHOTS_200408-201809_D_MLTS-1H.nc"
+data,units=OceanSites.read_WHOTS(file)
+```
 """
-function read()
-    fil="http://tds0.ifremer.fr/thredds/dodsC/CORIOLIS-OCEANSITES-GDAC-OBS/long_timeseries/WHOTS/OS_WHOTS_200408-201809_D_MLTS-1H.nc"
-        
-    ds=NCDataset(fil)
+function read_WHOTS(file="DATA_GRIDDED/WHOTS/OS_WHOTS_200408-201809_D_MLTS-1H.nc")
+    url0="http://tds0.ifremer.fr/thredds/dodsC/CORIOLIS-OCEANSITES-GDAC-OBS/"
+    fil0=url0*file*"#fillmismatch"
+
+    ds=NCDataset(fil0)
     TIME = ds["TIME"][:,:]; uTIME=ds["TIME"].attrib["units"]
     AIRT = ds["AIRT"][:,:]; uAIRT=ds["AIRT"].attrib["units"]
     TEMP = ds["TEMP"][:,:]; uTEMP=ds["TEMP"].attrib["units"]
@@ -266,22 +271,22 @@ function read()
     wspeed = sqrt.(ds["UWND"][:,:].^2+ds["VWND"][:,:].^2); uwspeed=ds["UWND"].attrib["units"]
     close(ds)
 
-    arr=(TIME=TIME,AIRT=AIRT,TEMP=TEMP,PSAL=PSAL,RAIN=RAIN,RELH=RELH,wspeed=wspeed)
+    data=(TIME=TIME,AIRT=AIRT,TEMP=TEMP,PSAL=PSAL,RAIN=RAIN,RELH=RELH,wspeed=wspeed)
     units=(TIME=uTIME,AIRT=uAIRT,TEMP=uTEMP,PSAL=uPSAL,RAIN=uRAIN,RELH=uRELH,wspeed=uwspeed)
 
-    return arr,units
+    return data,units
 end
 
 """
-    oceansites_index()
+    index()
 
 Download, read and process the `oceansites_index.txt` file. Return a DataFrame.
 
 ```
-oceansites_index=WHOTS.oceansites_index()
+oceansites_index=OceanSites.index()
 ```
 """
-function oceansites_index()
+function index()
     url="ftp://ftp.ifremer.fr/ifremer/oceansites/"
     fil=joinpath(tempdir(),"oceansites_index.txt")
     ftp=FTP(url)
@@ -307,6 +312,43 @@ function oceansites_index()
     rename!(oceansites_index,list)
 
     return oceansites_index
+end
+
+function ncread(f::String,v::String)
+    Dataset(f,"r") do ds
+        ds[v][:]
+    end
+end
+
+"""
+    read(file,args...)
+
+Open file from opendap server.
+
+```
+file="DATA_GRIDDED/WHOTS/OS_WHOTS_200408-201809_D_MLTS-1H.nc"
+OceanSites.read(file,:lon,:lat,:time,:TEMP)
+```
+"""
+function read(file,args...)
+    url0="http://tds0.ifremer.fr/thredds/dodsC/CORIOLIS-OCEANSITES-GDAC-OBS/"
+    fil0=url0*file*"#fillmismatch"
+    store=[]
+    for a in args
+        if a==:lon
+            push!(store,Float64.(ncread(fil0,"LONGITUDE")))
+        elseif a==:lat
+            push!(store,Float64.(ncread(fil0,"LATITUDE")))
+        elseif a==:time
+            push!(store,DateTime.(ncread(fil0,"TIME")))
+        else
+            push!(store,ncread(fil0,string(a)))
+        end
+    end
+    
+    #Dataset(fil0)
+    #store
+    (; zip(args, store)...)
 end
 
 end

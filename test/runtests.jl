@@ -15,7 +15,15 @@ using Test
 
     @test haskey(ds,"ve")
 
-    oceansites_index=WHOTS.oceansites_index()
+    oceansites_index=OceanSites.index()
     @test !isempty(oceansites_index)
+
+    data,units=OceanSites.read_WHOTS()
+    @test !isempty(data.TIME)
+    @test !isempty(units.TIME)
+
+    file="DATA_GRIDDED/WHOTS/OS_WHOTS_200408-201809_D_MLTS-1H.nc"
+    data=OceanSites.read(file,:lon,:lat,:time,:TEMP)
+    @test !isempty(data.TEMP)
 
 end

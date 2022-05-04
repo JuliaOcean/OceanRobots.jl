@@ -10,7 +10,7 @@ The suite of examples includes :
 - [Mooring\_WHOTS.jl](Mooring_WHOTS.html) (➭ [code link](https://raw.githubusercontent.com/gaelforget/OceanRobots.jl/master/examples/Mooring_WHOTS.jl)) : WHOTS [mooring](http://www.soest.hawaii.edu/whots/wh_data.html) data
 - [Drifter\_GDP.jl](Drifter_GDP.html) (➭ [code link](https://raw.githubusercontent.com/gaelforget/OceanRobots.jl/master/examples/Drifter_GDP.jl)) : [drifter](https://www.aoml.noaa.gov/phod/gdp/hourly_data.php) time series
 - [Float\_Argo.jl](Float_Argo.html) (➭ [code link](https://raw.githubusercontent.com/gaelforget/OceanRobots.jl/master/examples/Float_Argo.jl)) : Argo profiling [float](https://argo.ucsd.edu) data
-- [Spray\_Glider.jl](Spray_Glider.html) (➭ [code link](https://raw.githubusercontent.com/gaelforget/OceanRobots.jl/master/examples/Spray_Glider.jl)) : underwater [glider](http://spraydata.ucsd.edu/projects/) data.
+- [Glider\_Spray.jl](Glider_Spray.html) (➭ [code link](https://raw.githubusercontent.com/gaelforget/OceanRobots.jl/master/examples/Glider_Spray.jl)) : underwater [glider](http://spraydata.ucsd.edu/projects/) data.
 
 !!! note
     The static `html` rendering of the notebooks (this website) lack the interactivity that comes from [Running The Examples](@ref) yourself.
@@ -45,5 +45,5 @@ Spray Glider Data | NOAA Time series
 ```
 
 ```@autodocs
-Modules = [GDP, NOAA, Spray_Glider, ArgoFiles, WHOTS, THREDDS]
+Modules = [GDP, NOAA, GliderFiles, ArgoFiles, OceanSites, THREDDS]
 ```
