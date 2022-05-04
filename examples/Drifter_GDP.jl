@@ -29,7 +29,8 @@ md"""# Surface Drifters
 
 Here we learn to download, read, and plot one hourly drifter data file from [NOAA webpage](https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/) or its [ftp server](ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/). 
 
-See [global drifter website](https://www.aoml.noaa.gov/phod/gdp/hourly_data.php) and [Elipot et al 2016](http://www.aoml.noaa.gov/phod/gdp/papers/Elipot_et_al-2016.pdf) for more information about this data set.
+!!! note
+    See [global drifter website](https://www.aoml.noaa.gov/phod/gdp/hourly_data.php) for more information about this data set.
 """
 
 # ╔═╡ 568d54ae-19a6-4ff4-ae0b-e131693029e5
@@ -40,9 +41,11 @@ begin
 	url3="https://www.aoml.noaa.gov/wp-content/uploads/2020/08/GlobalDrifterProgram.jpg"
 	
 	#	http://www.aoml.noaa.gov/phod/gdp/interactive/drifter_array.html"
-	md"""
-	
-	tbd
+	md"""	
+ 	$(PlutoUI.Resource(url0,:height => 100))
+ 	$(PlutoUI.Resource(url1,:height => 100))
+	$(PlutoUI.Resource(url2,:height => 100))
+ 	$(PlutoUI.Resource(url3,:height => 100))
 	"""
 end
 
@@ -55,27 +58,6 @@ md"""## Appendix"""
 # ╔═╡ 37186681-41f5-4bbc-b8f6-fde37c7b5130
 md"""### Julia"""
 
-# ╔═╡ 156ff1f1-ca05-4ac6-8351-69b6c19ed8fa
-function plot_drifter(ds)	
-	la=Float64.(ds["latitude"][:])
-	tst=maximum(ds["longitude"])-minimum(ds["longitude"])>maximum(ds["lon360"])-minimum(ds["lon360"])
-	tst ? lo=Float64.(ds["lon360"][:]) : lo=Float64.(ds["longitude"][:])
-
-	vel=sqrt.(Float64.(ds["ve"][:].^2 .+ ds["vn"][:].^2 ))
-	ve=Float64.(ds["ve"][:])
-	vn=Float64.(ds["vn"][:])
-		
-	fig1 = Mkie.Figure()
-	ax1 = Mkie.Axis(fig1[1,1], title="positions", xlabel="longitude",ylabel="latitude")
-	Mkie.lines!(ax1,lo[:],la[:])
-	ax2 = Mkie.Axis(fig1[1,2], title="velocities", xlabel="time",ylabel="m/s")
-	Mkie.lines!(ax2,vel[:],color=:red,linewidth=2)
-	Mkie.lines!(ax2,ve[:],color=:blue)
-	Mkie.lines!(ax2,vn[:],color=:green)
-	
-	fig1
-end
-
 # ╔═╡ 1a5bf0e8-669b-47b7-ad1e-72a39d86e69e
 md"""### Files
 
@@ -84,16 +66,44 @@ A subset of the drifter files is used for illustration in this notebook.
 
 # ╔═╡ e8f3749c-e009-45be-9f25-71354352c8ee
 begin
+	myread(ds,v) = Float64.(OceanRobots.GDP.cfvariable(ds,v,missing_value=-1.e+34))
+	
 	list_files=GDP.list_files()
 	jj=[1,5000,10000,15000] #subset of the files
-	list_files[jj,:]
+	list_files=list_files[jj,:]
 end
 
 # ╔═╡ 505b7aa1-d598-4e58-bc5a-1fb435c5c476
 begin
-	ii_select = @bind ii_txt Select(list_files.filename[jj])
+	ii_select = @bind ii_txt Select(list_files.filename,default=list_files.filename[end])
 	md"""Select one of the drifting buoys $(ii_select)
 	"""
+end
+
+# ╔═╡ 156ff1f1-ca05-4ac6-8351-69b6c19ed8fa
+function plot_drifter(ds)	
+	la=myread(ds,"latitude")
+	lo=myread(ds,"longitude")
+	lon360=myread(ds,"lon360")
+	tst=maximum(lo)-minimum(lo)>maximum(lon360)-minimum(lon360)
+	tst ? lo.=lon360 : nothing
+
+	ve=myread(ds,"ve")
+	vn=myread(ds,"vn")
+	vel=sqrt.(ve.^2 .+ vn.^2)
+		
+	fig1 = Mkie.Figure()
+	ax1 = Mkie.Axis(fig1[1,1], title="positions", xlabel="longitude",ylabel="latitude")
+	Mkie.lines!(ax1,lo[:],la[:])
+	ax1 = Mkie.Axis(fig1[1,2], title="velocities", xlabel="ve",ylabel="vn")
+	Mkie.scatter!(ax1,ve[:],vn[:],markersize=2.0)
+
+	ax2 = Mkie.Axis(fig1[2,1:2], title="speed (red), ve (blue), vn (green)", xlabel="time",ylabel="m/s")
+	Mkie.lines!(ax2,vel[:],color=:red)
+	Mkie.lines!(ax2,ve[:],color=:blue)
+	Mkie.lines!(ax2,vn[:],color=:green)
+	
+	fig1
 end
 
 # ╔═╡ 1af8da1e-8906-4042-91b0-bad3632d02bf
@@ -101,9 +111,9 @@ begin
 	kk=findall(list_files.filename.==ii_txt)[1]
 	fil=GDP.download(list_files,kk)
 	ds=GDP.read(fil)
-	with_terminal() do 
-		show(ds)
-	end
+	#with_terminal() do 
+	#	show(ds)
+	#end
 end
 
 # ╔═╡ b39d9b80-4674-424b-ad52-091033b07ce2
@@ -118,7 +128,7 @@ begin
 end
 
 # ╔═╡ 32810c75-efaf-4bb6-8e54-19077b4e5a00
-#plot_drifter(ds)
+plot_drifter(ds)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
