@@ -42,10 +42,10 @@ begin
 	#	http://www.aoml.noaa.gov/phod/gdp/interactive/drifter_array.html"
 	md"""
 	
-	$(Resource(url2,:height => 100))
-	$(Resource(url1,:height => 100))
-	$(Resource(url3,:height => 100))
-	$(Resource(url0,:height => 100))
+	(Resource(url2,:height => 100))
+	(Resource(url1,:height => 100))
+	(Resource(url3,:height => 100))
+	(Resource(url0,:height => 100))
 	"""
 end
 
