@@ -11,7 +11,7 @@ function check_for_file(set::String,args...)
     end
 end
 
-export GDP, NOAA, Spray_Glider, ArgoFiles, WHOTS
+export GDP, NOAA, GliderFiles, ArgoFiles, OceanSites
 export check_for_file, THREDDS
 
 end # module
