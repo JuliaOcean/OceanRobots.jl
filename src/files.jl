@@ -3,7 +3,7 @@ module GliderFiles
 
 using Downloads, Glob, DataFrames, NCDatasets
 
-function check_for_file_GliderFiles(args...)
+function check_for_file_Spray(args...)
     if !isempty(args)
         url1="http://spraydata.ucsd.edu/media/data/binnednc/"*basename(args[1])
         pth0=dirname(args[1])
@@ -54,11 +54,11 @@ module NOAA
 using Downloads, CSV, DataFrames, Dates
 
 """
-    NOAA.get_NWP_NOAA(MC::ModelConfig)
+    NOAA.download(MC::ModelConfig)
 
 Download files listed in `MC.inputs["stations"]` from `ndbc.noaa.gov` to `pathof(MC)`.
 """
-function get_NWP_NOAA(MC)
+function download(MC)
     url0="https://www.ndbc.noaa.gov/data/realtime2/"
     pth0=pathof(MC)
 
@@ -130,10 +130,10 @@ using DataFrames, FTPClient, NCDatasets
 """
     list_files()
 
-Get list of drifter files from NOAA ftp server     
-<ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/>
-or the corresponding webpage 
-<https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/>.
+Get list of drifter files from NOAA ftp server or the corresponding webpage.
+
+- <ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/>
+- <https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/>s
 """
 function list_files()
     list_files=DataFrame("folder" => [],"filename" => [])
@@ -143,17 +143,16 @@ function list_files()
     list_files
 end
 
-# 6-hourly interpolated data product
+# 6-hourly interpolated data product if available via thredds server
 # https://www.ncei.noaa.gov/access/metadata/landing-page/bin/iso?id=gov.noaa.nodc:AOML-GDP
 # url="https://www.ncei.noaa.gov/thredds-ocean/fileServer/aoml/gdp/1982/drifter_7702192.nc"
 
 """
     download(list_files,ii=1)
 
-Download one drifter file from NOAA ftp server     
+Download one drifter file from NOAA ftp server.
+
 <ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/>
-or the corresponding webpage 
-<https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/>.
 
 ```
 list_files=GDP.list_files()
@@ -178,10 +177,10 @@ end
 """
     read(filename::String)
 
-Download one drifter file from NOAA ftp server     
+Open file from NOAA ftp server using `NCDatasets.Dataset`.
+
 <ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/>
 or the corresponding webpage 
-<https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/>.
 
 ```
 list_files=GDP.list_files()

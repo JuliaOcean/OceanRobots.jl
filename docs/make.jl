@@ -12,11 +12,11 @@ makedocs(;
     assets=String[],
     )
 
-OceanRobots.check_for_file("Spray_Glider","GulfStream.nc")
-OceanRobots.check_for_file("Spray_Glider","CUGN_along.nc")
+OceanRobots.check_for_file("Glider_Spray","GulfStream.nc")
+OceanRobots.check_for_file("Glider_Spray","CUGN_along.nc")
 
-lst=("Spray_Glider.jl","Buoy_NWP_NOAA.jl","Mooring_WHOTS.jl","Drifter_GDP.jl","Float_Argo.jl")
-for i in lst
+lst=("Glider_Spray.jl","Buoy_NWP_NOAA.jl","Mooring_WHOTS.jl","Drifter_GDP.jl","Float_Argo.jl")
+if false #for i in lst
     fil_in=joinpath(@__DIR__,"..", "examples",i)
     fil_out=joinpath(@__DIR__,"build", i[1:end-2]*"html")
     PlutoSliderServer.export_notebook(fil_in)

@@ -4,8 +4,8 @@ include("thredds_servers.jl")
 include("files.jl")
 
 function check_for_file(set::String,args...)
-    if set=="Spray_Glider"
-        Spray_Glider.check_for_file_Spray_Glider(args...)
+    if set=="Glider_Spray"
+        GliderFiles.check_for_file_Spray(args...)
     else
         println("unknown set")
     end
