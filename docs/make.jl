@@ -16,7 +16,7 @@ OceanRobots.check_for_file("Glider_Spray","GulfStream.nc")
 OceanRobots.check_for_file("Glider_Spray","CUGN_along.nc")
 
 lst=("Glider_Spray.jl","Buoy_NWP_NOAA.jl","Mooring_WHOTS.jl","Drifter_GDP.jl","Float_Argo.jl")
-if false #for i in lst
+for i in lst
     fil_in=joinpath(@__DIR__,"..", "examples",i)
     fil_out=joinpath(@__DIR__,"build", i[1:end-2]*"html")
     PlutoSliderServer.export_notebook(fil_in)

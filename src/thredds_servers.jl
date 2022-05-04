@@ -6,12 +6,12 @@ using Downloads, LightXML
 """
     parse_catalog(url,recursive=true)
 
-Starting from an `xml` (not `html`) _thredds catalog_ look for both subfolders and files;
+Starting from an `xml` (not `html`) `thredds` catalog look for both subfolders and files;
 they are identified based on the `href` and `urlPath` attributes respectively. If `recursive`
 is set to `true` then go down in subfolders and do the same until only files are found; in this
 case the returned `folders` should be empty and `files` can be extensive.
 
-See <https://www.unidata.ucar.edu/software/tds/current/catalog/> for more on `thredds`.
+For more on `thredds` servers, see <https://www.unidata.ucar.edu/software/tds/current/catalog/>.
 
 ```
 url="https://dods.ndbc.noaa.gov/thredds/catalog/oceansites/long_timeseries/WHOTS/catalog.xml"

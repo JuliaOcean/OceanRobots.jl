@@ -133,7 +133,7 @@ using DataFrames, FTPClient, NCDatasets
 Get list of drifter files from NOAA ftp server or the corresponding webpage.
 
 - <ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/>
-- <https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/>s
+- <https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/>
 """
 function list_files()
     list_files=DataFrame("folder" => [],"filename" => [])
@@ -326,11 +326,9 @@ end
 Open file from opendap server.
 
 ```
-#oceansites_index=OceanSites.index()
-#file=oceansites_index[1,:FILE]
-
 file="DATA_GRIDDED/WHOTS/OS_WHOTS_200408-201809_D_MLTS-1H.nc"
 OceanSites.read(file,:lon,:lat,:time,:TEMP)
+```
 """
 function read(file,args...)
     url0="http://tds0.ifremer.fr/thredds/dodsC/CORIOLIS-OCEANSITES-GDAC-OBS/"
