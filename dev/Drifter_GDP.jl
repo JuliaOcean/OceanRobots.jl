@@ -42,10 +42,7 @@ begin
 	#	http://www.aoml.noaa.gov/phod/gdp/interactive/drifter_array.html"
 	md"""
 	
-	(Resource(url2,:height => 100))
-	(Resource(url1,:height => 100))
-	(Resource(url3,:height => 100))
-	(Resource(url0,:height => 100))
+	tbd
 	"""
 end
 
@@ -121,7 +118,7 @@ begin
 end
 
 # ╔═╡ 32810c75-efaf-4bb6-8e54-19077b4e5a00
-plot_drifter(ds)
+#plot_drifter(ds)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
