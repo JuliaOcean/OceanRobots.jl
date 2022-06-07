@@ -142,7 +142,8 @@ function read_historical_monthly(ID=44013,years=1985:1986)
                 (ATMP=NaN , WTMP=NaN , WSPD=NaN , PRES=NaN)
             end    
         end
-        df2.YY.=y
+        df2.YY=fill(y,length(df2.MM))
+
         append!(mdf,df2)
     end
 
