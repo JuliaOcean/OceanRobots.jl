@@ -12,6 +12,9 @@ begin
 	"Done with packages"
 end
 
+# ╔═╡ 55f371a8-bf01-4c2e-a333-b57cffb52f91
+PlutoUI.TableOfContents()
+
 # ╔═╡ 91db1379-9f47-4982-9716-f755451f819f
 begin
 img_url="https://nosc.noaa.gov/OSC/images/Kukui_and_NOAA_buoy_1.177308.JPG"
@@ -57,8 +60,20 @@ Plot below shows:
 """
 end
 
+# ╔═╡ ca4098b2-a7e6-40ba-b9d3-668f247bf7fa
+md"""## Reading Data"""
+
+# ╔═╡ 34a9a048-da3e-11ec-2017-b7b762895d86
+begin
+	ID=44013
+	years,_=THREDDS.parse_catalog_NOAA_buoy(ID)
+	mdf=NOAA.read_historical_monthly(ID,years)
+	gmdf=groupby(mdf,"MM")
+	gmdf[1]
+end
+
 # ╔═╡ fe2ff5d6-bd10-4217-a961-bd59a43ee1a5
-md"""## Packages and functions"""
+md"""## Packages and Functions"""
 
 # ╔═╡ 19f37008-9a63-4a28-8fe6-d91319f82df8
 function plot_summary(tbl,all)
@@ -73,7 +88,7 @@ function plot_summary(tbl,all)
 end
 
 # ╔═╡ e76df21f-e3ad-4c1e-97d6-3b775abd59ea
-function get_table(z,ny=25)
+function summary_table(z,ny=25)
     T=round.(z.WTMP * 1.8 .+32,digits=1)
     p=[(T[z.YY.==y],T[z.YY.==y+ny]) for y in 1984:2001]
     i=findall([length(pp[1])*length(pp[2])==1 for pp in p])
@@ -83,82 +98,9 @@ function get_table(z,ny=25)
     DataFrame(T0 = T0[i], T1 = T1[i])
 end
 
-# ╔═╡ ccc5a08b-b9dd-4152-b729-061f46528d05
-function read_buoy_data_nc(ID,y)
-    url0="https://dods.ndbc.noaa.gov/thredds/dodsC/data/stdmet/"
-    ds=Dataset(url0*"$(ID)/$(ID)h$(y).nc")
-    
-    df=DataFrame(YY=year.(ds["time"][:]),MM=month.(ds["time"][:]),
-    air_temperature=ds["air_temperature"][1,1,:],
-    sea_surface_temperature=ds["sea_surface_temperature"][1,1,:],    
-    wind_spd=ds["wind_spd"][1,1,:],air_pressure=ds["air_pressure"][1,1,:])
-
-    close(ds)
-
-    rename!( df,Dict("air_temperature" => "ATMP","sea_surface_temperature" => "WTMP",
-    "air_pressure" => "PRES", "wind_spd" => "WSPD") )
-
-    df
-end
-
-# ╔═╡ a93ebf7f-7327-4bbc-8a37-22c63b349e58
-function monthly_buoy_data(ID=44013,years=1985:2021)
-    mdf=DataFrame(  YY=Int[],MM=Int[],ATMP=Float64[],
-                    WTMP=Float64[],WSPD=Float64[],PRES=Float64[])
-    for y in years
-        y==years[1] ? println(string(y)*" ...") : nothing
-        y==years[end] ? println("... "*string(y)) : nothing
-		
-        df=read_buoy_data_nc(ID,y)
-
-        gdf=groupby(df,"MM")
-        df2=combine(gdf) do df
-            try
-                (ATMP=mean(skipmissing(df.ATMP)) , WTMP=mean(skipmissing(df.WTMP)) , 
-                WSPD=mean(skipmissing(df.WSPD)) , PRES=mean(skipmissing(df.PRES)))
-            catch
-                (ATMP=NaN , WTMP=NaN , WSPD=NaN , PRES=NaN)
-            end    
-        end
-        df2.YY.=y
-        append!(mdf,df2)
-    end
-
-    sort!(mdf, [:YY, :MM])
-    return mdf
-end
-
-# ╔═╡ e6132a02-0c8d-4193-9778-51547ca83a81
-function parse_buoy_data_thredds(ID)
-    url0="https://dods.ndbc.noaa.gov/thredds/catalog/data/stdmet/"
-    url=url0*"$(ID)/catalog.xml"
-    tmp=THREDDS.parse_catalog(url)
-
-    ii=findall( length.(tmp[1]) .> 3)
-    tmp1=tmp[1][ii]
-    ii=findall( [jj[end-2:end]==".nc" for jj in tmp1])
-    tmp2=tmp1[ii]
-
-    yy=[parse(Int,jj[end-6:end-3]) for jj in tmp2]
-    ii=findall(yy.<9999)
-    files_url=[url0*jj for jj in tmp2[ii]]
-    files_year=sort(yy[ii])
-
-    return files_year,files_url
-end
-
-# ╔═╡ 34a9a048-da3e-11ec-2017-b7b762895d86
-begin
-	ID=44013
-	years,_=parse_buoy_data_thredds(ID)
-	mdf=monthly_buoy_data(ID,years)
-	gmdf=groupby(mdf,"MM")
-	gmdf[1]
-end
-
 # ╔═╡ c201edba-f8cd-426e-bffa-75ba868c13a3
 begin
-	tbl=[get_table(gmdf[m],25) for m in 1:12]
+	tbl=[summary_table(gmdf[m],25) for m in 1:12]
 	all=[]; [push!(all,(tbl[m].T1-tbl[m].T0)...) for m in 1:12]
 	"Total number of data point pairs = "*string(length(all))
 end
@@ -167,7 +109,7 @@ end
 plot_summary(tbl,all)
 
 # ╔═╡ aaf89c1f-bd6f-45d8-ae86-3c28bd0735ee
-md"""## Alternative Access Data Method
+md"""## Alternative Method
 
 !!! note
     Using text files requires that you download them to a temporary folder as done below.
@@ -175,10 +117,11 @@ md"""## Alternative Access Data Method
 ```
 buoyID=44013
 years=1985:2021
-NOAA.download_historical(buoyID,years)
-df=NOAA.read_historical(buoyID,years[1])
+NOAA.download_historical_txt(buoyID,years)
+df=NOAA.read_historical_txt(buoyID,years[1])
 ```
 """
+
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -198,7 +141,7 @@ CSV = "~0.10.4"
 CairoMakie = "~0.8.3"
 DataFrames = "~1.3.4"
 NCDatasets = "~0.12.4"
-OceanRobots = "~0.1.9"
+OceanRobots = "~0.1.10"
 PlutoUI = "~0.7.39"
 """
 
@@ -935,10 +878,10 @@ uuid = "510215fc-4207-5dde-b226-833fc4488ee2"
 version = "0.5.1"
 
 [[deps.OceanRobots]]
-deps = ["CFTime", "CSV", "DataFrames", "Dates", "Downloads", "FTPClient", "Glob", "LightXML", "NCDatasets", "Printf"]
-git-tree-sha1 = "4524a553ce2c995ac3831a7241399202751d7e3f"
+deps = ["CFTime", "CSV", "DataFrames", "Dates", "Downloads", "FTPClient", "Glob", "LightXML", "NCDatasets", "Printf", "Statistics"]
+git-tree-sha1 = "be303230c3d715143202d4cb41a6713e689f3fa5"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
-version = "0.1.9"
+version = "0.1.10"
 
 [[deps.OffsetArrays]]
 deps = ["Adapt"]
@@ -1471,17 +1414,16 @@ version = "3.5.0+0"
 """
 
 # ╔═╡ Cell order:
+# ╟─55f371a8-bf01-4c2e-a333-b57cffb52f91
 # ╟─91db1379-9f47-4982-9716-f755451f819f
 # ╟─051ea6ce-a699-4a08-a4cf-214875bd3ca7
+# ╟─ca4098b2-a7e6-40ba-b9d3-668f247bf7fa
 # ╟─34a9a048-da3e-11ec-2017-b7b762895d86
 # ╟─c201edba-f8cd-426e-bffa-75ba868c13a3
 # ╟─fe2ff5d6-bd10-4217-a961-bd59a43ee1a5
 # ╟─920b7a98-8478-4ad7-8897-8e5d92737199
 # ╟─19f37008-9a63-4a28-8fe6-d91319f82df8
 # ╟─e76df21f-e3ad-4c1e-97d6-3b775abd59ea
-# ╟─ccc5a08b-b9dd-4152-b729-061f46528d05
-# ╟─a93ebf7f-7327-4bbc-8a37-22c63b349e58
-# ╟─e6132a02-0c8d-4193-9778-51547ca83a81
 # ╟─aaf89c1f-bd6f-45d8-ae86-3c28bd0735ee
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
