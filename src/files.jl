@@ -51,7 +51,7 @@ end #module GliderFiles
 
 module NOAA
 
-using Downloads, CSV, DataFrames, Dates
+using Downloads, CSV, DataFrames, Dates, NCDatasets, Statistics
 
 """
     NOAA.download(MC::ModelConfig)
@@ -118,6 +118,92 @@ descriptions=Dict(
 "PTDY"=>"Pressure Tendency is the direction (plus or minus) and the amount of pressure change (hPa)for a three hour period ending at the time of observation. (not in Historical files)",
 "TIDE"=>"The water level in feet above or below Mean Lower Low Water (MLLW).",
 )
+
+"""
+    NOAA.read_historical_monthly(ID,years)
+
+Read files from https://www.ndbc.noaa.gov to temporary folder for chosen float `ID` and year `y`.
+"""
+function read_historical_monthly(ID=44013,years=1985:1986)
+    mdf=DataFrame(  YY=Int[],MM=Int[],ATMP=Float64[],
+                    WTMP=Float64[],WSPD=Float64[],PRES=Float64[])
+    for y in years
+        y==years[1] ? println(string(y)*" ...") : nothing
+        y==years[end] ? println("... "*string(y)) : nothing
+		
+        df=read_historical_nc(ID,y)
+
+        gdf=groupby(df,"MM")
+        df2=combine(gdf) do df
+            try
+                (ATMP=mean(skipmissing(df.ATMP)) , WTMP=mean(skipmissing(df.WTMP)) , 
+                WSPD=mean(skipmissing(df.WSPD)) , PRES=mean(skipmissing(df.PRES)))
+            catch
+                (ATMP=NaN , WTMP=NaN , WSPD=NaN , PRES=NaN)
+            end    
+        end
+        df2.YY.=y
+        append!(mdf,df2)
+    end
+
+    sort!(mdf, [:YY, :MM])
+    return mdf
+end
+
+"""
+    NOAA.read_historical_nc(ID,year)
+
+Read files from https://www.ndbc.noaa.gov to temporary folder for chosen float `ID` and year `y`.
+"""
+function read_historical_nc(ID,y)
+    url0="https://dods.ndbc.noaa.gov/thredds/dodsC/data/stdmet/"
+    ds=Dataset(url0*"$(ID)/$(ID)h$(y).nc")
+    
+    df=DataFrame(YY=year.(ds["time"][:]),MM=month.(ds["time"][:]),
+    air_temperature=ds["air_temperature"][1,1,:],
+    sea_surface_temperature=ds["sea_surface_temperature"][1,1,:],    
+    wind_spd=ds["wind_spd"][1,1,:],air_pressure=ds["air_pressure"][1,1,:])
+
+    close(ds)
+
+    rename!( df,Dict("air_temperature" => "ATMP","sea_surface_temperature" => "WTMP",
+    "air_pressure" => "PRES", "wind_spd" => "WSPD") )
+
+    df
+end
+
+"""
+    NOAA.download_historical_txt(ID,years)
+
+Download files from https://www.ndbc.noaa.gov to temporary folder for chosen float `ID` and `years`.
+"""
+function download_historical_txt(ID,years)
+    for y in years
+        fil0="$(ID)h$(y).txt"
+        url0="https://www.ndbc.noaa.gov/view_text_file.php?filename=$(fil0).gz&dir=data/historical/stdmet/"
+        pth0=joinpath(tempdir(),"NDBC"); !isdir(pth0) ? mkdir(pth0) : nothing
+        fil1=joinpath(pth0,fil0)
+        !isfile(fil1) ? Downloads.download(url0,fil1) : nothing
+    end
+end
+
+"""
+    NOAA.read_historical_txt(ID,y)
+
+Read files from https://www.ndbc.noaa.gov to temporary folder for chosen float `ID` and year `y`.
+"""
+function read_historical_txt(ID,y)
+    fil1=joinpath(tempdir(),"NDBC","$(ID)h$(y).txt")
+    if y<2007
+        df=CSV.read(fil1,DataFrame,header=1,delim=" ",
+            ignorerepeated=true,missingstring=["99.0", "999.0", "9999.0", "99", "999"])
+        rename!(df,"BAR" => "PRES")
+    else
+        df=CSV.read(fil1,DataFrame,header=1,skipto=3,delim=" ",
+            ignorerepeated=true,missingstring=["99.0", "999.0", "9999.0", "99", "999"])
+    end
+    df
+end
 
 end #module NOAA
 
