@@ -196,7 +196,7 @@ end #module GDP
 
 module ArgoFiles
 
-using NCDatasets, Downloads
+using NCDatasets, Downloads, CSV, DataFrames
 
 """
     ArgoFiles.download(files_list,wmo)
@@ -237,6 +237,53 @@ function read(fil)
     close(ds)
 
     return (lon=lon,lat=lat,PRES=PRES,TEMP=TEMP,PSAL=PSAL,TIME=TIME)
+end
+
+skmi(x) = ( sum((!ismissing).(x))>0 ? minimum(skipmissing(x)) : missing )
+skma(x) = ( sum((!ismissing).(x))>0 ? maximum(skipmissing(x)) : missing )
+
+"""
+    ArgoFiles.scan_txt(fil="ar_index_global_prof.txt"; do_write=false)
+
+Scan the Argo file lists and return summary tables in DataFrame format. 
+Write to csv file if `istrue(do_write)`.
+
+```
+ArgoFiles.scan_txt("ar_index_global_prof.txt",do_write=true)
+ArgoFiles.scan_txt("argo_synthetic-profile_index.txt",do_write=true)
+```
+"""
+function scan_txt(fil="ar_index_global_prof.txt"; do_write=false)
+    if fil=="ar_index_global_prof.txt"
+        filename=joinpath(tempdir(),"ar_index_global_prof.txt")
+        url="https://data-argo.ifremer.fr/ar_index_global_prof.txt"
+        outputfile=joinpath(tempdir(),"ar_index_global_prof.csv")
+    elseif fil=="argo_synthetic-profile_index.txt"
+        filename=joinpath(tempdir(),"argo_synthetic-profile_index.txt")
+        url="https://data-argo.ifremer.fr/argo_synthetic-profile_index.txt"
+        outputfile=joinpath(tempdir(),"argo_synthetic-profile_index.csv")
+    else
+        error("unknown file")
+    end
+
+    !isfile(filename) ? Downloads.download(url,filename) : nothing
+
+    df=DataFrame(CSV.File(filename; header=9))
+    n=length(df.file)
+    df.wmo=[parse(Int,split(df.file[i],"/")[2]) for i in 1:n]
+    sum(occursin.(names(df),"parameters"))==0 ? df.parameters.="CTD" : nothing
+
+    gdf=groupby(df,:wmo)
+
+    prof=combine(gdf) do df
+        (minlon=skmi(df.longitude) , maxlon=skma(df.longitude) ,
+        minlat=skmi(df.latitude) , maxlat=skma(df.latitude) ,
+        mintim=skmi(df.date) , maxtim=skma(df.date), 
+        nprof=length(df.date) , parameters=df.parameters[1])
+    end
+
+    do_write ? CSV.write(outputfile, prof) : nothing
+
 end
 
 end
