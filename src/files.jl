@@ -357,7 +357,7 @@ function scan_txt(fil="ar_index_global_prof.txt"; do_write=false)
     df=DataFrame(CSV.File(filename; header=9))
     n=length(df.file)
     df.wmo=[parse(Int,split(df.file[i],"/")[2]) for i in 1:n]
-    sum(occursin.(names(df),"parameters"))==0 ? df.parameters.="CTD" : nothing
+    sum(occursin.(names(df),"parameters"))==0 ? df.parameters=fill("CTD",n) : nothing
 
     gdf=groupby(df,:wmo)
 
