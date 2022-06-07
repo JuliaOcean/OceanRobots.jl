@@ -38,11 +38,28 @@ using Test
     df=GliderFiles.read(fil)
     @test isa(df,DataFrame)
 
+    ##
+
     parameters=Dict("stations" => [41048, 44066])		
 	MC=ModelConfig(model=NOAA.download,inputs=parameters)
 	setup(MC)
 	launch(MC)
     df=NOAA.read(MC,41048)
     @test isa(df,DataFrame)
+
+    ##
+
+    buoyID=44013
+    years=1985:1986
+
+    NOAA.download_historical_txt(buoyID,years)
+    df=NOAA.read_historical_txt(buoyID,years[1])
+    @test isa(df,DataFrame)
+
+    df=NOAA.read_historical_monthly()
+    @test isa(df,DataFrame)
+
+    files_year,files_url=THREDDS.parse_catalog_NOAA_buoy()
+    @test !isempty(files_url)
 
 end
