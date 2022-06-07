@@ -60,6 +60,10 @@ begin
 	First, let's extract the recorded float positions, display the float trajectory, and then estimate an approximate drift speed from the difference between consecutive float positions (one every 10 days).
 	
 	$(mywmo_bind)
+
+	###
+	
+	Second, let's interpolate profile data to standard depth levels and show profiles as a function of time.
 	"""
 end
 
@@ -67,7 +71,7 @@ end
 wmo=parse(Int,wmo_txt)
 
 # ╔═╡ a9fd8646-7269-4f70-93cf-0e831d533237
-md"""## Visualize Profile Data
+md"""## Original Profiles
 
 Temperature and salinity profiles recorded by the float as a function of time.
 """
@@ -195,29 +199,6 @@ function heatmap_profiles!(ax,TIME,TEMP,cmap)
 	sca
 end
 
-# ╔═╡ b56e436d-afc9-4469-8de2-1144be7740f9
-begin
-		T_std,S_std=interp_z_all(arr)
-
-		fig1=Mkie.Figure()
-		lims=(nothing, nothing, -500.0, 0.0)
-	
-		ttl="Float wmo="*string(wmo)
-		ax=Mkie.Axis(fig1[1,1],title=ttl*", temperature, degree C", limits=lims)
-		hm1=heatmap_profiles!(ax,arr.TIME,T_std,:thermal)
-		Mkie.Colorbar(fig1[1,2], hm1, height=Mkie.Relative(0.65))
-	
-		ax=Mkie.Axis(fig1[2,1],title=ttl*", salinity, psu", limits=lims)
-		hm2=heatmap_profiles!(ax,arr.TIME,S_std,:viridis)
-		Mkie.Colorbar(fig1[2,2], hm2, height=Mkie.Relative(0.65))
-	
-		fig1
-#	Mkie.heatmap(T_std)
-#		co=Float64.(T_std[:])
-#	rng=extrema(co)
-
-end
-
 # ╔═╡ ce6b8cf0-2589-431b-a551-980f9ee763af
 function plot_profiles!(ax,TIME,PRES,TEMP,cmap)
 	ii=findall(((!ismissing).(PRES)).*((!ismissing).(TEMP)))
@@ -252,26 +233,43 @@ let
 	fig1
 end
 
-# ╔═╡ f47ef7b4-8e92-44a1-82ad-f8ca0337077b
-function plot_trajectory(lon,lat,dx)
+# ╔═╡ 2e35911d-3e5a-453f-bedd-2d621db20d09
+function plot_trajectory!(ax,lon,lat,dx)
 	dt=10.0*86400
 	co=(dx[2:end]+dx[1:end-1])/2
 	co=[dx[1];co[:];dx[end]]/dt
 
-	fig1=Mkie.Figure()
-	ax=Mkie.Axis(fig1[1,1])
 	li=Mkie.lines!(ax,lon, lat, linewidth=2, color=co, colormap=:turbo)
 	Mkie.scatter!(ax,lon, lat, marker=:circle, markersize=5, color=:black)
 	ax.xlabel="longitude"
 	ax.ylabel="latitude"
-	ax.title="Float wmo="*string(wmo)*" -- positions (dots) & speed (color)"
+	ax.title="positions (dots) & speed (color)"
+
+	li
+end
+
+# ╔═╡ 2a1c12c9-21e9-479a-b56c-a893d1cbede6
+let
+	T_std,S_std=interp_z_all(arr)
+	lims=(nothing, nothing, -500.0, 0.0)
+
+	fig1=Mkie.Figure()
+	ax=Mkie.Axis(fig1[1,1])
+	li=plot_trajectory!(ax,arr.lon,arr.lat,spd.dx)
 	Mkie.Colorbar(fig1[1,2], li, height=Mkie.Relative(0.65))
+	ax=Mkie.Axis(fig1[1,3],title="Float wmo="*string(wmo))
+	Mkie.scatter!(ax,arr.PSAL[:],arr.TEMP[:],markersize=3.0)
+
+	ax=Mkie.Axis(fig1[2,1:3],title="Temperature, degree C", limits=lims)
+	hm1=heatmap_profiles!(ax,arr.TIME,T_std,:thermal)
+	Mkie.Colorbar(fig1[2,4], hm1, height=Mkie.Relative(0.65))
+
+	ax=Mkie.Axis(fig1[3,1:3],title="Salinity, psu", limits=lims)
+	hm2=heatmap_profiles!(ax,arr.TIME,S_std,:viridis)
+	Mkie.Colorbar(fig1[3,4], hm2, height=Mkie.Relative(0.65))
 
 	fig1
 end
-
-# ╔═╡ fb5e783b-6275-411d-b8b5-0f3ff8481961
-	plot_trajectory(arr.lon,arr.lat,spd.dx)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1802,10 +1800,9 @@ version = "3.5.0+0"
 # ╟─1a835449-de37-4d08-9c91-c7affe7084cd
 # ╟─904c8a06-0552-40b4-aa9f-404d61b21c08
 # ╟─49256e11-fbd2-40e7-8f0b-193e17e2b31b
-# ╟─fb5e783b-6275-411d-b8b5-0f3ff8481961
+# ╟─2a1c12c9-21e9-479a-b56c-a893d1cbede6
 # ╟─a9fd8646-7269-4f70-93cf-0e831d533237
 # ╟─c176fd5e-b2f2-47e3-8145-a4c152389344
-# ╟─b56e436d-afc9-4469-8de2-1144be7740f9
 # ╟─9037e2ce-a04a-40d0-945e-ec3f19a4f3c4
 # ╟─3f5419f1-d131-42eb-86c8-44a385e88d51
 # ╟─533ea412-76ae-4060-bbc8-2650ee0d2774
@@ -1818,6 +1815,6 @@ version = "3.5.0+0"
 # ╟─a42edc9d-9fa2-4775-83c4-2d9a5130105c
 # ╟─fc0340be-4671-406f-9dc0-e831009aa9b8
 # ╟─ce6b8cf0-2589-431b-a551-980f9ee763af
-# ╟─f47ef7b4-8e92-44a1-82ad-f8ca0337077b
+# ╟─2e35911d-3e5a-453f-bedd-2d621db20d09
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
