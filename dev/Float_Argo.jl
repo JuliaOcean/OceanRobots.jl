@@ -240,7 +240,7 @@ function plot_trajectory!(ax,lon,lat,dx)
 	co=[dx[1];co[:];dx[end]]/dt
 
 	li=Mkie.lines!(ax,lon, lat, linewidth=2, color=co, colormap=:turbo)
-	Mkie.scatter!(ax,lon, lat, marker=:circle, markersize=5, color=:black)
+	Mkie.scatter!(ax,lon, lat, marker=:circle, markersize=2, color=:black)
 	ax.xlabel="longitude"
 	ax.ylabel="latitude"
 	ax.title="positions (dots) & speed (color)"
