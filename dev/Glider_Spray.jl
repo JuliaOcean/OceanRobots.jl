@@ -89,10 +89,12 @@ md"""## Appendix
 
 # ╔═╡ 9523dc0d-1758-4e0f-864c-4ab253bf11a9
 begin
+	check_for_file("Glider_Spray","GulfStream.nc")
+	
 	pth0=joinpath(tempdir(),"tmp_glider_data")
 	fil0=joinpath(pth0,MID)
 
-	df=Spray_Glider.read(fil0)
+	df=GliderFiles.read(fil0)
 	gdf=groupby(df,:ID)
 
 	ID_bind = @bind ID NumberField(1:gdf.ngroups, default=1)
