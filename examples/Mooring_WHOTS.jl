@@ -95,7 +95,7 @@ In this next cell we also read a selection of variables to make them available f
 
 # ╔═╡ cfd3a864-73de-11ec-3f98-55bc2b29050c
 begin
-	(arr,units)=WHOTS.read()
+	(arr,units)=OceanSites.read_WHOTS()
 end
 
 # ╔═╡ afbd09fa-c013-4dc8-866e-3315c5631a58
