@@ -6,9 +6,9 @@ makedocs(;
     pages=[
         "Home" => "index.md",
         ],
-    repo="https://github.com/gaelforget/OceanRobots.jl/blob/{commit}{path}#L{line}",
+    repo="https://github.com/JuliaOcean/OceanRobots.jl/blob/{commit}{path}#L{line}",
     sitename="OceanRobots.jl",
-    authors="gaelforget <gforget@mit.edu>",
+    authors="JuliaOcean <gforget@mit.edu>",
     assets=String[],
     )
 
@@ -32,5 +32,5 @@ for fil in ["argo_synthetic-profile_index.txt", "ar_index_global_prof.txt"]
 end
 
 deploydocs(;
-    repo="github.com/gaelforget/OceanRobots.jl",
+    repo="github.com/JuliaOcean/OceanRobots.jl",
 )
