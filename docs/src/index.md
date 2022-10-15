@@ -27,7 +27,6 @@ The examples are most easily run using [Pluto.jl](https://github.com/fonsp/Pluto
 
 - For more on Argo : see [ArgoData.jl](https://github.com/JuliaOcean/ArgoData.jl)
 - [Drifter\_CloudDrift.jl](https://github.com/JuliaOcean/OceanRobots.jl/blob/master/examples/Drifter_CloudDrift.jl) 
-- [Buoy\_NWP\_NOAA\_monthly.jl](https://github.com/JuliaOcean/OceanRobots.jl/blob/master/examples/Buoy_NWP_NOAA_monthly.jl) 
 
 ### Visual Examples
 
