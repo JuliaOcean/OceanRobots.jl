@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.16
+# v0.19.17
 
 using Markdown
 using InteractiveUtils
@@ -49,8 +49,29 @@ begin
 	"""
 end
 
+# ╔═╡ a9fd8646-7269-4f70-93cf-0e831d533237
+md"""## Data Samples
+
+Temperature and salinity profiles recorded by the float as a function of time and depth.
+"""
+
 # ╔═╡ 9d29d0f8-7b1c-11ec-1f16-b313a50cc5e7
 TableOfContents()
+
+# ╔═╡ 1a835449-de37-4d08-9c91-c7affe7084cd
+begin
+	mywmo_bind = @bind wmo_txt confirm(TextField(default="6900900"))
+	
+	md"""## Select a Float
+	
+	$(mywmo_bind)
+	
+	See later in the notebook for the full list of floats.
+	"""
+end
+
+# ╔═╡ 904c8a06-0552-40b4-aa9f-404d61b21c08
+wmo=parse(Int,wmo_txt)
 
 # ╔═╡ 4d949835-4cf8-4493-b765-6e956019b777
 begin
@@ -64,37 +85,21 @@ begin
 	"""
 end
 
-# ╔═╡ a9fd8646-7269-4f70-93cf-0e831d533237
-md"""## Original Data Samples
-
-Temperature and salinity profiles recorded by the float as a function of time and depth.
-"""
-
 # ╔═╡ 3f5419f1-d131-42eb-86c8-44a385e88d51
 begin
 	files_list=GDAC.files_list()
 	nf=size(files_list,1)
 end
 
-# ╔═╡ 1a835449-de37-4d08-9c91-c7affe7084cd
-begin
-	mywmo_bind = @bind wmo_txt confirm(TextField(default="6900900"))
-	
-	md"""## Select a Float
-	
-	$(mywmo_bind)
-
-	$(pretty_table(files_list[1:2000:nf,:]))
-
-	See later in the notebook for the full list of floats.
-	"""
-end
-
-# ╔═╡ 904c8a06-0552-40b4-aa9f-404d61b21c08
-wmo=parse(Int,wmo_txt)
+# ╔═╡ 8418b9ca-2e7f-4468-a0fb-36f5a05dde2c
+pretty_table(files_list[1:2000:nf,:],
+	header = names(files_list),
+	header_crayon = crayon"yellow bold",
+	highlighters  = ( hl_col(1, crayon"white"),hl_col(2, crayon"white") ),
+)
 
 # ╔═╡ 9037e2ce-a04a-40d0-945e-ec3f19a4f3c4
-md"""## Lot More Floats
+md"""## Many More Floats
 
 Argo is an international program that maintains an array of over 3000 profiling floats distributed 
 over the Global Ocean. It collectively provides a high-quality and global data set that plays a 
@@ -272,7 +277,7 @@ end
 # ╔═╡ c176fd5e-b2f2-47e3-8145-a4c152389344
 function plot_samples(arr)
 	
-	fig1=Figure()
+	fig1=Figure(resolution = (800, 400))
 	lims=(nothing, nothing, -500.0, 0.0)
 
 	ttl="Float wmo="*string(wmo)
@@ -300,21 +305,13 @@ OceanRobots = "0b51df41-3294-4961-8d23-db645e32016d"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 PrettyTables = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
-
-[compat]
-ArgoData = "~0.1.14"
-CairoMakie = "~0.9.3"
-Interpolations = "~0.14.6"
-OceanRobots = "~0.1.11"
-PlutoUI = "~0.7.49"
-PrettyTables = "~2.2.2"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.8.1"
+julia_version = "1.8.3"
 manifest_format = "2.0"
 project_hash = "7698ba56ef3db3cb3df905945de9441fb0c9c772"
 
@@ -353,9 +350,9 @@ version = "1.1.1"
 
 [[deps.ArgoData]]
 deps = ["CSV", "DataFrames", "Dates", "Downloads", "FTPClient", "Glob", "Interpolations", "MITgcmTools", "MeshArrays", "NCDatasets", "OceanStateEstimation", "OrderedCollections", "Pkg", "Printf", "Statistics", "YAML"]
-git-tree-sha1 = "72b2efce00f1da89c9887113ef5580d92952a25b"
+git-tree-sha1 = "a7b92703ebd55d01f8fb0451a3cf790307c6182e"
 uuid = "9eb831cf-c491-48dc-bed4-6aca718df73c"
-version = "0.1.14"
+version = "0.1.15"
 
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -399,10 +396,10 @@ uuid = "179af706-886a-5703-950a-314cd64e0468"
 version = "0.1.2"
 
 [[deps.CSV]]
-deps = ["CodecZlib", "Dates", "FilePathsBase", "InlineStrings", "Mmap", "Parsers", "PooledArrays", "SentinelArrays", "Tables", "Unicode", "WeakRefStrings"]
-git-tree-sha1 = "c5fd7cd27ac4aed0acf4b73948f0110ff2a854b2"
+deps = ["CodecZlib", "Dates", "FilePathsBase", "InlineStrings", "Mmap", "Parsers", "PooledArrays", "SentinelArrays", "SnoopPrecompile", "Tables", "Unicode", "WeakRefStrings", "WorkerUtilities"]
+git-tree-sha1 = "8c73e96bd6817c2597cfd5615b91fca5deccf1af"
 uuid = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
-version = "0.10.7"
+version = "0.10.8"
 
 [[deps.Cairo]]
 deps = ["Cairo_jll", "Colors", "Glib_jll", "Graphics", "Libdl", "Pango_jll"]
@@ -412,9 +409,9 @@ version = "1.0.5"
 
 [[deps.CairoMakie]]
 deps = ["Base64", "Cairo", "Colors", "FFTW", "FileIO", "FreeType", "GeometryBasics", "LinearAlgebra", "Makie", "SHA", "SnoopPrecompile"]
-git-tree-sha1 = "20bd6ace08bb83bf5579e8dfb0b1e23e33518b04"
+git-tree-sha1 = "5e2c8d04a4b98f73da6d314f673c8b7e7db2d76d"
 uuid = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
-version = "0.9.3"
+version = "0.9.4"
 
 [[deps.Cairo_jll]]
 deps = ["Artifacts", "Bzip2_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "JLLWrappers", "LZO_jll", "Libdl", "Pixman_jll", "Pkg", "Xorg_libXext_jll", "Xorg_libXrender_jll", "Zlib_jll", "libpng_jll"]
@@ -571,9 +568,9 @@ version = "0.25.79"
 
 [[deps.DocStringExtensions]]
 deps = ["LibGit2"]
-git-tree-sha1 = "c36550cb29cbe373e95b3f40486b9a4148f89ffd"
+git-tree-sha1 = "2fb1e02f2b635d0845df5d7c167fec4dd739b00d"
 uuid = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
-version = "0.9.2"
+version = "0.9.3"
 
 [[deps.Downloads]]
 deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
@@ -650,9 +647,9 @@ uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 
 [[deps.FillArrays]]
 deps = ["LinearAlgebra", "Random", "SparseArrays", "Statistics"]
-git-tree-sha1 = "802bfc139833d2ba893dd9e62ba1767c88d708ae"
+git-tree-sha1 = "9a0472ec2f5409db243160a8b030f94c380167a3"
 uuid = "1a297f60-69ca-5386-bcde-b61e274b549b"
-version = "0.13.5"
+version = "0.13.6"
 
 [[deps.FixedPointNumbers]]
 deps = ["Statistics"]
@@ -704,6 +701,12 @@ version = "1.0.10+0"
 [[deps.Future]]
 deps = ["Random"]
 uuid = "9fa8497b-333b-5362-9e8d-4d0656e87820"
+
+[[deps.GPUArraysCore]]
+deps = ["Adapt"]
+git-tree-sha1 = "6872f5ec8fd1a38880f027a26739d42dcda6691f"
+uuid = "46192b85-c4d5-4398-a991-12ede77f4527"
+version = "0.1.2"
 
 [[deps.GeoInterface]]
 deps = ["Extents"]
@@ -869,9 +872,9 @@ uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 
 [[deps.Interpolations]]
 deps = ["Adapt", "AxisAlgorithms", "ChainRulesCore", "LinearAlgebra", "OffsetArrays", "Random", "Ratios", "Requires", "SharedArrays", "SparseArrays", "StaticArrays", "WoodburyMatrices"]
-git-tree-sha1 = "842dd89a6cb75e02e85fdd75c760cdc43f5d6863"
+git-tree-sha1 = "721ec2cf720536ad005cb38f50dbba7b02419a15"
 uuid = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
-version = "0.14.6"
+version = "0.14.7"
 
 [[deps.IntervalSets]]
 deps = ["Dates", "Random", "Statistics"]
@@ -1075,9 +1078,9 @@ version = "0.5.10"
 
 [[deps.Makie]]
 deps = ["Animations", "Base64", "ColorBrewer", "ColorSchemes", "ColorTypes", "Colors", "Contour", "Distributions", "DocStringExtensions", "FFMPEG", "FileIO", "FixedPointNumbers", "Formatting", "FreeType", "FreeTypeAbstraction", "GeometryBasics", "GridLayoutBase", "ImageIO", "InteractiveUtils", "IntervalSets", "Isoband", "KernelDensity", "LaTeXStrings", "LinearAlgebra", "MakieCore", "Markdown", "Match", "MathTeXEngine", "MiniQhull", "Observables", "OffsetArrays", "Packing", "PlotUtils", "PolygonOps", "Printf", "Random", "RelocatableFolders", "Serialization", "Showoff", "SignedDistanceFields", "SnoopPrecompile", "SparseArrays", "Statistics", "StatsBase", "StatsFuns", "StructArrays", "TriplotBase", "UnicodeFun"]
-git-tree-sha1 = "d3b9553c2f5e0ca588e4395a9508cef024bd9e8a"
+git-tree-sha1 = "bdbc2178494c5328defb095a04d553278705b448"
 uuid = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-version = "0.18.3"
+version = "0.18.4"
 
 [[deps.MakieCore]]
 deps = ["Observables"]
@@ -1143,9 +1146,9 @@ version = "2022.2.1"
 
 [[deps.NCDatasets]]
 deps = ["CFTime", "DataStructures", "Dates", "NetCDF_jll", "NetworkOptions", "Printf"]
-git-tree-sha1 = "8d5cd8ff530228bf172f7d4e91d9ae9e8b8e8ad3"
+git-tree-sha1 = "6ad0a7da2848fb47012ce63ff457585d15e9d0bb"
 uuid = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
-version = "0.12.9"
+version = "0.12.10"
 
 [[deps.NaNMath]]
 deps = ["OpenLibm_jll"]
@@ -1188,9 +1191,9 @@ version = "0.5.4"
 
 [[deps.OceanRobots]]
 deps = ["CFTime", "CSV", "DataFrames", "Dates", "Downloads", "FTPClient", "Glob", "LightXML", "NCDatasets", "Printf", "Statistics"]
-git-tree-sha1 = "0c6f6b27abe759d1ef5407893405fa6c0c9aaf4c"
+git-tree-sha1 = "9ae43d6820f5bbf932aeff07c47b41c948df519a"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
-version = "0.1.11"
+version = "0.1.12"
 
 [[deps.OceanStateEstimation]]
 deps = ["CodecZlib", "Distributed", "Downloads", "FortranFiles", "JLD2", "MITgcmTools", "MeshArrays", "NCDatasets", "Pkg", "Printf", "Scratch", "SharedArrays", "Statistics", "TOML", "Tar"]
@@ -1315,9 +1318,9 @@ version = "0.3.2"
 
 [[deps.PlotUtils]]
 deps = ["ColorSchemes", "Colors", "Dates", "Printf", "Random", "Reexport", "SnoopPrecompile", "Statistics"]
-git-tree-sha1 = "21303256d239f6b484977314674aef4bb1fe4420"
+git-tree-sha1 = "5b7690dd212e026bbab1860016a6601cb077ab66"
 uuid = "995b91a9-d308-5afd-9ec6-746e21dbc043"
-version = "1.3.1"
+version = "1.3.2"
 
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
@@ -1547,9 +1550,9 @@ version = "0.33.21"
 
 [[deps.StatsFuns]]
 deps = ["ChainRulesCore", "HypergeometricFunctions", "InverseFunctions", "IrrationalConstants", "LogExpFunctions", "Reexport", "Rmath", "SpecialFunctions"]
-git-tree-sha1 = "89a3bfe98f5400f4ff58bb5cd1a9e46f95d08352"
+git-tree-sha1 = "ab6083f09b3e617e34a956b43e9d51b824206932"
 uuid = "4c63d2b9-4356-54db-8cca-17b64c39e42c"
-version = "1.1.0"
+version = "1.1.1"
 
 [[deps.StringEncodings]]
 deps = ["Libiconv_jll"]
@@ -1563,10 +1566,10 @@ uuid = "892a3eda-7b42-436c-8928-eab12a02cf0e"
 version = "0.3.0"
 
 [[deps.StructArrays]]
-deps = ["Adapt", "DataAPI", "StaticArraysCore", "Tables"]
-git-tree-sha1 = "13237798b407150a6d2e2bce5d793d7d9576e99e"
+deps = ["Adapt", "DataAPI", "GPUArraysCore", "StaticArraysCore", "Tables"]
+git-tree-sha1 = "b03a3b745aa49b566f128977a7dd1be8711c5e71"
 uuid = "09ab397b-f2b6-538f-b94a-2f83cf4a842a"
-version = "0.6.13"
+version = "0.6.14"
 
 [[deps.SuiteSparse]]
 deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
@@ -1597,7 +1600,7 @@ version = "1.10.0"
 [[deps.Tar]]
 deps = ["ArgTools", "SHA"]
 uuid = "a4e569a6-e804-4fa4-b0f3-eef7a1d5b13e"
-version = "1.10.0"
+version = "1.10.1"
 
 [[deps.TensorCore]]
 deps = ["LinearAlgebra"]
@@ -1617,9 +1620,9 @@ version = "0.6.2"
 
 [[deps.TranscodingStreams]]
 deps = ["Random", "Test"]
-git-tree-sha1 = "8a75929dcd3c38611db2f8d08546decb514fcadf"
+git-tree-sha1 = "e4bdc63f5c6d62e80eb1c0043fcc0360d5950ff7"
 uuid = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
-version = "0.9.9"
+version = "0.9.10"
 
 [[deps.Tricks]]
 git-tree-sha1 = "6bac775f2d42a611cdfcd1fb217ee719630c4175"
@@ -1672,6 +1675,11 @@ deps = ["LinearAlgebra", "SparseArrays"]
 git-tree-sha1 = "de67fa59e33ad156a590055375a30b23c40299d3"
 uuid = "efce3f68-66dc-5838-9240-27a6d6f5f9b6"
 version = "0.5.5"
+
+[[deps.WorkerUtilities]]
+git-tree-sha1 = "cd1659ba0d57b71a464a29e64dbc67cfe83d54e7"
+uuid = "76eceee3-57b5-4d4a-8e66-0e911cebbf60"
+version = "1.6.1"
 
 [[deps.XML2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libiconv_jll", "Pkg", "Zlib_jll"]
@@ -1818,13 +1826,14 @@ version = "3.5.0+0"
 # ╟─89647c4e-e568-4d3a-af57-bcc541744e38
 # ╟─09a2aa6e-16bc-4582-9d5f-c50432e3f0ca
 # ╟─9d29d0f8-7b1c-11ec-1f16-b313a50cc5e7
+# ╟─a9fd8646-7269-4f70-93cf-0e831d533237
+# ╟─c85a1eea-e2db-4f7f-9b7c-00b29a4cb975
 # ╟─1a835449-de37-4d08-9c91-c7affe7084cd
 # ╟─904c8a06-0552-40b4-aa9f-404d61b21c08
+# ╟─8418b9ca-2e7f-4468-a0fb-36f5a05dde2c
 # ╟─4d949835-4cf8-4493-b765-6e956019b777
 # ╟─49256e11-fbd2-40e7-8f0b-193e17e2b31b
 # ╟─2a1c12c9-21e9-479a-b56c-a893d1cbede6
-# ╟─a9fd8646-7269-4f70-93cf-0e831d533237
-# ╠═c85a1eea-e2db-4f7f-9b7c-00b29a4cb975
 # ╟─9037e2ce-a04a-40d0-945e-ec3f19a4f3c4
 # ╟─3f5419f1-d131-42eb-86c8-44a385e88d51
 # ╟─533ea412-76ae-4060-bbc8-2650ee0d2774
