@@ -13,6 +13,7 @@ The suite of examples includes :
 - [Drifter\_CloudDrift.jl](https://juliaocean.github.io/OceanRobots.jl/v0.1.10/Drifter_CloudDrift.html) (➭ [code link](https://github.com/JuliaOcean/OceanRobots.jl/blob/master/examples/Drifter_CloudDrift.jl)) : drifter statistics
 - [Float\_Argo.jl](Float_Argo.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/Float_Argo.jl)) : Argo profiling [float](https://argo.ucsd.edu) data
 - [Glider\_Spray.jl](Glider_Spray.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/Glider_Spray.jl)) : underwater [glider](http://spraydata.ucsd.edu/projects/) data.
+- [OceanOPS.jl](OceanOPS.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/OceanOPS.jl)) : global ocean observing services.
 
 !!! note
     The static `html` rendering of the notebooks (this website) lack the interactivity that comes from [Running The Examples](@ref) yourself.
