@@ -47,5 +47,5 @@ Spray Glider Data | NOAA Time series
 ```
 
 ```@autodocs
-Modules = [GDP, NOAA, GliderFiles, ArgoFiles, OceanSites, THREDDS]
+Modules = [GDP, NOAA, GliderFiles, ArgoFiles, OceanSites, OceanOPS, THREDDS]
 ```
