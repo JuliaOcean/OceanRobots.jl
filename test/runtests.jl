@@ -62,4 +62,6 @@ using Test
     files_year,files_url=THREDDS.parse_catalog_NOAA_buoy()
     @test !isempty(files_url)
 
+    tab_Argo=OceanOPS.get_table(:Argo,1)
+    @test isa(tab_Argo,DataFrame)
 end
