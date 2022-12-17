@@ -490,7 +490,7 @@ end
 
 module OceanOPS
 
-using Downloads, CSV, DataFrames
+using Downloads, CSV, DataFrames, JSON3, HTTP
 
 """
     csv_listings()
@@ -533,6 +533,58 @@ function get_table(s::Symbol,i=1)
     !isfile(path1) ? Downloads.download(url1,path1) : nothing
 
     CSV.read(path1, DataFrame)
+end
+
+"""
+    get_list(nam=:Argo)
+
+Get list of active Argo profilers from OceanOPS API.
+
+For more information see https://www.ocean-ops.org/api/1/help/
+
+```
+list_Argo=OceanOPS.get_list(:Argo)
+```
+"""
+function get_list(nam=:Argo)
+    if nam==:Argo
+        url="https://www.ocean-ops.org/api/1/data/platform/"*
+            "?exp=[%22ptfStatus.name=%27OPERATIONAL%27%20and%20networkPtfs.network.name=%27Argo%27%22]"
+    elseif nam==:Drifter
+        url="https://www.ocean-ops.org/api/1/data/platform?"*
+        "exp=[%22ptfStatus.name=%27OPERATIONAL%27%20and%20networkPtfs.network.nameShort=%27DBCP%27%20and%20ptfModel.ptfType.ptfFamily.name%20=%20%27Drifting%20Buoy%27%22]"
+    else
+        error("unknown option")
+    end
+
+    tmp=JSON3.read(String(HTTP.get(url).body))
+    [i.id for i in tmp.data]
+end
+
+"""
+    get_platform(i)
+
+Get info on a platform (e.g., float for drifter) from OceanOPS API.
+
+For more information see https://www.ocean-ops.org/api/1/help/
+
+```
+list_Drifter=OceanOPS.get_list(:Drifter)
+tmp=OceanOPS.get_platform(list_Drifter[1000])
+```
+"""
+function get_platform(i)
+    url="https://www.ocean-ops.org/api/1/data/platform/$(i)"*
+        "?include=[%22ptfDepl.ship.name%22,%20%22ref%22,%20%22program.country.name%22,"*
+        "%20%22ptfDepl.deplDate%22,%20%22ptfStatus.name%22]"
+    tmp=JSON3.read(String(HTTP.get(url).body))
+    #
+    (id=tmp.data[1].ref,
+    country=tmp.data[1].program.country.name,
+    status=tmp.data[1].ptfStatus.name,
+    deployed=tmp.data[1].ptfDepl.deplDate,
+    ship=tmp.data[1].ptfDepl.ship.name,
+    )
 end
 
 end
