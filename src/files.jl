@@ -490,7 +490,7 @@ end
 
 module OceanOPS
 
-using Downloads, CSV, DataFrames
+using Downloads, CSV, DataFrames, JSON3, HTTP
 
 """
     csv_listings()
@@ -533,6 +533,31 @@ function get_table(s::Symbol,i=1)
     !isfile(path1) ? Downloads.download(url1,path1) : nothing
 
     CSV.read(path1, DataFrame)
+end
+
+"""
+    get_list(nam=:Argo)
+
+Get list of active Argo profilers from API.
+
+```
+get_list(:Argo)
+get_list(:Drifter)
+```
+"""
+function get_list(nam=:Argo)
+    if nam==:Argo
+        url="https://www.ocean-ops.org/api/1/data/platform/"*
+            "?exp=[%22ptfStatus.name=%27OPERATIONAL%27%20and%20networkPtfs.network.name=%27Argo%27%22]"
+    elseif nam==:Drifter
+        url="https://www.ocean-ops.org/api/1/data/platform?"*
+        "exp=[%22ptfStatus.name=%27OPERATIONAL%27%20and%20networkPtfs.network.nameShort=%27DBCP%27%20and%20ptfModel.ptfType.ptfFamily.name%20=%20%27Drifting%20Buoy%27%22]"
+    else
+        error("unknown option")
+    end
+
+    tmp=JSON3.read(String(HTTP.get(url).body))
+    [i.id for i in tmp.data]
 end
 
 end

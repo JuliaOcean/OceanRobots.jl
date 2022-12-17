@@ -64,4 +64,7 @@ using Test
 
     tab_Argo=OceanOPS.get_table(:Argo,1)
     @test isa(tab_Argo,DataFrame)
+
+    list_Argo=OceanOPS.get_list(:Argo)
+    @test isa(list_Argo,Vector)
 end
