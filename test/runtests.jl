@@ -67,4 +67,7 @@ using Test
 
     list_Argo=OceanOPS.get_list(:Argo)
     @test isa(list_Argo,Vector)
+
+    tmp=OceanOPS.get_platform(list_Argo[1000])
+    @test tmp.status=="OPERATIONAL"
 end

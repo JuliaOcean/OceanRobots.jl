@@ -543,8 +543,7 @@ Get list of active Argo profilers from OceanOPS API.
 For more information see https://www.ocean-ops.org/api/1/help/
 
 ```
-get_list(:Argo)
-get_list(:Drifter)
+list_Argo=OceanOPS.get_list(:Argo)
 ```
 """
 function get_list(nam=:Argo)
@@ -560,6 +559,32 @@ function get_list(nam=:Argo)
 
     tmp=JSON3.read(String(HTTP.get(url).body))
     [i.id for i in tmp.data]
+end
+
+"""
+    get_platform(i)
+
+Get info on a platform (e.g., float for drifter) from OceanOPS API.
+
+For more information see https://www.ocean-ops.org/api/1/help/
+
+```
+list_Drifter=OceanOPS.get_list(:Drifter)
+tmp=OceanOPS.get_platform(list_Drifter[1000])
+```
+"""
+function get_platform(i)
+    url="https://www.ocean-ops.org/api/1/data/platform/$(i)"*
+        "?include=[%22ptfDepl.ship.name%22,%20%22ref%22,%20%22program.country.name%22,"*
+        "%20%22ptfDepl.deplDate%22,%20%22ptfStatus.name%22]"
+    tmp=JSON3.read(String(HTTP.get(url).body))
+    #
+    (id=tmp.data[1].ref,
+    country=tmp.data[1].program.country.name,
+    status=tmp.data[1].ptfStatus.name,
+    deployed=tmp.data[1].ptfDepl.deplDate,
+    ship=tmp.data[1].ptfDepl.ship.name,
+    )
 end
 
 end
