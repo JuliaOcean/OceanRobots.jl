@@ -538,7 +538,9 @@ end
 """
     get_list(nam=:Argo)
 
-Get list of active Argo profilers from API.
+Get list of active Argo profilers from OceanOPS API.
+
+For more information see https://www.ocean-ops.org/api/1/help/
 
 ```
 get_list(:Argo)
