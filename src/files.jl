@@ -540,25 +540,38 @@ end
 
 Get list of active Argo profilers from OceanOPS API.
 
-For more information see https://www.ocean-ops.org/api/1/help/
+For more information see 
+
+- https://www.ocean-ops.org/api/1/help/
+- https://www.ocean-ops.org/api/1/help/?param=platformstatus
 
 ```
-list_Argo=OceanOPS.get_list(:Argo)
+list_Argo1=OceanOPS.get_list(:Argo,status="OPERATIONAL")
+list_Argo2=OceanOPS.get_list(:Argo,status="CONFIRMED")
+list_Argo3=OceanOPS.get_list(:Argo,status="REGISTERED")
+list_Argo4=OceanOPS.get_list(:Argo,status="INACTIVE")
 ```
 """
-function get_list(nam=:Argo)
+function get_list(nam=:Argo; status="OPERATIONAL", extended=false)
     if nam==:Argo
         url="https://www.ocean-ops.org/api/1/data/platform/"*
-            "?exp=[%22ptfStatus.name=%27OPERATIONAL%27%20and%20networkPtfs.network.name=%27Argo%27%22]"
+            "?exp=[%22ptfStatus.name=%27$(status)%27%20and%20networkPtfs.network.name=%27Argo%27%22]"
     elseif nam==:Drifter
-        url="https://www.ocean-ops.org/api/1/data/platform?"*
-        "exp=[%22ptfStatus.name=%27OPERATIONAL%27%20and%20networkPtfs.network.nameShort=%27DBCP%27%20and%20ptfModel.ptfType.ptfFamily.name%20=%20%27Drifting%20Buoy%27%22]"
+        url="https://www.ocean-ops.org/api/1/data/platform/"*
+            "?exp=[%22ptfStatus.name=%27$(status)%27%20and%20networkPtfs.network.nameShort=%27DBCP%27%20and%20ptfModel.ptfType.ptfFamily.name%20=%20%27Drifting%20Buoy%27%22]"
     else
         error("unknown option")
     end
 
+    url=url*"&include=[%22ptfDepl.lon%22,%22ptfDepl.lat%22,%22ptfDepl.deplDate%22,"*
+        "%22latestObs.lon%22,%22latestObs.lat%22,%22latestObs.obsDate%22,"*
+        "%22id%22,%22ref%22,%22ptfStatus.name%22]"
     tmp=JSON3.read(String(HTTP.get(url).body))
-    [i.id for i in tmp.data]
+    if !extended
+        [i.id for i in tmp.data]
+    else
+        tmp.data
+    end
 end
 
 """
