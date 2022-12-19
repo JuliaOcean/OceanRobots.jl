@@ -70,4 +70,7 @@ using Test
 
     tmp=OceanOPS.get_platform(list_Argo[1000])
     @test tmp.status=="OPERATIONAL"
+
+    tmp=OceanOPS.get_list_pos(:Drifter)
+    @test isa(tmp.lon,Vector)
 end
