@@ -596,6 +596,7 @@ For more information see
 
 - https://www.ocean-ops.org/api/1/help/
 - https://www.ocean-ops.org/api/1/help/?param=platformstatus
+- https://www.ocean-ops.org/api/1/help/?param=platformtype
 """
 function get_url(nam=:Argo; status="OPERATIONAL")
     if nam==:Argo
@@ -605,7 +606,13 @@ function get_url(nam=:Argo; status="OPERATIONAL")
         url="https://www.ocean-ops.org/api/1/data/platform/"*
             "?exp=[%22ptfStatus.name=%27$(status)%27%20and%20networkPtfs.network.nameShort=%27DBCP%27%20and%20ptfModel.ptfType.ptfFamily.name%20=%20%27Drifting%20Buoy%27%22]"
     else
-        error("unknown option")
+        url="https://www.ocean-ops.org/api/1/data/platform/"*
+#        "?exp=[%22ptfStatus.name=%27$(status)%27%20and%20ptfModel.ptfType.ptfFamily.name%20=%20%27Drifting%20Buoy%27%22]"
+#        "?exp=[%22ptfStatus.name=%27$(status)%27%20and%20ptfModel.ptfType.ptfFamily.name%20=%20%27Animal%20Borne%20Sensor%27%22]"
+#        "?exp=[%22ptfStatus.name=%27$(status)%27%20and%20ptfModel.ptfType.name%20=%20%27Sailing%20Drone%27%22]"
+#        "?exp=[%22ptfStatus.name=%27$(status)%27%20and%20ptfModel.ptfType.nameShort%20=%20%27"*string(nam)*"%27%22]"
+        "?exp=[%22ptfModel.ptfType.nameShort%20=%20%27"*string(nam)*"%27%22]"
+#        "?exp=[%22%20ptfModel.ptfType.name%20=%20%27SVP%27%22]"
     end
 
     return url,url*"&include=[%22ptfDepl.lon%22,%22ptfDepl.lat%22,%22ptfDepl.deplDate%22,"*
