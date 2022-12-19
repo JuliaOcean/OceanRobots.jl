@@ -573,16 +573,23 @@ function get_list_pos(nam=:Argo; status="OPERATIONAL")
     tmp=JSON3.read(String(HTTP.get(url).body))
     lon=Float64[]
     lat=Float64[]
+    flag=Symbol[]
     for i in tmp.data
-        if !ismissing(i.latestObs)
+        if !isnothing(i.latestObs)
             push!(lon,i.latestObs.lon)
             push!(lat,i.latestObs.lat)
-        else
+            push!(flag,:latestObs)
+        elseif !isnothing(i.ptfDepl.lon) && !isnothing(i.ptfDepl.lat)
             push!(lon,i.ptfDepl.lon)
             push!(lat,i.ptfDepl.lat)
+            push!(flag,:ptfDepl)
+        else
+            push!(lon,NaN)
+            push!(lat,NaN)
+            push!(flag,:NaN)
         end
     end
-    (lon=lon,lat=lat)
+    (lon=lon,lat=lat,flag=flag)
 end
 
 """
@@ -610,8 +617,8 @@ function get_url(nam=:Argo; status="OPERATIONAL")
 #        "?exp=[%22ptfStatus.name=%27$(status)%27%20and%20ptfModel.ptfType.ptfFamily.name%20=%20%27Drifting%20Buoy%27%22]"
 #        "?exp=[%22ptfStatus.name=%27$(status)%27%20and%20ptfModel.ptfType.ptfFamily.name%20=%20%27Animal%20Borne%20Sensor%27%22]"
 #        "?exp=[%22ptfStatus.name=%27$(status)%27%20and%20ptfModel.ptfType.name%20=%20%27Sailing%20Drone%27%22]"
-#        "?exp=[%22ptfStatus.name=%27$(status)%27%20and%20ptfModel.ptfType.nameShort%20=%20%27"*string(nam)*"%27%22]"
-        "?exp=[%22ptfModel.ptfType.nameShort%20=%20%27"*string(nam)*"%27%22]"
+        "?exp=[%22ptfStatus.name=%27$(status)%27%20and%20ptfModel.ptfType.nameShort%20=%20%27"*string(nam)*"%27%22]"
+#        "?exp=[%22ptfModel.ptfType.nameShort%20=%20%27"*string(nam)*"%27%22]"
 #        "?exp=[%22%20ptfModel.ptfType.name%20=%20%27SVP%27%22]"
     end
 
