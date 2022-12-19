@@ -536,35 +536,94 @@ function get_table(s::Symbol,i=1)
 end
 
 """
-    get_list(nam=:Argo)
+    get_list(nam=:Argo; status="OPERATIONAL")
 
-Get list of active Argo profilers from OceanOPS API.
+Get list of platform IDs from OceanOPS API.
 
-For more information see https://www.ocean-ops.org/api/1/help/
+For more information see 
+
+- https://www.ocean-ops.org/api/1/help/
+- https://www.ocean-ops.org/api/1/help/?param=platformstatus
 
 ```
-list_Argo=OceanOPS.get_list(:Argo)
+list_Argo1=OceanOPS.get_list(:Argo,status="OPERATIONAL")
+list_Argo2=OceanOPS.get_list(:Argo,status="CONFIRMED")
+list_Argo3=OceanOPS.get_list(:Argo,status="REGISTERED")
+list_Argo4=OceanOPS.get_list(:Argo,status="INACTIVE")
 ```
 """
-function get_list(nam=:Argo)
-    if nam==:Argo
-        url="https://www.ocean-ops.org/api/1/data/platform/"*
-            "?exp=[%22ptfStatus.name=%27OPERATIONAL%27%20and%20networkPtfs.network.name=%27Argo%27%22]"
-    elseif nam==:Drifter
-        url="https://www.ocean-ops.org/api/1/data/platform?"*
-        "exp=[%22ptfStatus.name=%27OPERATIONAL%27%20and%20networkPtfs.network.nameShort=%27DBCP%27%20and%20ptfModel.ptfType.ptfFamily.name%20=%20%27Drifting%20Buoy%27%22]"
-    else
-        error("unknown option")
-    end
-
+function get_list(nam=:Argo; status="OPERATIONAL")
+    url,_=get_url(nam; status=status)
     tmp=JSON3.read(String(HTTP.get(url).body))
     [i.id for i in tmp.data]
 end
 
 """
+    get_list_pos(nam=:Argo; status="OPERATIONAL")
+
+Get list of platform positions from OceanOPS API.
+
+For more information see 
+
+- https://www.ocean-ops.org/api/1/help/
+- https://www.ocean-ops.org/api/1/help/?param=platformstatus
+"""
+function get_list_pos(nam=:Argo; status="OPERATIONAL")
+    _,url=get_url(nam; status=status)
+    tmp=JSON3.read(String(HTTP.get(url).body))
+    lon=Float64[]
+    lat=Float64[]
+    for i in tmp.data
+        if !ismissing(i.latestObs)
+            push!(lon,i.latestObs.lon)
+            push!(lat,i.latestObs.lat)
+        else
+            push!(lon,i.ptfDepl.lon)
+            push!(lat,i.ptfDepl.lat)
+        end
+    end
+    (lon=lon,lat=lat)
+end
+
+"""
+    get_url(nam=:Argo; status="OPERATIONAL")
+
+API/GET URL to OceanOPS API that will list platforms of chosen type.
+
+Two URLs are reported; the second includes platform positions.
+
+For more information see 
+
+- https://www.ocean-ops.org/api/1/help/
+- https://www.ocean-ops.org/api/1/help/?param=platformstatus
+- https://www.ocean-ops.org/api/1/help/?param=platformtype
+"""
+function get_url(nam=:Argo; status="OPERATIONAL")
+    if nam==:Argo
+        url="https://www.ocean-ops.org/api/1/data/platform/"*
+            "?exp=[%22ptfStatus.name=%27$(status)%27%20and%20networkPtfs.network.name=%27Argo%27%22]"
+    elseif nam==:Drifter
+        url="https://www.ocean-ops.org/api/1/data/platform/"*
+            "?exp=[%22ptfStatus.name=%27$(status)%27%20and%20networkPtfs.network.nameShort=%27DBCP%27%20and%20ptfModel.ptfType.ptfFamily.name%20=%20%27Drifting%20Buoy%27%22]"
+    else
+        url="https://www.ocean-ops.org/api/1/data/platform/"*
+#        "?exp=[%22ptfStatus.name=%27$(status)%27%20and%20ptfModel.ptfType.ptfFamily.name%20=%20%27Drifting%20Buoy%27%22]"
+#        "?exp=[%22ptfStatus.name=%27$(status)%27%20and%20ptfModel.ptfType.ptfFamily.name%20=%20%27Animal%20Borne%20Sensor%27%22]"
+#        "?exp=[%22ptfStatus.name=%27$(status)%27%20and%20ptfModel.ptfType.name%20=%20%27Sailing%20Drone%27%22]"
+#        "?exp=[%22ptfStatus.name=%27$(status)%27%20and%20ptfModel.ptfType.nameShort%20=%20%27"*string(nam)*"%27%22]"
+        "?exp=[%22ptfModel.ptfType.nameShort%20=%20%27"*string(nam)*"%27%22]"
+#        "?exp=[%22%20ptfModel.ptfType.name%20=%20%27SVP%27%22]"
+    end
+
+    return url,url*"&include=[%22ptfDepl.lon%22,%22ptfDepl.lat%22,%22ptfDepl.deplDate%22,"*
+        "%22latestObs.lon%22,%22latestObs.lat%22,%22latestObs.obsDate%22,"*
+        "%22id%22,%22ref%22,%22ptfStatus.name%22]"
+end
+
+"""
     get_platform(i)
 
-Get info on a platform (e.g., float for drifter) from OceanOPS API.
+Get info on platform with `id=i` (e.g., float or drifter) from OceanOPS API.
 
 For more information see https://www.ocean-ops.org/api/1/help/
 
