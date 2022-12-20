@@ -17,10 +17,9 @@ Explore data coverage and data platforms.
 
 👉 [OceanOPS notebook](https://juliaocean.github.io/OceanRobots.jl/dev/examples/OceanOPS.html) 👈
 
-
-Individual Data Platforms           |  Global Data Coverage
+Global Data Coverage | Individual Data Platforms
 :------------------------------:|:---------------------------------:
-![](https://user-images.githubusercontent.com/20276764/208441408-1ffe7508-19da-4f41-b984-58820799785a.png)  |  ![](https://user-images.githubusercontent.com/20276764/208441529-d4f2255c-1c68-4586-bc1d-a531af6a3040.png)
+![](https://user-images.githubusercontent.com/20276764/208552147-d433f802-9c09-41cc-bece-f0ef424f26ea.png) | ![](https://user-images.githubusercontent.com/20276764/208441408-1ffe7508-19da-4f41-b984-58820799785a.png) 
 
 </p>
 </details>
