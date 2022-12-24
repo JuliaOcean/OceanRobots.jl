@@ -2,6 +2,7 @@ module OceanRobots
 
 include("thredds_servers.jl")
 include("files.jl")
+include("gridded_data.jl")
 
 function check_for_file(set::String,args...)
     if set=="Glider_Spray"
@@ -12,6 +13,6 @@ function check_for_file(set::String,args...)
 end
 
 export GDP, NOAA, GliderFiles, ArgoFiles, OceanSites, OceanOPS
-export check_for_file, THREDDS
+export check_for_file, THREDDS, cmems_sla, podaac_sla
 
 end # module
