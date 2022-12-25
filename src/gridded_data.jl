@@ -17,8 +17,8 @@ function get_grid(;url0=url0,
     lon=Float64.(ds["Longitude"][:])
     lat=Float64.(ds["Latitude"][:])
 
-    ii=findall(lon.>range_lon[1] .&& lon.<range_lon[2])
-    jj=findall(lat.>range_lat[1] .&& lat.<range_lat[2])
+    ii=findall( (lon.>range_lon[1]) .& (lon.<range_lon[2]) )
+    jj=findall( (lat.>range_lat[1]) .& (lat.<range_lat[2]) )
 
     (lon=lon,lat=lat,ii=ii,jj=jj,nt=2190,url0=url0)
 end
