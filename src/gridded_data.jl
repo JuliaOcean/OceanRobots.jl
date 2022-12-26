@@ -40,7 +40,7 @@ end
 """
     podaac_sla.subset()
 
-For download directions, see [this site](https://podaac.jpl.nasa.gov/dataset/MERGED_TP_J1_OSTM_OST_CYCLES_V51)
+For download directions, see [this site](https://podaac.jpl.nasa.gov/dataset/SEA_SURFACE_HEIGHT_ALT_GRIDS_L4_2SATS_5DAY_6THDEG_V_JPL2205)
 
 ```
 podaac_sla.subset()
@@ -92,6 +92,8 @@ using NCDatasets, URIs, DataStructures
     cmems_sla.subset()
 
 For download directions, see [this site](https://marine.copernicus.eu)
+
+For data documentation, see [this page](https://data.marine.copernicus.eu/product/SEALEVEL_GLO_PHY_L4_MY_008_047/description)
 
 ```
 cmems_sla.subset(username=username,password=password)

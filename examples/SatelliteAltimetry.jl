@@ -16,14 +16,21 @@ end
 
 # ╔═╡ a8e0b727-a416-4aad-b660-69e5470c7e9e
 begin
-	using GLMakie, Statistics, NCDatasets, PlutoUI
+	using PlutoUI
+	using GLMakie, Statistics, NCDatasets, Dates
 	import ArchGDAL
 end
 
 # ╔═╡ ec8cbf44-82d9-11ed-0131-1bdea9285f79
 module some_plots
 
-using GLMakie, NCDatasets, Statistics, ArchGDAL
+using GLMakie, NCDatasets, Statistics, Dates
+import ArchGDAL
+
+podaac_date(n)=Date("1992-10-05")+Dates.Day(5*n)
+cmems_date(n)=Date("1993-01-01")+Dates.Day(1*n)
+podaac_all_dates=podaac_date.(1:2190)
+cmems_all_dates=cmems_date.(1:10632)
 
 function get_topo()
 	dataset = ArchGDAL.read("exportImage_60arc.tiff")
@@ -36,7 +43,7 @@ function get_topo()
 	(lon=lon,lat=lat,z=band[:,:])
 end	
 
-function prep_movie(ds)
+function prep_movie(ds; colormap=:PRGn, color=:black, time=1, dates=[], showTopo=true)
 	lon=ds["lon"][:]
 	lat=ds["lat"][:]
 	store=ds["SLA"][:]
@@ -44,25 +51,38 @@ function prep_movie(ds)
 	nt=size(store,3)
 	kk=findall((!isnan).(store[:,:,end]))
 
-	n=Observable(1)
+	n=Observable(time)
 	SLA=@lift(store[:,:,$n])
 	SLA2=@lift($(SLA).-mean($(SLA)[kk]))
+	
     fig,ax,hm=heatmap(lon,lat,SLA2,
-        colorrange=0.2.*(-1.0,1.0),colormap=:roma)
+        colorrange=0.2.*(-1.0,1.0),colormap=colormap)
 
-	lon[1]>0.0 ? lon_off=360.0 : lon_off=0.0
-	topo=get_topo()
-	contour!(lon_off.+topo.lon,topo.lat,topo.z,levels=-300:100:300,color=:magenta,linewidth=0.5)
-	contour!(lon_off.+topo.lon,topo.lat,topo.z,levels=-2500:500:-500,color=:magenta4,linewidth=0.5)
-	contour!(lon_off.+topo.lon,topo.lat,topo.z,levels=-6000:1000:-3000,color=:black,linewidth=0.5)
+	if showTopo
+		lon[1]>0.0 ? lon_off=360.0 : lon_off=0.0
+		topo=get_topo()
+		contour!(lon_off.+topo.lon,topo.lat,topo.z,levels=-300:100:300,color=color,linewidth=1)
+		contour!(lon_off.+topo.lon,topo.lat,topo.z,levels=-2500:500:-500,color=color,linewidth=0.5)
+		contour!(lon_off.+topo.lon,topo.lat,topo.z,levels=-6000:1000:-3000,color=color,linewidth=0.25)
+	end
+
+	lon0=minimum(lon)+(maximum(lon)-minimum(lon))/20.0
+	lat0=maximum(lat)-(maximum(lat)-minimum(lat))/10.0
+	
+	if isempty(dates)
+		println("no date")
+	else
+	    dtxt=@lift(string(dates[$n]))
+		text!(lon0,lat0,text=dtxt,color=:black,fontsize=24)	
+	end
 	
 	Colorbar(fig[1,2],hm)
 
 	fig,n,nt
 end
 
-function make_movie(ds,tt; framerate = 90)
-	fig,n,nt=prep_movie(ds)
+function make_movie(ds,tt; framerate = 90, dates=[])
+	fig,n,nt=prep_movie(ds,dates=dates)
     record(fig,tempname()*".mp4", tt; framerate = framerate) do t
         n[] = t
     end
@@ -71,18 +91,24 @@ end
 end #module some_plots
 
 # ╔═╡ 71e87ed3-5a9f-49aa-99af-cf144501c678
-md"""# Dynamic Sea Level
+md"""# Regional Sea Level
 
-- Topography, bathymetry : ETOPO , <https://www.ncei.noaa.gov/products/etopo-global-relief-model>
-- Sea Level Anomaly #1 : NASA PODAAC , `SEA_SURFACE_HEIGHT_ALT_GRIDS_L4_2SATS_5DAY_6THDEG_V_JPL2205`
-- Sea Level Anomaly #2 : ESA CMEMS , `cmems_obs-sl_glo_phy-ssh_my_allsat-l4-duacs-0.25deg_P1D`
+Visualize dynamic sea level (colors) and topography (contours) in the region of the Azores . 
+
+!!! tip
+   Choose between two data sets (sources: NASA PODAAC, ESA CMEMS), select time, or generate animation.  
+
+- Topography, bathymetry : NOAA [etopo-global-relief-model](https://www.ncei.noaa.gov/products/etopo-global-relief-model)
+- Sea Level Anomaly #1 : NASA PODAAC [page 1](https://sealevel.nasa.gov/data/dataset/?identifier=SLCP_SEA_SURFACE_HEIGHT_ALT_GRIDS_L4_2SATS_5DAY_6THDEG_V_JPL2205_2205), [page 2](https://podaac.jpl.nasa.gov/dataset/SEA_SURFACE_HEIGHT_ALT_GRIDS_L4_2SATS_5DAY_6THDEG_V_JPL2205)
+- Sea Level Anomaly #2 : ESA CMEMS [here](https://data.marine.copernicus.eu/product/SEALEVEL_GLO_PHY_L4_MY_008_047/description)
+
 """
 
 # ╔═╡ a58cc4b4-7023-4dcf-a5f4-6366be8047a3
 TableOfContents()
 
 # ╔═╡ 62e0b8a9-0025-4ce7-9538-b6114d97b762
-md"""## Data and Viz
+md"""## Visualize Data
 
 - Color shading is sea level anomaly from a gridded data product based on satellite measurement (altimetry).
 - Contours show the relief (topography, bathymetry). Light pink contours correspond to the Azores islands.
@@ -92,33 +118,67 @@ md"""## Data and Viz
 @bind fil Select(["sla_podaac.nc","sla_cmems.nc"])
 
 # ╔═╡ 5fec1029-34a1-4d43-9183-7e6095194a3a
-md"""## Animation"""
+md"""## Animate Data"""
 
 # ╔═╡ 8fbd1b1d-affe-4e30-a3b2-f2584e459003
-#fil_mp4=some_plots.make_movie(ds,1:nt,framerate=Int(floor(nt/120)))
+#fil_mp4=some_plots.make_movie(ds,1:nt,framerate=framerate,dates=dates)
+fil_mp4="sla_podaac.mp4"
 
 # ╔═╡ 2d5611a9-b8ea-4d26-8ca3-edff9f2ebfdd
 #LocalResource(fil_mp4,:width=>400)
 
 # ╔═╡ ff7dd5eb-5b1b-4314-9553-b8c05c4d7376
-md"""## Netcdf File"""
+md"""## Netcdf File
+
+This file was generated using `OceanRobots.podaac_sla.subset()`
+
+"""
 
 # ╔═╡ 9b3c3856-9fe1-43ba-97a2-abcd5b385c1d
 ds=Dataset(fil)
 
-# ╔═╡ a45bbdbd-3793-4e69-b042-39a4a1ac7ed7
-begin
-	fig,n,nt=some_plots.prep_movie(ds)
-	fig
-end
-
 # ╔═╡ 1cf2cdb9-3c09-4b39-81cf-49318c16f531
 md"""## Julia Codes"""
+
+# ╔═╡ eeb9d308-ef62-4dcc-ba90-a2a1912ef2bd
+begin
+	podaac_date(n)=Date("1992-10-05")+Dates.Day(5*n)
+	podaac_sample_dates=podaac_date.(18:73:2190)
+	podaac_all_dates=podaac_date.(1:2190)
+	cmems_date(n)=Date("1993-01-01")+Dates.Day(1*n)
+	cmems_sample_dates=cmems_date.(3:366:10632)
+	cmems_all_dates=cmems_date.(1:10632)
+end
+
+# ╔═╡ 128e1676-90b2-459d-ab42-1a863a2c7183
+begin
+	if fil=="sla_podaac.nc"
+		bind_d0 = @bind d0 Select(podaac_sample_dates)
+	else
+		bind_d0 = @bind d0 Select(cmems_sample_dates)
+	end
+	bind_d0
+end
+
+# ╔═╡ a45bbdbd-3793-4e69-b042-39a4a1ac7ed7
+begin
+	if fil=="sla_podaac.nc"
+		t0=findall(podaac_all_dates.==d0)[1]
+		dates=podaac_all_dates
+	else
+		t0=findall(cmems_all_dates.==d0)[1]
+		dates=cmems_all_dates
+	end
+	fig,n,nt=some_plots.prep_movie(ds,colormap=:PRGn,color=:black,time=t0,dates=dates)
+	framerate=Int(floor(nt/120))
+	fig
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 ArchGDAL = "c9ce4bd3-c3d5-55b8-8973-c0e20141b8c3"
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
 NCDatasets = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
@@ -137,7 +197,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.3"
 manifest_format = "2.0"
-project_hash = "a04ce7fb18d0363ffd2ea61704487f3436479591"
+project_hash = "294538cde97eb34ccee6b9c10d5d32ab32d6399a"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -1639,14 +1699,16 @@ version = "3.5.0+0"
 # ╟─a58cc4b4-7023-4dcf-a5f4-6366be8047a3
 # ╟─62e0b8a9-0025-4ce7-9538-b6114d97b762
 # ╟─311522c5-b456-4396-8503-d7cd208c3f9a
+# ╟─128e1676-90b2-459d-ab42-1a863a2c7183
 # ╟─a45bbdbd-3793-4e69-b042-39a4a1ac7ed7
 # ╟─5fec1029-34a1-4d43-9183-7e6095194a3a
-# ╠═8fbd1b1d-affe-4e30-a3b2-f2584e459003
+# ╟─8fbd1b1d-affe-4e30-a3b2-f2584e459003
 # ╠═2d5611a9-b8ea-4d26-8ca3-edff9f2ebfdd
 # ╟─ff7dd5eb-5b1b-4314-9553-b8c05c4d7376
 # ╟─9b3c3856-9fe1-43ba-97a2-abcd5b385c1d
 # ╟─1cf2cdb9-3c09-4b39-81cf-49318c16f531
 # ╠═a8e0b727-a416-4aad-b660-69e5470c7e9e
 # ╟─ec8cbf44-82d9-11ed-0131-1bdea9285f79
+# ╟─eeb9d308-ef62-4dcc-ba90-a2a1912ef2bd
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
