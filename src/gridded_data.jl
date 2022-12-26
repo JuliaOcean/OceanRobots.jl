@@ -113,8 +113,8 @@ function subset(;
     lon=ds["longitude"][:]
     lat=ds["latitude"][:]
 
-    ii=findall(lon.>range_lon[1] .&& lon.<range_lon[2])
-    jj=findall(lat.>range_lat[1] .&& lat.<range_lat[2])
+    ii=findall( (lon.>range_lon[1]) .& (lon.<range_lon[2]) )
+    jj=findall( (lat.>range_lat[1]) .& (lat.<range_lat[2]) )
 
     SSH=ds["sla"]
 
