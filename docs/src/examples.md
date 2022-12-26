@@ -20,6 +20,7 @@ The suite of examples includes :
 
 - For Argo and state estimates, see [ArgoData.jl](https://github.com/JuliaOcean/ArgoData.jl)
 - For drifter data simulations, see [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl)
+- Sea level : gridded data, plotting, and animation. [SatelliteAltimetry.jl](http://www.gaelforget.net/notebooks/SatelliteAltimetry.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/SatelliteAltimetry.jl))
 
 ## Running Examples
 
