@@ -1,5 +1,8 @@
 # Notebooks
 
+!!! note
+    The static `html` rendering of the notebooks (this website) lack the interactivity that comes from [Running The Examples](@ref) yourself.
+
 ## Examples Suite
 
 The suite of examples includes :
@@ -11,16 +14,13 @@ The suite of examples includes :
 - [Drifter\_GDP.jl](Drifter_GDP.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/Drifter_GDP.jl)) : [drifter](https://www.aoml.noaa.gov/phod/gdp/hourly_data.php) time series
 - [Drifter\_CloudDrift.jl](https://juliaocean.github.io/OceanRobots.jl/v0.1.10/Drifter_CloudDrift.html) (➭ [code link](https://github.com/JuliaOcean/OceanRobots.jl/blob/master/examples/Drifter_CloudDrift.jl)) : drifter statistics
 - [Float\_Argo.jl](Float_Argo.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/Float_Argo.jl)) : Argo profiling [float](https://argo.ucsd.edu) data
-- [Glider\_Spray.jl](Glider_Spray.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/Glider_Spray.jl)) : underwater [glider](http://spraydata.ucsd.edu/projects/) data.
-
-!!! note
-    The static `html` rendering of the notebooks (this website) lack the interactivity that comes from [Running The Examples](@ref) yourself.
+- [Glider\_Spray.jl](Glider_Spray.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/Glider_Spray.jl)) : underwater [glider](http://spraydata.ucsd.edu/projects/) data
+- [SatelliteAltimetry.jl](http://www.gaelforget.net/notebooks/SatelliteAltimetry.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/SatelliteAltimetry.jl)) : gridded satellite data
 	
 ## Additional Examples
 
 - For Argo and state estimates, see [ArgoData.jl](https://github.com/JuliaOcean/ArgoData.jl)
 - For drifter data simulations, see [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl)
-- Sea level : gridded data, plotting, and animation. [SatelliteAltimetry.jl](http://www.gaelforget.net/notebooks/SatelliteAltimetry.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/SatelliteAltimetry.jl))
 
 ## Running Examples
 
