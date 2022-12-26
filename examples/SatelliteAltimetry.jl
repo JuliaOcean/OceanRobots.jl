@@ -43,27 +43,29 @@ function get_topo()
 	(lon=lon,lat=lat,z=band[:,:])
 end	
 
-function prep_movie(ds; colormap=:PRGn, color=:black, time=1, dates=[], showTopo=true)
+function prep_movie(ds; colormap=:PRGn, color=:black, 
+	time=1, dates=[], showTopo=true, resolution = (600, 400))
 	lon=ds["lon"][:]
 	lat=ds["lat"][:]
 	store=ds["SLA"][:]
-	#store_mean=mean(store,dims=(1,2))[:]
+
 	nt=size(store,3)
 	kk=findall((!isnan).(store[:,:,end]))
 
 	n=Observable(time)
 	SLA=@lift(store[:,:,$n])
 	SLA2=@lift($(SLA).-mean($(SLA)[kk]))
-	
-    fig,ax,hm=heatmap(lon,lat,SLA2,
-        colorrange=0.2.*(-1.0,1.0),colormap=colormap)
+
+	fig=Figure(resolution=resolution,fontsize=11)
+	ax=Axis(fig[1,1])
+    hm=heatmap!(lon,lat,SLA2,colorrange=0.25.*(-1.0,1.0),colormap=colormap)
 
 	if showTopo
 		lon[1]>0.0 ? lon_off=360.0 : lon_off=0.0
 		topo=get_topo()
 		contour!(lon_off.+topo.lon,topo.lat,topo.z,levels=-300:100:300,color=color,linewidth=1)
-		contour!(lon_off.+topo.lon,topo.lat,topo.z,levels=-2500:500:-500,color=color,linewidth=0.5)
-		contour!(lon_off.+topo.lon,topo.lat,topo.z,levels=-6000:1000:-3000,color=color,linewidth=0.25)
+		contour!(lon_off.+topo.lon,topo.lat,topo.z,levels=-2500:500:-500,color=color,linewidth=0.25)
+		contour!(lon_off.+topo.lon,topo.lat,topo.z,levels=-6000:1000:-3000,color=color,linewidth=0.1)
 	end
 
 	lon0=minimum(lon)+(maximum(lon)-minimum(lon))/20.0
@@ -73,7 +75,7 @@ function prep_movie(ds; colormap=:PRGn, color=:black, time=1, dates=[], showTopo
 		println("no date")
 	else
 	    dtxt=@lift(string(dates[$n]))
-		text!(lon0,lat0,text=dtxt,color=:black,fontsize=24)	
+		text!(lon0,lat0,text=dtxt,color=:blue2,fontsize=14,font = :bold)	
 	end
 	
 	Colorbar(fig[1,2],hm)
@@ -122,10 +124,12 @@ md"""## Animate Data"""
 
 # ╔═╡ 8fbd1b1d-affe-4e30-a3b2-f2584e459003
 #fil_mp4=some_plots.make_movie(ds,1:nt,framerate=framerate,dates=dates)
-fil_mp4="sla_podaac.mp4"
 
 # ╔═╡ 2d5611a9-b8ea-4d26-8ca3-edff9f2ebfdd
-#LocalResource(fil_mp4,:width=>400)
+begin
+	url_mp4="http://www.gaelforget.net/notebooks/sla_podaac.mp4"
+	RemoteResource(url_mp4,:width=>400)
+end
 
 # ╔═╡ ff7dd5eb-5b1b-4314-9553-b8c05c4d7376
 md"""## Netcdf File
@@ -1702,8 +1706,8 @@ version = "3.5.0+0"
 # ╟─128e1676-90b2-459d-ab42-1a863a2c7183
 # ╟─a45bbdbd-3793-4e69-b042-39a4a1ac7ed7
 # ╟─5fec1029-34a1-4d43-9183-7e6095194a3a
-# ╟─8fbd1b1d-affe-4e30-a3b2-f2584e459003
-# ╠═2d5611a9-b8ea-4d26-8ca3-edff9f2ebfdd
+# ╠═8fbd1b1d-affe-4e30-a3b2-f2584e459003
+# ╟─2d5611a9-b8ea-4d26-8ca3-edff9f2ebfdd
 # ╟─ff7dd5eb-5b1b-4314-9553-b8c05c4d7376
 # ╟─9b3c3856-9fe1-43ba-97a2-abcd5b385c1d
 # ╟─1cf2cdb9-3c09-4b39-81cf-49318c16f531
