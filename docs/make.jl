@@ -1,5 +1,28 @@
 using Documenter, OceanRobots, PlutoSliderServer
 
+##
+
+using Pkg
+ENV["PYTHON"]=""
+Pkg.build("PyCall")
+
+using Dataverse
+(DataAccessApi,NativeApi)=pyDataverse.APIs()
+
+DOI="doi:10.7910/DVN/OYBLGK"
+df=pyDataverse.dataset_file_list(DOI)
+lst=DataverseDownloads.download_urls(df)
+
+filenames=["exportImage_60arc.tiff","sla_podaac.nc"]
+pth0=joinpath(tempdir(),"azores_region_data")
+for filename in filenames
+ file0=joinpath(pth0,filename)
+ !ispath(pth0) ? mkdir(pth0) : nothing
+ !isfile(file0) ? DataverseDownloads.download_files(lst,filename,pth0) : nothing
+end
+
+##
+
 makedocs(;
     modules=[OceanRobots],
     format=Documenter.HTML(),
@@ -18,7 +41,7 @@ makedocs(;
 OceanRobots.check_for_file("Glider_Spray","GulfStream.nc")
 OceanRobots.check_for_file("Glider_Spray","CUGN_along.nc")
 
-lst=("Buoy_NWP_NOAA_monthly.jl","Glider_Spray.jl","OceanOPS.jl",
+lst=("SatelliteAltimetry.jl","Buoy_NWP_NOAA_monthly.jl","Glider_Spray.jl","OceanOPS.jl",
     "Buoy_NWP_NOAA.jl","Mooring_WHOTS.jl","Drifter_GDP.jl","Float_Argo.jl")
 for i in lst
     fil_in=joinpath(@__DIR__,"..","examples",i)
