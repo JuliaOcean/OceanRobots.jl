@@ -1,7 +1,7 @@
 # Notebooks
 
 !!! note
-    The static `html` rendering of the notebooks (this website) lack the interactivity that comes from [Running The Examples](@ref) yourself.
+    The static `html` rendering of the notebooks (this website) lack the interactivity that comes from [Running Examples](@ref) yourself.
 
 ## Examples Suite
 
