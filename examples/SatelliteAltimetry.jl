@@ -164,8 +164,16 @@ This file was generated using `OceanRobots.podaac_sla.subset()`
 
 """
 
+# ╔═╡ d9f6cc7c-2212-4de7-8718-603955c3340a
+
+
 # ╔═╡ 9b3c3856-9fe1-43ba-97a2-abcd5b385c1d
-ds=Dataset(joinpath(pth0,fil))
+begin	
+	file1=joinpath(pth0,fil)
+	!isfile(file1) ? DataverseDownloads.download_files(lst,fil,pth0) : nothing
+	
+	ds=Dataset(joinpath(pth0,fil))
+end
 
 # ╔═╡ 1cf2cdb9-3c09-4b39-81cf-49318c16f531
 md"""## Julia Codes"""
@@ -1866,6 +1874,7 @@ version = "3.5.0+0"
 # ╠═8fbd1b1d-affe-4e30-a3b2-f2584e459003
 # ╟─2d5611a9-b8ea-4d26-8ca3-edff9f2ebfdd
 # ╟─ff7dd5eb-5b1b-4314-9553-b8c05c4d7376
+# ╠═d9f6cc7c-2212-4de7-8718-603955c3340a
 # ╟─9b3c3856-9fe1-43ba-97a2-abcd5b385c1d
 # ╟─1cf2cdb9-3c09-4b39-81cf-49318c16f531
 # ╠═a8e0b727-a416-4aad-b660-69e5470c7e9e
