@@ -5,7 +5,14 @@ using Downloads, Glob, DataFrames, NCDatasets
 
 function check_for_file_Spray(args...)
     if !isempty(args)
-        url1="http://spraydata.ucsd.edu/media/data/binnednc/"*basename(args[1])
+        if args[1]=="CUGN_along.nc"
+          url0="http://spraydata.ucsd.edu/erddap/files/binnedCUGNalong/"
+        elseif args[1]=="GulfStream.nc"
+          url0="http://spraydata.ucsd.edu/erddap/files/binnedGS/"
+        else
+          error("unknown file")
+        end
+        url1=url0*basename(args[1])
         pth0=dirname(args[1])
         isempty(pth0) ? pth1=joinpath(tempdir(),"tmp_glider_data") : pth1=pth0
         !isdir(pth1) ? mkdir(pth1) : nothing
