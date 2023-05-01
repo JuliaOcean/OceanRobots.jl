@@ -2,15 +2,6 @@ using Documenter, OceanRobots, PlutoSliderServer
 
 ##
 
-using Pkg
-ENV["PYTHON"]=""
-Pkg.build("PyCall")
-
-using Dataverse
-(DataAccessApi,NativeApi)=pyDataverse.APIs()
-
-##
-
 makedocs(;
     modules=[OceanRobots],
     format=Documenter.HTML(),
