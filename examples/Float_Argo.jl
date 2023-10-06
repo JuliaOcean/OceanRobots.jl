@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.17
+# v0.19.27
 
 using Markdown
 using InteractiveUtils
@@ -34,7 +34,7 @@ the international Argo program please refer to, for example, <https://argo.ucsd.
 begin
 	url1="https://www.researchgate.net/profile/Taiyo-Kobayashi/publication/236890114/figure/fig1/AS:299396928425984@1448393198754/Distribution-of-profiling-floats-under-Argo-by-country-Total-number-of-floats-is-3256-as.png"
 	url2="https://www.researchgate.net/profile/Taiyo-Kobayashi/publication/236890114/figure/fig2/AS:299396928425984@1448393198754/Distribution-of-profiling-floats-under-Argo-by-country-Total-number-of-floats-is-3256-as.png"
-	url3="https://wwz.ifremer.fr/var/storage/images/_aliases/fullsize/medias-ifremer/medias-institut/espace-presse/communiques/communiques-2020/images/a-ce-jour-environ-4000-flotteurs-argo-monitorent-les-oceans-de-notre-planete/1771207-1-fre-FR/A-ce-jour-environ-4000-flotteurs-Argo-monitorent-les-oceans-de-notre-planete.jpg"
+	#url3="https://wwz.ifremer.fr/var/storage/images/_aliases/fullsize/medias-ifremer/medias-institut/espace-presse/communiques/communiques-2020/images/a-ce-jour-environ-4000-flotteurs-argo-monitorent-les-oceans-de-notre-planete/1771207-1-fre-FR/A-ce-jour-environ-4000-flotteurs-Argo-monitorent-les-oceans-de-notre-planete.jpg"
 	url4="https://floats.pmel.noaa.gov/sites/default/files/photos/Deep%20Argo/15.%20Deep%20SOLO%20float%20starts%20its%20mission%20by%20sinking%20after%20deployment%20during%20HOT%20Cruise%20302.jpg"
 
 	md"""
@@ -42,21 +42,20 @@ begin
 	
 	$(Resource(url1,:height => 100)) 
 	$(Resource(url2,:height => 100))
-	$(Resource(url3,:height => 100))
 	$(Resource(url4,:height => 100))
 
 	_Picture credits : Taiyo Kobayashi, IFREMER, NOAA._
 	"""
 end
 
+# ╔═╡ 9d29d0f8-7b1c-11ec-1f16-b313a50cc5e7
+TableOfContents()
+
 # ╔═╡ a9fd8646-7269-4f70-93cf-0e831d533237
 md"""## Data Samples
 
 Temperature and salinity profiles recorded by the float as a function of time and depth.
 """
-
-# ╔═╡ 9d29d0f8-7b1c-11ec-1f16-b313a50cc5e7
-TableOfContents()
 
 # ╔═╡ 1a835449-de37-4d08-9c91-c7affe7084cd
 begin
@@ -84,6 +83,9 @@ begin
 	The result is shown below as function of time along for positions, estimate speed, temperature, salinity.
 	"""
 end
+
+# ╔═╡ 907bf93a-3d5f-4705-93f1-9b05d4554af0
+
 
 # ╔═╡ 3f5419f1-d131-42eb-86c8-44a385e88d51
 begin
@@ -270,7 +272,7 @@ end
 # ╔═╡ 2a1c12c9-21e9-479a-b56c-a893d1cbede6
 let
 	T_std,S_std=interp_z_all(arr)
-
+	#println(arr)
 	fig1=plot_standard(arr,spd,T_std,S_std)
 end
 
@@ -311,7 +313,7 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.8.3"
+julia_version = "1.9.3"
 manifest_format = "2.0"
 project_hash = "7698ba56ef3db3cb3df905945de9441fb0c9c772"
 
@@ -414,7 +416,7 @@ uuid = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 version = "0.9.4"
 
 [[deps.Cairo_jll]]
-deps = ["Artifacts", "Bzip2_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "JLLWrappers", "LZO_jll", "Libdl", "Pixman_jll", "Pkg", "Xorg_libXext_jll", "Xorg_libXrender_jll", "Zlib_jll", "libpng_jll"]
+deps = ["Artifacts", "Bzip2_jll", "CompilerSupportLibraries_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "JLLWrappers", "LZO_jll", "Libdl", "Pixman_jll", "Pkg", "Xorg_libXext_jll", "Xorg_libXrender_jll", "Zlib_jll", "libpng_jll"]
 git-tree-sha1 = "4b859a208b2397a7a623a03449e4636bdb17bcf2"
 uuid = "83423d85-b0ee-5818-9007-b63ccbeb887a"
 version = "1.16.1+1"
@@ -494,7 +496,7 @@ version = "4.5.0"
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "0.5.2+0"
+version = "1.0.5+0"
 
 [[deps.ConstructionBase]]
 deps = ["LinearAlgebra"]
@@ -1041,7 +1043,7 @@ uuid = "9c8b4983-aa76-5018-a973-4c85ecc9e179"
 version = "0.9.0"
 
 [[deps.LinearAlgebra]]
-deps = ["Libdl", "libblastrampoline_jll"]
+deps = ["Libdl", "OpenBLAS_jll", "libblastrampoline_jll"]
 uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
 [[deps.LogExpFunctions]]
@@ -1111,7 +1113,7 @@ version = "0.5.4"
 [[deps.MbedTLS_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
-version = "2.28.0+0"
+version = "2.28.2+0"
 
 [[deps.MeshArrays]]
 deps = ["CatViews", "Dates", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SparseArrays", "Statistics", "Unitful"]
@@ -1142,7 +1144,7 @@ version = "0.3.4"
 
 [[deps.MozillaCACerts_jll]]
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
-version = "2022.2.1"
+version = "2022.10.11"
 
 [[deps.NCDatasets]]
 deps = ["CFTime", "DataStructures", "Dates", "NetCDF_jll", "NetworkOptions", "Printf"]
@@ -1216,7 +1218,7 @@ version = "1.3.5+1"
 [[deps.OpenBLAS_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
 uuid = "4536629a-c528-5b80-bd46-f80d51c5b363"
-version = "0.3.20+0"
+version = "0.3.21+4"
 
 [[deps.OpenEXR]]
 deps = ["Colors", "FileIO", "OpenEXR_jll"]
@@ -1261,7 +1263,7 @@ version = "1.4.1"
 [[deps.PCRE2_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "efcefdf7-47ab-520b-bdef-62a2eaa19f15"
-version = "10.40.0+0"
+version = "10.42.0+0"
 
 [[deps.PDMats]]
 deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse"]
@@ -1306,9 +1308,9 @@ uuid = "30392449-352a-5448-841d-b1acce4e97dc"
 version = "0.40.1+0"
 
 [[deps.Pkg]]
-deps = ["Artifacts", "Dates", "Downloads", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "Serialization", "TOML", "Tar", "UUIDs", "p7zip_jll"]
+deps = ["Artifacts", "Dates", "Downloads", "FileWatching", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "Serialization", "TOML", "Tar", "UUIDs", "p7zip_jll"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
-version = "1.8.0"
+version = "1.9.2"
 
 [[deps.PkgVersion]]
 deps = ["Pkg"]
@@ -1506,7 +1508,7 @@ uuid = "a2af1166-a08f-5f64-846c-94a0d3cef48c"
 version = "1.1.0"
 
 [[deps.SparseArrays]]
-deps = ["LinearAlgebra", "Random"]
+deps = ["Libdl", "LinearAlgebra", "Random", "Serialization", "SuiteSparse_jll"]
 uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [[deps.SpecialFunctions]]
@@ -1535,6 +1537,7 @@ version = "1.4.0"
 [[deps.Statistics]]
 deps = ["LinearAlgebra", "SparseArrays"]
 uuid = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+version = "1.9.0"
 
 [[deps.StatsAPI]]
 deps = ["LinearAlgebra"]
@@ -1575,6 +1578,11 @@ version = "0.6.14"
 deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
 uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
 
+[[deps.SuiteSparse_jll]]
+deps = ["Artifacts", "Libdl", "Pkg", "libblastrampoline_jll"]
+uuid = "bea87d4a-7f5b-5778-9afe-8cc45184846c"
+version = "5.10.1+6"
+
 [[deps.Suppressor]]
 git-tree-sha1 = "c6ed566db2fe3931292865b966d6d140b7ef32a9"
 uuid = "fd094767-a336-5f1f-9728-57cf17d0bbfb"
@@ -1583,7 +1591,7 @@ version = "0.2.1"
 [[deps.TOML]]
 deps = ["Dates"]
 uuid = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
-version = "1.0.0"
+version = "1.0.3"
 
 [[deps.TableTraits]]
 deps = ["IteratorInterfaceExtensions"]
@@ -1600,7 +1608,7 @@ version = "1.10.0"
 [[deps.Tar]]
 deps = ["ArgTools", "SHA"]
 uuid = "a4e569a6-e804-4fa4-b0f3-eef7a1d5b13e"
-version = "1.10.1"
+version = "1.10.0"
 
 [[deps.TensorCore]]
 deps = ["LinearAlgebra"]
@@ -1750,7 +1758,7 @@ version = "0.4.8"
 [[deps.Zlib_jll]]
 deps = ["Libdl"]
 uuid = "83775a58-1f1d-513f-b197-d71354ab007a"
-version = "1.2.12+3"
+version = "1.2.13+0"
 
 [[deps.isoband_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1771,9 +1779,9 @@ uuid = "0ac62f75-1d6f-5e53-bd7c-93b484bb37c0"
 version = "0.15.1+0"
 
 [[deps.libblastrampoline_jll]]
-deps = ["Artifacts", "Libdl", "OpenBLAS_jll"]
+deps = ["Artifacts", "Libdl"]
 uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
-version = "5.1.1+0"
+version = "5.8.0+0"
 
 [[deps.libfdk_aac_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1824,7 +1832,7 @@ version = "3.5.0+0"
 
 # ╔═╡ Cell order:
 # ╟─89647c4e-e568-4d3a-af57-bcc541744e38
-# ╟─09a2aa6e-16bc-4582-9d5f-c50432e3f0ca
+# ╠═09a2aa6e-16bc-4582-9d5f-c50432e3f0ca
 # ╟─9d29d0f8-7b1c-11ec-1f16-b313a50cc5e7
 # ╟─a9fd8646-7269-4f70-93cf-0e831d533237
 # ╟─c85a1eea-e2db-4f7f-9b7c-00b29a4cb975
@@ -1833,21 +1841,22 @@ version = "3.5.0+0"
 # ╟─8418b9ca-2e7f-4468-a0fb-36f5a05dde2c
 # ╟─4d949835-4cf8-4493-b765-6e956019b777
 # ╟─49256e11-fbd2-40e7-8f0b-193e17e2b31b
-# ╟─2a1c12c9-21e9-479a-b56c-a893d1cbede6
+# ╠═2a1c12c9-21e9-479a-b56c-a893d1cbede6
+# ╠═907bf93a-3d5f-4705-93f1-9b05d4554af0
 # ╟─9037e2ce-a04a-40d0-945e-ec3f19a4f3c4
 # ╟─3f5419f1-d131-42eb-86c8-44a385e88d51
 # ╟─533ea412-76ae-4060-bbc8-2650ee0d2774
-# ╠═8539e67f-6361-409a-9dbe-e8dcb2c7e10d
+# ╟─8539e67f-6361-409a-9dbe-e8dcb2c7e10d
 # ╟─916e5a50-ee01-4299-9314-2e3cc9c826e6
-# ╟─2558c88f-7fee-4a91-bfdd-46f1f61795b0
+# ╠═2558c88f-7fee-4a91-bfdd-46f1f61795b0
 # ╟─5b814708-292a-45ed-8eab-386a7f097634
 # ╟─3fd610a8-80c1-4acc-b3ef-20883f77e32d
 # ╟─66e41568-7825-4383-80cb-cc48bdf56397
 # ╟─a42edc9d-9fa2-4775-83c4-2d9a5130105c
-# ╟─fc0340be-4671-406f-9dc0-e831009aa9b8
+# ╠═fc0340be-4671-406f-9dc0-e831009aa9b8
 # ╟─ce6b8cf0-2589-431b-a551-980f9ee763af
-# ╟─2e35911d-3e5a-453f-bedd-2d621db20d09
-# ╟─9ef9ae19-d8c8-4816-9699-b157f122fc63
-# ╟─c176fd5e-b2f2-47e3-8145-a4c152389344
+# ╠═2e35911d-3e5a-453f-bedd-2d621db20d09
+# ╠═9ef9ae19-d8c8-4816-9699-b157f122fc63
+# ╠═c176fd5e-b2f2-47e3-8145-a4c152389344
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
