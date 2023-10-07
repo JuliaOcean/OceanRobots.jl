@@ -19,6 +19,7 @@ begin
 	using OceanRobots, ArgoData
 	using Statistics, Interpolations 
 	using CairoMakie, PlutoUI, PrettyTables
+	using GeoMakie
 	"Done with packages"
 end
 
@@ -83,9 +84,6 @@ begin
 	The result is shown below as function of time along for positions, estimate speed, temperature, salinity.
 	"""
 end
-
-# ╔═╡ 907bf93a-3d5f-4705-93f1-9b05d4554af0
-
 
 # ╔═╡ 3f5419f1-d131-42eb-86c8-44a385e88d51
 begin
@@ -178,6 +176,9 @@ md"""_Average estimated drift speed :_ $(round(spd.speed_mean; digits=4)) m/s"""
 # ╔═╡ 66e41568-7825-4383-80cb-cc48bdf56397
 md"""### Viz"""
 
+# ╔═╡ 63748797-cfc1-4b51-8f17-a38ac40626d5
+arr.TIME
+
 # ╔═╡ a42edc9d-9fa2-4775-83c4-2d9a5130105c
 begin
 	z_std=collect(0.0:5:500.0)
@@ -239,9 +240,9 @@ function plot_trajectory!(ax,lon,lat,dx)
 
 	li=lines!(ax,lon, lat, linewidth=2, color=co, colormap=:turbo)
 	scatter!(ax,lon, lat, marker=:circle, markersize=2, color=:black)
-	ax.xlabel="longitude"
-	ax.ylabel="latitude"
-	ax.title="positions (dots) & speed (color)"
+	#ax.xlabel="longitude"
+	#ax.ylabel="latitude"
+	#ax.title="positions (dots) & speed (color)"
 
 	li
 end
@@ -249,32 +250,63 @@ end
 # ╔═╡ 9ef9ae19-d8c8-4816-9699-b157f122fc63
 function plot_standard(arr,spd,T_std,S_std)
 	fig1=Figure()
+
+	# GeoMakie not happy if outside -180:180 longitude 
+	# issues with crossing dateline not handled here
+	if minimum(arr.lon) > 180
+		lon = arr.lon .- 360
+	elseif minimum(arr.lon) < -180
+		lon = arr.lon .+ 360
+	else
+		lon = arr.lon
+	end
+		
+	xcentral = string(Int(round((minimum(lon) + maximum(lon))/2)))
+	ycentral = string(Int(round((minimum(arr.lat) + maximum(arr.lat))/2)))
+
+	xlo = Int(floor(minimum(lon)-10.0))
+	xhi = Int(ceil(maximum(lon)+10.0))
+	ylo = Int(floor(minimum(arr.lat)-10.0))
+	yhi = Int(ceil(maximum(arr.lat))+10.0)
+	ax = GeoAxis(fig1[1:2,1]; coastlines = true, lonlims = (xlo, xhi), latlims = (ylo,yhi), dest = "+proj=ortho +lon_0="*xcentral*" +lat_0="*ycentral, title="position and speed")
 	
-	ax=Axis(fig1[1,1])
-	li=plot_trajectory!(ax,arr.lon,arr.lat,spd.dx)
-	Colorbar(fig1[1,2], li, height=Relative(0.65))
-	ax=Axis(fig1[1,3],title="Float wmo="*string(wmo))
+	li=plot_trajectory!(ax,lon,arr.lat,spd.dx)
+
+	Colorbar(fig1[1:2,2], li, height=Relative(0.65))
+
+	fig2=Figure()
+	ax=Axis(fig2[1,1],title="Float wmo="*string(wmo))
 	scatter!(ax,arr.PSAL[:],arr.TEMP[:],markersize=3.0)
 
 	lims=(nothing, nothing, -500.0, 0.0)
 
-	ax=Axis(fig1[2,1:3],title="Temperature, degree C", limits=lims)
+	fig3 = Figure()
+	ax=Axis(fig3[1,1:2],title="Temperature, °C", limits=lims)
 	hm1=heatmap_profiles!(ax,arr.TIME,T_std,:thermal)
-	Colorbar(fig1[2,4], hm1, height=Relative(0.65))
+	Colorbar(fig3[1,3], hm1, height=Relative(0.65))
 
-	ax=Axis(fig1[3,1:3],title="Salinity, psu", limits=lims)
+	ax=Axis(fig3[2,1:2],title="Salinity [PSS-78]", limits=lims)
 	hm2=heatmap_profiles!(ax,arr.TIME,S_std,:viridis)
-	Colorbar(fig1[3,4], hm2, height=Relative(0.65))
+	Colorbar(fig3[2,3], hm2, height=Relative(0.65))
 
-	fig1
+	fig1,fig2,fig3
 end
 
 # ╔═╡ 2a1c12c9-21e9-479a-b56c-a893d1cbede6
-let
+begin
 	T_std,S_std=interp_z_all(arr)
 	#println(arr)
-	fig1=plot_standard(arr,spd,T_std,S_std)
-end
+	figs=plot_standard(arr,spd,T_std,S_std);
+end;
+
+# ╔═╡ add92d11-de23-4b13-86b1-7cd604cb0a15
+figs[1]
+
+# ╔═╡ 1692d466-75cf-430d-88d9-e36ccdbb0a2f
+figs[2]
+
+# ╔═╡ b1c028e0-8c60-45e5-90e1-ec5dcc51e680
+figs[3]
 
 # ╔═╡ c176fd5e-b2f2-47e3-8145-a4c152389344
 function plot_samples(arr)
@@ -283,11 +315,11 @@ function plot_samples(arr)
 	lims=(nothing, nothing, -500.0, 0.0)
 
 	ttl="Float wmo="*string(wmo)
-	ax=Axis(fig1[1,1],title=ttl*", temperature, degree C", limits=lims)
+	ax=Axis(fig1[1,1],title=ttl*", temperature, °C", limits=lims)
 	hm1=plot_profiles!(ax,arr.TIME,arr.PRES,arr.TEMP,:thermal)
 	Colorbar(fig1[1,2], hm1, height=Relative(0.65))
 
-	ax=Axis(fig1[2,1],title=ttl*", salinity, psu", limits=lims)
+	ax=Axis(fig1[2,1],title=ttl*", salinity [PSS-78]", limits=lims)
 	hm2=plot_profiles!(ax,arr.TIME,arr.PRES,arr.PSAL,:viridis)
 	Colorbar(fig1[2,2], hm2, height=Relative(0.65))
 
@@ -302,11 +334,21 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 ArgoData = "9eb831cf-c491-48dc-bed4-6aca718df73c"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+GeoMakie = "db073c08-6b98-4ee5-b6a4-5efafb3259c6"
 Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
 OceanRobots = "0b51df41-3294-4961-8d23-db645e32016d"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 PrettyTables = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+
+[compat]
+ArgoData = "~0.1.15"
+CairoMakie = "~0.9.4"
+GeoMakie = "~0.4.6"
+Interpolations = "~0.14.7"
+OceanRobots = "~0.1.12"
+PlutoUI = "~0.7.49"
+PrettyTables = "~2.2.2"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -315,7 +357,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.9.3"
 manifest_format = "2.0"
-project_hash = "7698ba56ef3db3cb3df905945de9441fb0c9c772"
+project_hash = "7d4b61b39b286cf0ab7e61cc950f909f922aa3a2"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -508,6 +550,12 @@ version = "1.4.1"
 git-tree-sha1 = "d05d9e7b7aedff4e5b51a029dced05cfb6125781"
 uuid = "d38c429a-6771-53c6-b99e-75d170b6e991"
 version = "0.6.2"
+
+[[deps.CoordinateTransformations]]
+deps = ["LinearAlgebra", "StaticArrays"]
+git-tree-sha1 = "f9d7112bfff8a19a3a4ea4e03a8e6a91fe8456bf"
+uuid = "150eb455-5306-5404-9cee-2592286d6298"
+version = "0.6.3"
 
 [[deps.Crayons]]
 git-tree-sha1 = "249fe38abf76d48563e2f4556bebd215aa317e15"
@@ -710,11 +758,34 @@ git-tree-sha1 = "6872f5ec8fd1a38880f027a26739d42dcda6691f"
 uuid = "46192b85-c4d5-4398-a991-12ede77f4527"
 version = "0.1.2"
 
+[[deps.GeoFormatTypes]]
+git-tree-sha1 = "434166198434a5c2fcc0a1a59d22c3b0ad460889"
+uuid = "68eda718-8dee-11e9-39e7-89f7f65f511f"
+version = "0.4.1"
+
 [[deps.GeoInterface]]
 deps = ["Extents"]
 git-tree-sha1 = "fb28b5dc239d0174d7297310ef7b84a11804dfab"
 uuid = "cf35fbd7-0cd7-5166-be24-54bfbe79505f"
 version = "1.0.1"
+
+[[deps.GeoInterfaceRecipes]]
+deps = ["GeoInterface", "RecipesBase"]
+git-tree-sha1 = "0e26e1737e94de57c858649dc28e482b6c87d341"
+uuid = "0329782f-3d07-4b52-b9f6-d3137cf03c7a"
+version = "1.0.1"
+
+[[deps.GeoJSON]]
+deps = ["Extents", "GeoFormatTypes", "GeoInterface", "GeoInterfaceRecipes", "JSON3", "Tables"]
+git-tree-sha1 = "624eb2bb45428b1ca3f6b5428aa105028912c71c"
+uuid = "61d90e0f-e114-555e-ac52-39dfb47a3ef9"
+version = "0.6.4"
+
+[[deps.GeoMakie]]
+deps = ["Colors", "Downloads", "GeoInterface", "GeoJSON", "GeometryBasics", "ImageIO", "LinearAlgebra", "Makie", "Proj", "Reexport", "Statistics", "StructArrays"]
+git-tree-sha1 = "98f7c722d813bc3c66c61da4c398a1f9e029aefd"
+uuid = "db073c08-6b98-4ee5-b6a4-5efafb3259c6"
+version = "0.4.6"
 
 [[deps.GeometryBasics]]
 deps = ["EarCut_jll", "GeoInterface", "IterTools", "LinearAlgebra", "StaticArrays", "StructArrays", "Tables"]
@@ -934,6 +1005,12 @@ git-tree-sha1 = "3c837543ddb02250ef42f4738347454f95079d4e"
 uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 version = "0.21.3"
 
+[[deps.JSON3]]
+deps = ["Dates", "Mmap", "Parsers", "PrecompileTools", "StructTypes", "UUIDs"]
+git-tree-sha1 = "95220473901735a0f4df9d1ca5b171b568b2daa3"
+uuid = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
+version = "1.13.2"
+
 [[deps.JpegTurbo]]
 deps = ["CEnum", "FileIO", "ImageCore", "JpegTurbo_jll", "TOML"]
 git-tree-sha1 = "a77b273f1ddec645d1b7c4fd5fb98c8f90ad10a5"
@@ -957,6 +1034,12 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "f6250b16881adf048549549fba48b1161acdac8c"
 uuid = "c1c5ebd0-6772-5130-a774-d5fcae4a789d"
 version = "3.100.1+0"
+
+[[deps.LERC_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "bf36f528eec6634efc60d7ec062008f171071434"
+uuid = "88015f11-f218-50d7-93a8-a6af411a945d"
+version = "3.0.0+1"
 
 [[deps.LZO_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1029,6 +1112,12 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "9c30530bf0effd46e15e0fdcf2b8636e78cbbd73"
 uuid = "4b2f31a3-9ecc-558c-b454-b3730dcb73e9"
 version = "2.35.0+0"
+
+[[deps.Libtiff_jll]]
+deps = ["Artifacts", "JLLWrappers", "JpegTurbo_jll", "LERC_jll", "Libdl", "XZ_jll", "Zlib_jll", "Zstd_jll"]
+git-tree-sha1 = "2da088d113af58221c52828a80378e16be7d037a"
+uuid = "89763e89-9b03-5906-acba-b20f662cd828"
+version = "4.5.1+1"
 
 [[deps.Libuuid_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1277,6 +1366,12 @@ git-tree-sha1 = "f809158b27eba0c18c269cf2a2be6ed751d3e81d"
 uuid = "f57f5aa1-a3ce-4bc8-8ab9-96f992907883"
 version = "0.3.17"
 
+[[deps.PROJ_jll]]
+deps = ["Artifacts", "JLLWrappers", "LibCURL_jll", "Libdl", "Libtiff_jll", "SQLite_jll"]
+git-tree-sha1 = "bc28131c974f9275402ed1827457f3f4b047895f"
+uuid = "58948b4f-47e0-5654-a9ad-f609743f8632"
+version = "900.200.100+0"
+
 [[deps.Packing]]
 deps = ["GeometryBasics"]
 git-tree-sha1 = "1155f6f937fa2b94104162f01fa400e192e4272f"
@@ -1341,6 +1436,12 @@ git-tree-sha1 = "a6062fe4063cdafe78f4a0a81cfffb89721b30e7"
 uuid = "2dfb63ee-cc39-5dd5-95bd-886bf059d720"
 version = "1.4.2"
 
+[[deps.PrecompileTools]]
+deps = ["Preferences"]
+git-tree-sha1 = "03b4c25b43cb84cee5c90aa9b5ea0a78fd848d2f"
+uuid = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
+version = "1.2.0"
+
 [[deps.Preferences]]
 deps = ["TOML"]
 git-tree-sha1 = "47e5f437cc0e7ef2ce8406ce1e7e24d44915f88d"
@@ -1362,6 +1463,12 @@ deps = ["Distributed", "Printf"]
 git-tree-sha1 = "d7a7aef8f8f2d537104f170139553b14dfe39fe9"
 uuid = "92933f4c-e287-5a05-a399-4b506db050ca"
 version = "1.7.2"
+
+[[deps.Proj]]
+deps = ["CEnum", "CoordinateTransformations", "GeoFormatTypes", "NetworkOptions", "PROJ_jll"]
+git-tree-sha1 = "495a52a7c491d0570a170f6de48a74860a1c1ece"
+uuid = "c94c279d-25a6-4763-9509-64d165bea63e"
+version = "1.4.0"
 
 [[deps.QOI]]
 deps = ["ColorTypes", "FileIO", "FixedPointNumbers"]
@@ -1406,6 +1513,12 @@ git-tree-sha1 = "dc84268fe0e3335a62e315a3a7cf2afa7178a734"
 uuid = "c84ed2f1-dad5-54f0-aa8e-dbefe2724439"
 version = "0.4.3"
 
+[[deps.RecipesBase]]
+deps = ["PrecompileTools"]
+git-tree-sha1 = "5c3d09cc4f31f5fc6af001c250bf1278733100ff"
+uuid = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
+version = "1.3.4"
+
 [[deps.Reexport]]
 git-tree-sha1 = "45e428421666073eab6f2da5c9d310d99bb12f9b"
 uuid = "189a3867-3050-52da-a836-e630ba90ab69"
@@ -1443,6 +1556,12 @@ version = "0.7.0"
 git-tree-sha1 = "bc12e315740f3a36a6db85fa2c0212a848bd239e"
 uuid = "fdea26ae-647d-5447-a871-4b548cad5224"
 version = "3.4.2"
+
+[[deps.SQLite_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Zlib_jll"]
+git-tree-sha1 = "81f7d934b52b2441f7b44520bd982fdb3607b0da"
+uuid = "76ed43ae-9a5d-5a62-8c75-30186b810ce8"
+version = "3.43.0+0"
 
 [[deps.ScanByte]]
 deps = ["Libdl", "SIMD"]
@@ -1574,6 +1693,12 @@ git-tree-sha1 = "b03a3b745aa49b566f128977a7dd1be8711c5e71"
 uuid = "09ab397b-f2b6-538f-b94a-2f83cf4a842a"
 version = "0.6.14"
 
+[[deps.StructTypes]]
+deps = ["Dates", "UUIDs"]
+git-tree-sha1 = "ca4bccb03acf9faaf4137a9abc1881ed1841aa70"
+uuid = "856f2bd8-1eba-4b0a-8007-ebc267875bd4"
+version = "1.10.0"
+
 [[deps.SuiteSparse]]
 deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
 uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
@@ -1701,6 +1826,12 @@ git-tree-sha1 = "91844873c4085240b95e795f692c4cec4d805f8a"
 uuid = "aed1982a-8fda-507f-9586-7b0439959a61"
 version = "1.1.34+0"
 
+[[deps.XZ_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "cf2c7de82431ca6f39250d2fc4aacd0daa1675c0"
+uuid = "ffd25f8a-64ca-5728-b0f7-c24cf3aae800"
+version = "5.4.4+0"
+
 [[deps.Xorg_libX11_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg", "Xorg_libxcb_jll", "Xorg_xtrans_jll"]
 git-tree-sha1 = "5be649d550f3f4b95308bf0183b82e2582876527"
@@ -1759,6 +1890,12 @@ version = "0.4.8"
 deps = ["Libdl"]
 uuid = "83775a58-1f1d-513f-b197-d71354ab007a"
 version = "1.2.13+0"
+
+[[deps.Zstd_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "49ce682769cd5de6c72dcf1b94ed7790cd08974c"
+uuid = "3161d3a3-bdf6-5164-811a-617609db77b4"
+version = "1.5.5+0"
 
 [[deps.isoband_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1832,7 +1969,7 @@ version = "3.5.0+0"
 
 # ╔═╡ Cell order:
 # ╟─89647c4e-e568-4d3a-af57-bcc541744e38
-# ╠═09a2aa6e-16bc-4582-9d5f-c50432e3f0ca
+# ╟─09a2aa6e-16bc-4582-9d5f-c50432e3f0ca
 # ╟─9d29d0f8-7b1c-11ec-1f16-b313a50cc5e7
 # ╟─a9fd8646-7269-4f70-93cf-0e831d533237
 # ╟─c85a1eea-e2db-4f7f-9b7c-00b29a4cb975
@@ -1842,16 +1979,19 @@ version = "3.5.0+0"
 # ╟─4d949835-4cf8-4493-b765-6e956019b777
 # ╟─49256e11-fbd2-40e7-8f0b-193e17e2b31b
 # ╠═2a1c12c9-21e9-479a-b56c-a893d1cbede6
-# ╠═907bf93a-3d5f-4705-93f1-9b05d4554af0
+# ╟─add92d11-de23-4b13-86b1-7cd604cb0a15
+# ╟─1692d466-75cf-430d-88d9-e36ccdbb0a2f
+# ╟─b1c028e0-8c60-45e5-90e1-ec5dcc51e680
 # ╟─9037e2ce-a04a-40d0-945e-ec3f19a4f3c4
 # ╟─3f5419f1-d131-42eb-86c8-44a385e88d51
 # ╟─533ea412-76ae-4060-bbc8-2650ee0d2774
-# ╟─8539e67f-6361-409a-9dbe-e8dcb2c7e10d
+# ╠═8539e67f-6361-409a-9dbe-e8dcb2c7e10d
 # ╟─916e5a50-ee01-4299-9314-2e3cc9c826e6
 # ╠═2558c88f-7fee-4a91-bfdd-46f1f61795b0
 # ╟─5b814708-292a-45ed-8eab-386a7f097634
 # ╟─3fd610a8-80c1-4acc-b3ef-20883f77e32d
 # ╟─66e41568-7825-4383-80cb-cc48bdf56397
+# ╠═63748797-cfc1-4b51-8f17-a38ac40626d5
 # ╟─a42edc9d-9fa2-4775-83c4-2d9a5130105c
 # ╠═fc0340be-4671-406f-9dc0-e831009aa9b8
 # ╟─ce6b8cf0-2589-431b-a551-980f9ee763af
