@@ -120,7 +120,6 @@ The regional data sets used in this notebook are available in [this Dataverse re
 begin
 	DOI="doi:10.7910/DVN/OYBLGK"
 	df=Dataverse.file_list(DOI)
-	lst=Dataverse.url_list(df)
 	@bind filename Select(df.filename,default="exportImage_60arc.tiff")
 end
 
@@ -130,7 +129,7 @@ begin
 		pth0=joinpath(tempdir(),"azores_region_data")
 		file0=joinpath(pth0,filename)
 		!ispath(pth0) ? mkdir(pth0) : nothing
-		!isfile(file0) ? Dataverse.file_download(lst,filename,pth0) : nothing
+		!isfile(file0) ? Dataverse.file_download(df,filename,pth0) : nothing
 		"Downloaded to "*file0
 	end
 end
@@ -167,7 +166,7 @@ This file was generated using `OceanRobots.podaac_sla.subset()`
 # ╔═╡ 9b3c3856-9fe1-43ba-97a2-abcd5b385c1d
 begin	
 	file1=joinpath(pth0,fil)
-	!isfile(file1) ? Dataverse.file_download(lst,fil,pth0) : nothing
+	!isfile(file1) ? Dataverse.file_download(df,fil,pth0) : nothing
 	
 	ds=Dataset(joinpath(pth0,fil))
 end
