@@ -20,7 +20,8 @@ makedocs(;
 OceanRobots.check_for_file("Glider_Spray","GulfStream.nc")
 OceanRobots.check_for_file("Glider_Spray","CUGN_along.nc")
 
-lst=("SatelliteAltimetry.jl","Buoy_NWP_NOAA_monthly.jl","Glider_Spray.jl","OceanOPS.jl",
+lst=("SatelliteAltimetry.jl","Buoy_NWP_NOAA_monthly.jl","Glider_Spray.jl",
+    #"OceanOPS.jl",
     "Buoy_NWP_NOAA.jl","Mooring_WHOTS.jl","Drifter_GDP.jl","Float_Argo.jl")
 for i in lst
     fil_in=joinpath(@__DIR__,"..","examples",i)
