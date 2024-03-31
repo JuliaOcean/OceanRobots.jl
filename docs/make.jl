@@ -14,7 +14,7 @@ makedocs(;
     repo="https://github.com/JuliaOcean/OceanRobots.jl/blob/{commit}{path}#L{line}",
     sitename="OceanRobots.jl",
     authors="JuliaOcean <gforget@mit.edu>",
-    assets=String[],
+    warnonly = [:cross_references,:missing_docs],
     )
 
 OceanRobots.check_for_file("Glider_Spray","GulfStream.nc")
