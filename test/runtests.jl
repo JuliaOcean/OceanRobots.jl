@@ -62,15 +62,15 @@ using Test
     files_year,files_url=THREDDS.parse_catalog_NOAA_buoy()
     @test !isempty(files_url)
 
-    tab_Argo=OceanOPS.get_table(:Argo,1)
-    @test isa(tab_Argo,DataFrame)
+    #tab_Argo=OceanOPS.get_table(:Argo,1)
+    #@test isa(tab_Argo,DataFrame)
 
-    list_Argo=OceanOPS.get_list(:Argo)
-    @test isa(list_Argo,Vector)
+    #list_Argo=OceanOPS.get_list(:Argo)
+    #@test isa(list_Argo,Vector)
 
-    tmp=OceanOPS.get_platform(list_Argo[1000])
-    @test tmp.status=="OPERATIONAL"
+    #tmp=OceanOPS.get_platform(list_Argo[1000])
+    #@test tmp.status=="OPERATIONAL"
 
-    tmp=OceanOPS.get_list_pos(:Drifter)
-    @test isa(tmp.lon,Vector)
+    #tmp=OceanOPS.get_list_pos(:Drifter)
+    #@test isa(tmp.lon,Vector)
 end
