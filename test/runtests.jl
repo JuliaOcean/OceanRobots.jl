@@ -40,11 +40,11 @@ using Test
 
     ##
 
-    parameters=Dict("stations" => [41048, 44066])		
+    parameters=Dict("stations" => [41046, 44065])		
 	MC=ModelConfig(model=NOAA.download,inputs=parameters)
 	setup(MC)
 	launch(MC)
-    df=NOAA.read(MC,41048)
+    df=NOAA.read(MC,41046)
     @test isa(df,DataFrame)
 
     ##
