@@ -400,17 +400,17 @@ data,units=OceanSites.read_WHOTS(file)
 ```
 """
 function read_WHOTS(file="DATA_GRIDDED/WHOTS/OS_WHOTS_200408-201809_D_MLTS-1H.nc")
-    url0="http://tds0.ifremer.fr/thredds/dodsC/CORIOLIS-OCEANSITES-GDAC-OBS/"
+    url0="https://tds0.ifremer.fr/thredds/dodsC/CORIOLIS-OCEANSITES-GDAC-OBS/"
     fil0=url0*file*"#fillmismatch"
 
     ds=NCDataset(fil0)
-    TIME = ds["TIME"][:,:]; uTIME=ds["TIME"].attrib["units"]
-    AIRT = ds["AIRT"][:,:]; uAIRT=ds["AIRT"].attrib["units"]
-    TEMP = ds["TEMP"][:,:]; uTEMP=ds["TEMP"].attrib["units"]
-    PSAL = ds["PSAL"][:,:]; uPSAL=ds["PSAL"].attrib["units"]
-    RAIN = ds["RAIN"][:,:]; uRAIN=ds["RAIN"].attrib["units"]
-    RELH = ds["RELH"][:,:]; uRELH=ds["RELH"].attrib["units"]
-    wspeed = sqrt.(ds["UWND"][:,:].^2+ds["VWND"][:,:].^2); uwspeed=ds["UWND"].attrib["units"]
+    TIME = ds["TIME"][:]; uTIME=ds["TIME"].attrib["units"]
+    AIRT = ds["AIRT"][:]; uAIRT=ds["AIRT"].attrib["units"]
+    TEMP = ds["TEMP"][:]; uTEMP=ds["TEMP"].attrib["units"]
+    PSAL = ds["PSAL"][:]; uPSAL=ds["PSAL"].attrib["units"]
+    RAIN = ds["RAIN"][:]; uRAIN=ds["RAIN"].attrib["units"]
+    RELH = ds["RELH"][:]; uRELH=ds["RELH"].attrib["units"]
+    wspeed = sqrt.(ds["UWND"][:].^2+ds["VWND"][:].^2); uwspeed=ds["UWND"].attrib["units"]
     close(ds)
 
     data=(TIME=TIME,AIRT=AIRT,TEMP=TEMP,PSAL=PSAL,RAIN=RAIN,RELH=RELH,wspeed=wspeed)
