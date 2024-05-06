@@ -43,7 +43,7 @@ grid=(lon=-180.0+0.25:0.5:180.0,lat=-90.0+0.25:0.5:90.0)
 """
 function to_DataFrame(ds)
 	df=DataFrame(:sst => ds[:sst][:], :ve => ds[:ve][:], :vn => ds[:vn][:])
-	df.drogue_status=ds[:drogue_status][:]
+	in("drogue_status",names(df)) ? df.drogue_status=ds[:drogue_status][:] : nothing
 	df.sst1=ds[:sst1][:]
 	df.sst2=ds[:sst2][:]
 	df.longitude=ds[:longitude][:]
@@ -83,8 +83,8 @@ end
 
 # ╔═╡ 8303dd1b-08da-48ca-a91f-3fc3707a8625
 begin
-	pth="data/"
-	file=joinpath(pth,"gdp_subset.nc")
+	pth="data/"; file=joinpath(pth,"gdp_subset.nc")
+	#file="Drifter_hourly_v2p0/gdp_v2.00.nc"
 	ds=Dataset(file)
 	df=to_DataFrame(ds)
 	add_ID!(df,ds)
@@ -132,8 +132,8 @@ region_subset(df,lons,lats,dates) =
 
 # ╔═╡ 9e9b1fc0-ab55-4a2d-8f40-5b6bbae3764f
 begin
-	lon = (-98, -78)
-	lat = (18, 31)
+	lon = (-98, -78); lat = (18, 31)
+	#lon = (-150, -140); lat = (25, 35)
 	d0=DateTime("2000-01-1T00:00:00")
 	d1=DateTime("2020-12-31T00:00:00")
 	tim=(d0,d1)
