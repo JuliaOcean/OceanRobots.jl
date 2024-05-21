@@ -14,206 +14,169 @@ macro bind(def, element)
     end
 end
 
-# ╔═╡ 0247a51e-c89b-11ec-071f-bb82fe257adc
+# ╔═╡ ccf98691-9386-41b9-a957-3cdeba51312b
 begin
-	using DataFrames, OceanRobots, PlutoUI, CairoMakie
-	"Done with Software Packages"
+	using OceanRobots, CairoMakie, PlutoUI, GeoMakie
+	using DataFrames, JSON3, HTTP
 end
 
-# ╔═╡ 1f244746-363c-4e7e-8bf8-70141fce66a3
-#http://spraydata.ucsd.edu/erddap/files/binnedGS/GulfStream.nc
-using Downloads
+# ╔═╡ 5fa93c17-0a01-44c6-8679-d712c786907a
+md"""# OceanOPS : Global Ocean Metadata
 
-# ╔═╡ d9ffd0a8-85e3-4e2a-9d6a-81f3dbd3ee31
-TableOfContents()
-
-# ╔═╡ e5b9772e-cbb5-42f0-bacb-5bae6bc8d5b6
-md"""# Spray Gliders
-
-_Spray gliders autonomously collect measurements in the upper kilometer of the ocean during missions typically lasting three to four months and covering 2000-3000 km through the water._  ([spraydata.ucsd.edu](http://spraydata.ucsd.edu)).
+Source : <https://www.ocean-ops.org/board>, <https://www.ocean-ops.org/share/>
 """
 
-# ╔═╡ 0a016d12-de41-45f5-800d-af8f953720e4
-begin
-	url1="https://timesofsandiego.com/wp-content/uploads/2014/06/Spray-Glider.jpg"
-	url2="https://www.whoi.edu/wp-content/uploads/2019/01/GP020002-1-14_506075_510753-1.jpg"
-	url3="http://spraydata.ucsd.edu/media/GulfStream/GS_KE_for_web.png"
-	url4="http://spraydata.ucsd.edu/cugnclim-figs/66/meanmap/66_meanmap_xz_geov.png"
-	md"""
-	$(Resource(url2,:height => 100))
-	$(Resource(url1,:height => 100))
-	$(Resource(url4,:height => 100))
-	$(Resource(url3,:height => 100))
+# ╔═╡ 31fe91d7-dea2-49e3-902b-31aa62075986
+TableOfContents()
 
-	_Image Credits : WHOI, UCSD._
+# ╔═╡ 1042f70c-4337-4bf2-b533-edf27a422365
+md"""## Visualize Data Cover
+
+Each color represents one type of observing platform.
+"""
+
+# ╔═╡ 52dc1cd5-e57a-43bb-82c9-feb1de25e5ca
+begin
+	argo_operational=OceanOPS.get_list_pos(:Argo)
+	
+	a0=OceanOPS.get_list_pos(:Argo,status=:PROBABLE)
+	a1=OceanOPS.get_list_pos(:Argo,status=:CONFIRMED)
+	a2=OceanOPS.get_list_pos(:Argo,status=:REGISTERED)
+	
+	argo_planned=( lon=vcat(a0.lon,a1.lon,a2.lon),
+				lat=vcat(a0.lat,a1.lat,a2.lat),
+				flag=vcat(a0.flag,a1.flag,a2.flag))
+
+	drifter_operational=OceanOPS.get_list_pos(:Drifter)
+
+	"Done with accessing latest positions."
+end
+
+# ╔═╡ ec963909-f9ee-4dd8-b9fa-4f34038c99e0
+md"""## Visualize Data Cover (2)
+
+Bue points show all Argo floats currently in operation. Red crosses shows the other selected data set.
+
+!!! note
+    This example use CSV files prepared by OceanOPS (rather than their API directly).
+"""
+
+# ╔═╡ f71390bd-6862-43be-84b9-005ff5742b5e
+@bind s Select([:ArgoPlanned,:OceanOPS,:DBCP,:OceanGliders])
+
+# ╔═╡ 596bce95-e13f-4439-858f-e944834c0924
+begin
+	bind_nam = @bind nam Select([:Argo,:Drifter])
+	md"""## Explore Platform Metadata
+
+	Here you can select a data set and then a platform. Meta-data from that platform is displayed as a result.
+	
+	Data set : $(bind_nam)
 	"""
 end
 
-# ╔═╡ b8db58ca-ed7a-4174-a6b0-e53925b5887a
+# ╔═╡ aa80092c-80b9-489c-97b9-06c3d39ac594
 begin
-	MID_bind = @bind MID Select(["CUGN_along.nc", "GulfStream.nc"], default="GulfStream.nc")
-	md"""## Visualize Data
-	
-	- Select data set : $(MID_bind)"""
+	list_data=OceanOPS.get_list(nam)
+	bind_id = @bind id Select(list_data)
+	md"""Platform ID : $(bind_id)"""
 end
 
+# ╔═╡ 401180a9-cb62-4dc6-b0a1-35df35f834db
+begin
+	meta=OceanOPS.get_platform(id)
+	md"""
+	| Item         | Value |
+	|--------------|:-----------|
+	| platform ID  | $(meta.id) |
+	| status      | $(meta.status) |
+	| country      | $(meta.country) |
+	| ship      | $(meta.ship) |
+	| deployed      | $(meta.deployed) |
+	"""
+end
 
-# ╔═╡ 1ab9daac-b631-4f3e-a868-14e95f71962b
-md"""## Data as a Table"""
+# ╔═╡ cb5cce8c-f67f-496b-ba10-38eefe9285e1
+md"""## List of Platform Types"""
 
-# ╔═╡ 440e4256-d6eb-4dfa-946b-22fac53432e8
-md"""
-## Data Sources
-
-_Spray gliders autonomously collect measurements in the upper kilometer of the ocean during missions typically lasting three to four months and covering 2000-3000 km through the water._ ([spraydata.ucsd.edu](http://spraydata.ucsd.edu)).
-
-### Websites
-
-- [spraydata.ucsd.edu](http://spraydata.ucsd.edu)
-  - <http://spraydata.ucsd.edu/projects/>
-  - <http://spraydata.ucsd.edu/GulfStream/>
-  - <http://spraydata.ucsd.edu/climCUGN/>
-- [gliders.whoi.edu](http://gliders.whoi.edu)
-  - [gliders.whoi.edu/data](http://gliders.whoi.edu/data/)
-
-### References 
-
-- Todd, R. and Owens, B. (2016). Gliders in the Gulf Stream [Data set]. Scripps Institution of Oceanography, Instrument Development Group. doi: 10.21238/S8SPRAY2675
-- Rudnick, D. (2016). California Underwater Glider Network [Data set]. Scripps Institution of Oceanography, Instrument Development Group. doi: 10.21238/S8SPRAY1618
-- Rudnick, D. (2016). Seasonal-to-Interannual Modulation of Fine-Scale Thermohaline Structure [Data set]. Scripps Institution of Oceanography, Instrument Development Group. doi: 10.21238/S8SPRAY4863
-
-"""
-
-# ╔═╡ 68028522-205e-4b41-b3c0-2e3b09c2d8a7
-md"""## Appendix
-
-### Julia Packages, etc
-"""
-
-# ╔═╡ 0a0842ff-aeb4-4561-857b-8ea31b10b32a
-function check_for_file_updated(args...)
-    if !isempty(args)
-	if args[1]=="CUGN_along.nc"
-	  url0="http://spraydata.ucsd.edu/erddap/files/binnedCUGNalong/"
-	elseif args[1]=="GulfStream.nc"
-       	  url0="http://spraydata.ucsd.edu/erddap/files/binnedGS/"
+# ╔═╡ 33c56cf4-5954-49f8-bb26-4f0d028f9093
+begin
+	list_platform_types=DataFrame(:nameShort=>String[],:name=>String[],:description=>String[],:wigosCode=>String[],:id=>Int[])
+	list_platform_types=DataFrame(:nameShort=>String[],:name=>String[],:description=>Any[],:wigosCode=>Any[],:id=>Int[])
+	
+	url="https://www.ocean-ops.org/api/1/data/platformtype"
+	tmp=JSON3.read(String(HTTP.get(url).body))
+	for i in tmp.data
+		push!(list_platform_types,(nameShort=i.nameShort,name=i.name,
+					description=i.description,wigosCode=i.wigosCode,id=i.id))
 	end
-	url1=url0*basename(args[1])
-		
-        pth0=dirname(args[1])
-        isempty(pth0) ? pth1=joinpath(tempdir(),"tmp_glider_data") : pth1=pth0
-        !isdir(pth1) ? mkdir(pth1) : nothing
-        fil1=joinpath(pth1,basename(args[1]))
-        !isfile(fil1) ? Downloads.download(url1,fil1) : fil1
-    else
-        pth0=joinpath(tempdir(),"tmp_glider_data")
-        glob("*.nc",pth0)
-    end
+	list_platform_types
 end
 
-# ╔═╡ 9523dc0d-1758-4e0f-864c-4ab253bf11a9
-begin
-	#check_for_file("Glider_Spray","GulfStream.nc")
-	check_for_file_updated(MID)
-	
-	pth0=joinpath(tempdir(),"tmp_glider_data")
-	fil0=joinpath(pth0,MID)
+# ╔═╡ 3b80d06d-72b8-4f67-945e-0b18f61de6e9
+@bind nam_platform_types Select(list_platform_types.nameShort,default="TROPICAL_MB")
 
-	df=GliderFiles.read(fil0)
-	gdf=groupby(df,:ID)
+# ╔═╡ fccdc273-2e9f-4f60-a659-8ee2790ae2fc
+more_operational=OceanOPS.get_list_pos(Symbol(nam_platform_types))
 
-	ID_bind = @bind ID NumberField(1:gdf.ngroups, default=1)
+# ╔═╡ eb95a380-a0b0-4762-8342-89d0f634d1ec
+jj=findall(list_platform_types.nameShort.==nam_platform_types)[1]
 
-	"Done with Data Ingestion"
+# ╔═╡ b6a138b0-fce5-4767-b4d1-eed0d0560988
+let
+	fi0=Figure()
+	ax0=GeoAxis(fi0[1,1]) #,coastlines = true)	
+	sc1=scatter!(argo_operational.lon,argo_operational.lat,
+		label="Argo (operational)",color=:blue,markersize=4)
+	sc2=scatter!(argo_planned.lon,argo_planned.lat,
+		label="Argo (planned)",color=:red,marker=:xcross,markersize=8)
+	sc3=scatter!(drifter_operational.lon,drifter_operational.lat,
+		label="Drifter",color=:green2,marker='O',markersize=12)
+	sc4=scatter!(more_operational.lon,more_operational.lat,
+		label=list_platform_types.name[jj],color=:gold2,marker=:star5,markersize=16)
+	lines!(ax0, GeoMakie.coastlines(),color=:black)
+	Legend(fi0[2, 1],[sc1,sc2,sc3,sc4],[sc1.label,sc2.label,sc3.label,sc4.label],
+		orientation = :horizontal)
+	fi0
 end
 
-# ╔═╡ 428120da-1542-4265-a369-1273ae4718ac
-md"""- Select mission  : $(ID_bind)"""
+# ╔═╡ 1bf99223-ef46-4202-bdcc-8d7d6c561822
+md"""## Appendices"""
 
-# ╔═╡ f72d308f-6a74-460d-ae88-cf994477e750
-begin
-	f=Figure()
-	
-	a_traj=Axis(f[1,1],title="Positions")
-	p=scatter!(a_traj,df.lon,df.lat,markersize=1)
-	p=scatter!(a_traj,gdf[ID].lon,gdf[ID].lat,color=:red)
-
-	a_uv=Axis(f[1,2],title="Velocity (m/s, depth mean)")
-	p=lines!(a_uv,gdf[ID].u[:])
-	p=lines!(a_uv,gdf[ID].v[:])
-	p=lines!(a_uv,sqrt.(gdf[ID].u[:].^2 + gdf[ID].v[:].^2))
-
-	a2=Axis(f[2,1],title="Temperature (degree C -- 10,100,500m depth)")
-
-	lines!(a2,gdf[ID].T10[:])	
-	lines!(a2,gdf[ID].T100[:])
-	lines!(a2,gdf[ID].T500[:])
-
-	a3=Axis(f[2,2],title="Salinity (psu -- 10,100,500m depth)")
-
-	lines!(a3,gdf[ID].S10[:],label="10m")	
-	lines!(a3,gdf[ID].S100[:],label="100m")
-	lines!(a3,gdf[ID].S500[:],label="500m")
-
-	f
+# ╔═╡ 6d4c35fc-1a18-4fd7-a194-61fb387c7091
+function plot_add(s=:OceanOPS,i=1;col=:red)
+	tab=OceanOPS.get_table(s,i)
+	nam=OceanOPS.csv_listings()[s][i]
+	scatter!(tab.DEPL_LON,tab.DEPL_LAT,label=nam,markersize=8,marker=:xcross,color=col)
 end
 
-# ╔═╡ d49320f0-06c3-4d82-93d1-6047edc37d47
-gdf[ID]
-
-# ╔═╡ 4edad6a6-0468-4443-b878-7c9e26921766
-function to_DataFrame(ds)
-	df=DataFrame(:lon => ds[:lon][:], :lat => ds[:lat][:], :ID => ds[:trajectory_index][:])
-	df.time=ds[:time][:]
-
-	df.T10=ds[:temperature][:,1]
-	df.T100=ds[:temperature][:,10]
-	df.T500=ds[:temperature][:,50]
-
-	df.S10=ds[:salinity][:,1]
-	df.S100=ds[:salinity][:,10]
-	df.S500=ds[:salinity][:,50]
-
-	df.u100=ds[:u][:,10]
-	df.v100=ds[:v][:,10]
-
-	df.u=ds[:u_depth_mean][:]
-	df.v=ds[:v_depth_mean][:]
-	
-	df
+# ╔═╡ fbff1986-68c0-4558-b29b-2c6b87ca85fe
+function plot_base_Argo()
+	fi0=Figure()
+	ax0=GeoAxis(fi0[1,1])	
+	tab=OceanOPS.get_table(:Argo,1)
+	nam=OceanOPS.csv_listings()[:Argo][1]
+	sc0=scatter!(tab.LATEST_LOC_LON,tab.LATEST_LOC_LAT,label=nam,markersize=4)
+	lines!(ax0, GeoMakie.coastlines(),color=:black)
+	fi0,ax0,sc0
 end
 
-# ╔═╡ 5748bb5f-528f-42fd-8961-fd7c93d12554
-md"""### Typical File Content
-
-```
-	mission_name:long_name = "Mission name of each trajectory." ;
-	depth:long_name = "Depth" ;
-	lat:long_name = "Latitude" ;
-	lon:long_name = "Longitude" ;
-	lat_uv:long_name = "Latitude" ;
-	lon_uv:long_name = "Longitude" ;
-	u_depth_mean:long_name = "Depth-Averaged Eastward Sea Water Velocity" ;
-	v_depth_mean:long_name = "Depth-Averaged Northward Sea Water Velocity" ;
-	temperature:long_name = "Sea Water Temperature" ;
-	salinity:long_name = "Sea Water Salinity" ;
-	time:long_name = "Time" ;
-	time_uv:long_name = "Time" ;
-	u:long_name = "Eastward Sea Water Velocity" ;
-	v:long_name = "Northward Sea Water Velocity" ;
-	acoustic_backscatter_at_1MHz:long_name = "Acoustic Backscatter at 1MHz" ;
-	mission:long_name = "Mission name of each trajectory" ;
-	mission_profile:long_name = "Profile of one mission" ;
-	trajectory_index:long_name = "which mission (trajectory) this profile is part of" ;
-```
-"""
+# ╔═╡ 4b3f3ede-f1f0-4df5-931b-982a29395a53
+let
+	fi0,ax0,sc0=plot_base_Argo()
+	sc1= (s==:ArgoPlanned ? plot_add(:Argo,2,col=:red) : plot_add(s,1,col=:red))
+	Legend(fi0[2, 1],[sc0,sc1],[sc0.label,sc1.label],orientation = :horizontal)
+	fi0
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
+GeoMakie = "db073c08-6b98-4ee5-b6a4-5efafb3259c6"
+HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
+JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
 OceanRobots = "0b51df41-3294-4961-8d23-db645e32016d"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 """
@@ -224,7 +187,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.3"
 manifest_format = "2.0"
-project_hash = "7a67f25ec7c64acdf2555f3e0fe3b9b6ea144dcd"
+project_hash = "047c472716cc26846f610d82160099ce32ee066c"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -316,9 +279,9 @@ uuid = "6e34b625-4abd-537c-b88f-471c36dfa7a0"
 version = "1.0.8+1"
 
 [[deps.CEnum]]
-git-tree-sha1 = "389ad5c84de1ae7cf0e28e381131c98ea87d54fc"
+git-tree-sha1 = "eb4cb44a499229b3b8426dcfb5dd85333951ff90"
 uuid = "fa961155-64e5-5f13-b03f-caf6b980ea82"
-version = "0.5.0"
+version = "0.4.2"
 
 [[deps.CFTime]]
 deps = ["Dates", "Printf"]
@@ -349,9 +312,9 @@ version = "1.0.5"
 
 [[deps.CairoMakie]]
 deps = ["CRC32c", "Cairo", "Colors", "FileIO", "FreeType", "GeometryBasics", "LinearAlgebra", "Makie", "PrecompileTools"]
-git-tree-sha1 = "aec444a07f2b3df8d41a47fabd02841b32be2dc5"
+git-tree-sha1 = "d69c7593fe9d7d617973adcbe4762028c6899b2c"
 uuid = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
-version = "0.12.0"
+version = "0.11.11"
 
 [[deps.Cairo_jll]]
 deps = ["Artifacts", "Bzip2_jll", "CompilerSupportLibraries_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "JLLWrappers", "LZO_jll", "Libdl", "Pixman_jll", "Xorg_libXext_jll", "Xorg_libXrender_jll", "Zlib_jll", "libpng_jll"]
@@ -456,6 +419,12 @@ weakdeps = ["IntervalSets", "StaticArrays"]
 [[deps.Contour]]
 git-tree-sha1 = "439e35b0b36e2e5881738abc8857bd92ad6ff9a8"
 uuid = "d38c429a-6771-53c6-b99e-75d170b6e991"
+version = "0.6.3"
+
+[[deps.CoordinateTransformations]]
+deps = ["LinearAlgebra", "StaticArrays"]
+git-tree-sha1 = "f9d7112bfff8a19a3a4ea4e03a8e6a91fe8456bf"
+uuid = "150eb455-5306-5404-9cee-2592286d6298"
 version = "0.6.3"
 
 [[deps.Crayons]]
@@ -679,11 +648,50 @@ deps = ["Artifacts", "Libdl"]
 uuid = "781609d7-10c4-51f6-84f2-b8444358ff6d"
 version = "6.2.1+6"
 
+[[deps.GeoFormatTypes]]
+git-tree-sha1 = "59107c179a586f0fe667024c5eb7033e81333271"
+uuid = "68eda718-8dee-11e9-39e7-89f7f65f511f"
+version = "0.4.2"
+
 [[deps.GeoInterface]]
 deps = ["Extents"]
 git-tree-sha1 = "801aef8228f7f04972e596b09d4dba481807c913"
 uuid = "cf35fbd7-0cd7-5166-be24-54bfbe79505f"
 version = "1.3.4"
+
+[[deps.GeoInterfaceMakie]]
+deps = ["GeoInterface", "GeometryBasics", "MakieCore"]
+git-tree-sha1 = "b6c01b714e37cb6e5102f30544e8185a33f528c1"
+uuid = "0edc0954-3250-4c18-859d-ec71c1660c08"
+version = "0.1.6"
+
+[[deps.GeoInterfaceRecipes]]
+deps = ["GeoInterface", "RecipesBase"]
+git-tree-sha1 = "fb1156076f24f1dfee45b3feadb31d05730a49ac"
+uuid = "0329782f-3d07-4b52-b9f6-d3137cf03c7a"
+version = "1.0.2"
+
+[[deps.GeoJSON]]
+deps = ["Extents", "GeoFormatTypes", "GeoInterface", "GeoInterfaceMakie", "GeoInterfaceRecipes", "JSON3", "StructTypes", "Tables"]
+git-tree-sha1 = "e2ae0c6d4f6b8c49eccc261fef29c290998e44a5"
+uuid = "61d90e0f-e114-555e-ac52-39dfb47a3ef9"
+version = "0.8.1"
+weakdeps = ["Makie"]
+
+    [deps.GeoJSON.extensions]
+    GeoJSONMakieExt = "Makie"
+
+[[deps.GeoMakie]]
+deps = ["Colors", "Downloads", "GeoInterface", "GeoJSON", "Geodesy", "GeometryBasics", "ImageIO", "LinearAlgebra", "Makie", "Proj", "Reexport", "Statistics", "StructArrays"]
+git-tree-sha1 = "cd10770fef1d33132ec73c21fae1047a00ff3831"
+uuid = "db073c08-6b98-4ee5-b6a4-5efafb3259c6"
+version = "0.6.5"
+
+[[deps.Geodesy]]
+deps = ["CoordinateTransformations", "Dates", "LinearAlgebra", "StaticArrays"]
+git-tree-sha1 = "ed98a4429bf0a033ccc5e036120181dd52f06d31"
+uuid = "0ef565a4-170c-5f04-8de2-149903a85f3d"
+version = "1.1.0"
 
 [[deps.GeometryBasics]]
 deps = ["EarCut_jll", "Extents", "GeoInterface", "IterTools", "LinearAlgebra", "StaticArrays", "StructArrays", "Tables"]
@@ -728,9 +736,9 @@ version = "1.3.14+0"
 
 [[deps.GridLayoutBase]]
 deps = ["GeometryBasics", "InteractiveUtils", "Observables"]
-git-tree-sha1 = "fc713f007cff99ff9e50accba6373624ddd33588"
+git-tree-sha1 = "6f93a83ca11346771a93bbde2bdad2f65b61498f"
 uuid = "3955a311-db13-416c-9275-1d80ed98e5e9"
-version = "0.11.0"
+version = "0.10.2"
 
 [[deps.Grisu]]
 git-tree-sha1 = "53bb909d1151e57e2484c3d1b53e19552b887fb2"
@@ -852,10 +860,12 @@ deps = ["Adapt", "AxisAlgorithms", "ChainRulesCore", "LinearAlgebra", "OffsetArr
 git-tree-sha1 = "88a101217d7cb38a7b481ccd50d21876e1d1b0e0"
 uuid = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
 version = "0.15.1"
-weakdeps = ["Unitful"]
 
     [deps.Interpolations.extensions]
     InterpolationsUnitfulExt = "Unitful"
+
+    [deps.Interpolations.weakdeps]
+    Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [[deps.IntervalArithmetic]]
 deps = ["CRlibm_jll", "MacroTools", "RoundingEmulator"]
@@ -877,16 +887,12 @@ version = "0.22.12"
 git-tree-sha1 = "dba9ddf07f77f60450fe5d2e2beb9854d9a49bd0"
 uuid = "8197267c-284f-5f27-9208-e0e47529a953"
 version = "0.7.10"
+weakdeps = ["Random", "RecipesBase", "Statistics"]
 
     [deps.IntervalSets.extensions]
     IntervalSetsRandomExt = "Random"
     IntervalSetsRecipesBaseExt = "RecipesBase"
     IntervalSetsStatisticsExt = "Statistics"
-
-    [deps.IntervalSets.weakdeps]
-    Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
-    RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
-    Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [[deps.InvertedIndices]]
 git-tree-sha1 = "0dc7b50b8d436461be01300fd8cd45aa0274b038"
@@ -961,6 +967,12 @@ deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "170b660facf5df5de098d866564877e119141cbd"
 uuid = "c1c5ebd0-6772-5130-a774-d5fcae4a789d"
 version = "3.100.2+0"
+
+[[deps.LERC_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "bf36f528eec6634efc60d7ec062008f171071434"
+uuid = "88015f11-f218-50d7-93a8-a6af411a945d"
+version = "3.0.0+1"
 
 [[deps.LLVMOpenMP_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -1054,6 +1066,12 @@ git-tree-sha1 = "0c4f9c4f1a50d8f35048fa0532dabbadf702f81e"
 uuid = "4b2f31a3-9ecc-558c-b454-b3730dcb73e9"
 version = "2.40.1+0"
 
+[[deps.Libtiff_jll]]
+deps = ["Artifacts", "JLLWrappers", "JpegTurbo_jll", "LERC_jll", "Libdl", "XZ_jll", "Zlib_jll", "Zstd_jll"]
+git-tree-sha1 = "6355fb9a4d22d867318db186fd09b09b35bd2ed7"
+uuid = "89763e89-9b03-5906-acba-b20f662cd828"
+version = "4.6.0+0"
+
 [[deps.Libuuid_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "5ee6203157c120d79034c748a2acba45b82b8807"
@@ -1137,16 +1155,16 @@ uuid = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
 version = "0.5.13"
 
 [[deps.Makie]]
-deps = ["Animations", "Base64", "CRC32c", "ColorBrewer", "ColorSchemes", "ColorTypes", "Colors", "Contour", "Dates", "DelaunayTriangulation", "Distributions", "DocStringExtensions", "Downloads", "FFMPEG_jll", "FileIO", "FilePaths", "FixedPointNumbers", "Format", "FreeType", "FreeTypeAbstraction", "GeometryBasics", "GridLayoutBase", "ImageIO", "InteractiveUtils", "IntervalSets", "Isoband", "KernelDensity", "LaTeXStrings", "LinearAlgebra", "MacroTools", "MakieCore", "Markdown", "MathTeXEngine", "Observables", "OffsetArrays", "Packing", "PlotUtils", "PolygonOps", "PrecompileTools", "Printf", "REPL", "Random", "RelocatableFolders", "Scratch", "ShaderAbstractions", "Showoff", "SignedDistanceFields", "SparseArrays", "Statistics", "StatsBase", "StatsFuns", "StructArrays", "TriplotBase", "UnicodeFun", "Unitful"]
-git-tree-sha1 = "e96f6e1dba3c008d95b97103a330be6287411c67"
+deps = ["Animations", "Base64", "CRC32c", "ColorBrewer", "ColorSchemes", "ColorTypes", "Colors", "Contour", "DelaunayTriangulation", "Distributions", "DocStringExtensions", "Downloads", "FFMPEG_jll", "FileIO", "FilePaths", "FixedPointNumbers", "Format", "FreeType", "FreeTypeAbstraction", "GeometryBasics", "GridLayoutBase", "ImageIO", "InteractiveUtils", "IntervalSets", "Isoband", "KernelDensity", "LaTeXStrings", "LinearAlgebra", "MacroTools", "MakieCore", "Markdown", "MathTeXEngine", "Observables", "OffsetArrays", "Packing", "PlotUtils", "PolygonOps", "PrecompileTools", "Printf", "REPL", "Random", "RelocatableFolders", "Scratch", "ShaderAbstractions", "Showoff", "SignedDistanceFields", "SparseArrays", "Statistics", "StatsBase", "StatsFuns", "StructArrays", "TriplotBase", "UnicodeFun"]
+git-tree-sha1 = "4d49c9ee830eec99d3e8de2425ff433ece7cc1bc"
 uuid = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-version = "0.21.0"
+version = "0.20.10"
 
 [[deps.MakieCore]]
-deps = ["ColorTypes", "GeometryBasics", "IntervalSets", "Observables"]
-git-tree-sha1 = "f23e301d977e037ff8df4e1f5d8035cd78a1e250"
+deps = ["Observables", "REPL"]
+git-tree-sha1 = "248b7a4be0f92b497f7a331aed02c1e9a878f46b"
 uuid = "20f20a25-4f0e-4fdf-b5d1-57303727442b"
-version = "0.8.0"
+version = "0.7.3"
 
 [[deps.MappedArrays]]
 git-tree-sha1 = "2dab0221fe2b0f2cb6754eaa743cc266339f527e"
@@ -1159,9 +1177,9 @@ uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 
 [[deps.MathTeXEngine]]
 deps = ["AbstractTrees", "Automa", "DataStructures", "FreeTypeAbstraction", "GeometryBasics", "LaTeXStrings", "REPL", "RelocatableFolders", "UnicodeFun"]
-git-tree-sha1 = "1865d0b8a2d91477c8b16b49152a32764c7b1f5f"
+git-tree-sha1 = "96ca8a313eb6437db5ffe946c457a401bbb8ce1d"
 uuid = "0a4f8689-d25c-4efe-a92b-7142dfc1aa53"
-version = "0.6.0"
+version = "0.5.7"
 
 [[deps.MbedTLS]]
 deps = ["Dates", "MbedTLS_jll", "MozillaCACerts_jll", "NetworkOptions", "Random", "Sockets"]
@@ -1345,6 +1363,12 @@ git-tree-sha1 = "67186a2bc9a90f9f85ff3cc8277868961fb57cbd"
 uuid = "f57f5aa1-a3ce-4bc8-8ab9-96f992907883"
 version = "0.4.3"
 
+[[deps.PROJ_jll]]
+deps = ["Artifacts", "JLLWrappers", "LibCURL_jll", "Libdl", "Libtiff_jll", "SQLite_jll"]
+git-tree-sha1 = "84aa844bd56f62282116b413fbefb45e370e54d6"
+uuid = "58948b4f-47e0-5654-a9ad-f609743f8632"
+version = "901.300.0+1"
+
 [[deps.Packing]]
 deps = ["GeometryBasics"]
 git-tree-sha1 = "ec3edfe723df33528e085e632414499f26650501"
@@ -1437,6 +1461,12 @@ git-tree-sha1 = "763a8ceb07833dd51bb9e3bbca372de32c0605ad"
 uuid = "92933f4c-e287-5a05-a399-4b506db050ca"
 version = "1.10.0"
 
+[[deps.Proj]]
+deps = ["CEnum", "CoordinateTransformations", "GeoFormatTypes", "GeoInterface", "NetworkOptions", "PROJ_jll"]
+git-tree-sha1 = "76ab3cbf876f3c859b6cc5817d8262809add3e13"
+uuid = "c94c279d-25a6-4763-9509-64d165bea63e"
+version = "1.7.0"
+
 [[deps.PtrArrays]]
 git-tree-sha1 = "077664975d750757f30e739c870fbbdc01db7913"
 uuid = "43287f4e-b6f4-7ad1-bb20-aadabca52c3d"
@@ -1476,6 +1506,12 @@ weakdeps = ["FixedPointNumbers"]
 
     [deps.Ratios.extensions]
     RatiosFixedPointNumbersExt = "FixedPointNumbers"
+
+[[deps.RecipesBase]]
+deps = ["PrecompileTools"]
+git-tree-sha1 = "5c3d09cc4f31f5fc6af001c250bf1278733100ff"
+uuid = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
+version = "1.3.4"
 
 [[deps.Reexport]]
 git-tree-sha1 = "45e428421666073eab6f2da5c9d310d99bb12f9b"
@@ -1520,6 +1556,12 @@ deps = ["PrecompileTools"]
 git-tree-sha1 = "2803cab51702db743f3fda07dd1745aadfbf43bd"
 uuid = "fdea26ae-647d-5447-a871-4b548cad5224"
 version = "3.5.0"
+
+[[deps.SQLite_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Zlib_jll"]
+git-tree-sha1 = "004fffbe2711abdc7263a980bbb1af9620781dd9"
+uuid = "76ed43ae-9a5d-5a62-8c75-30186b810ce8"
+version = "3.45.3+0"
 
 [[deps.Scratch]]
 deps = ["Dates"]
@@ -1772,20 +1814,6 @@ git-tree-sha1 = "53915e50200959667e78a92a418594b428dffddf"
 uuid = "1cfade01-22cf-5700-b092-accc4b62d6e1"
 version = "0.4.1"
 
-[[deps.Unitful]]
-deps = ["Dates", "LinearAlgebra", "Random"]
-git-tree-sha1 = "dd260903fdabea27d9b6021689b3cd5401a57748"
-uuid = "1986cc42-f94f-5a68-af5c-568840ba703d"
-version = "1.20.0"
-
-    [deps.Unitful.extensions]
-    ConstructionBaseUnitfulExt = "ConstructionBase"
-    InverseFunctionsUnitfulExt = "InverseFunctions"
-
-    [deps.Unitful.weakdeps]
-    ConstructionBase = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
-    InverseFunctions = "3587e190-3f89-42d0-90ee-14403ec27112"
-
 [[deps.WeakRefStrings]]
 deps = ["DataAPI", "InlineStrings", "Parsers"]
 git-tree-sha1 = "b1be2855ed9ed8eac54e5caff2afcdb442d52c23"
@@ -1981,21 +2009,25 @@ version = "3.5.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╟─d9ffd0a8-85e3-4e2a-9d6a-81f3dbd3ee31
-# ╟─e5b9772e-cbb5-42f0-bacb-5bae6bc8d5b6
-# ╟─0a016d12-de41-45f5-800d-af8f953720e4
-# ╟─b8db58ca-ed7a-4174-a6b0-e53925b5887a
-# ╟─428120da-1542-4265-a369-1273ae4718ac
-# ╟─f72d308f-6a74-460d-ae88-cf994477e750
-# ╟─1ab9daac-b631-4f3e-a868-14e95f71962b
-# ╟─d49320f0-06c3-4d82-93d1-6047edc37d47
-# ╟─440e4256-d6eb-4dfa-946b-22fac53432e8
-# ╟─68028522-205e-4b41-b3c0-2e3b09c2d8a7
-# ╟─0247a51e-c89b-11ec-071f-bb82fe257adc
-# ╟─9523dc0d-1758-4e0f-864c-4ab253bf11a9
-# ╠═1f244746-363c-4e7e-8bf8-70141fce66a3
-# ╟─0a0842ff-aeb4-4561-857b-8ea31b10b32a
-# ╟─4edad6a6-0468-4443-b878-7c9e26921766
-# ╟─5748bb5f-528f-42fd-8961-fd7c93d12554
+# ╟─5fa93c17-0a01-44c6-8679-d712c786907a
+# ╟─31fe91d7-dea2-49e3-902b-31aa62075986
+# ╟─1042f70c-4337-4bf2-b533-edf27a422365
+# ╟─b6a138b0-fce5-4767-b4d1-eed0d0560988
+# ╟─52dc1cd5-e57a-43bb-82c9-feb1de25e5ca
+# ╟─3b80d06d-72b8-4f67-945e-0b18f61de6e9
+# ╟─eb95a380-a0b0-4762-8342-89d0f634d1ec
+# ╟─fccdc273-2e9f-4f60-a659-8ee2790ae2fc
+# ╟─ec963909-f9ee-4dd8-b9fa-4f34038c99e0
+# ╟─f71390bd-6862-43be-84b9-005ff5742b5e
+# ╟─4b3f3ede-f1f0-4df5-931b-982a29395a53
+# ╟─596bce95-e13f-4439-858f-e944834c0924
+# ╟─aa80092c-80b9-489c-97b9-06c3d39ac594
+# ╟─401180a9-cb62-4dc6-b0a1-35df35f834db
+# ╟─cb5cce8c-f67f-496b-ba10-38eefe9285e1
+# ╟─33c56cf4-5954-49f8-bb26-4f0d028f9093
+# ╟─1bf99223-ef46-4202-bdcc-8d7d6c561822
+# ╠═ccf98691-9386-41b9-a957-3cdeba51312b
+# ╟─6d4c35fc-1a18-4fd7-a194-61fb387c7091
+# ╟─fbff1986-68c0-4558-b29b-2c6b87ca85fe
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
