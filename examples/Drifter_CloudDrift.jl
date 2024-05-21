@@ -19,89 +19,14 @@ TableOfContents()
 # ╔═╡ f3c351c7-3fba-4ee8-8522-80fd0e8921af
 md"""## Read To DataFrame"""
 
-# ╔═╡ 8303dd1b-08da-48ca-a91f-3fc3707a8625
-begin
-	pth="data/"; file=joinpath(pth,"gdp_subset.nc")
-	#file="Drifter_hourly_v2p0/gdp_v2.00.nc"
-	ds=Dataset(file)
-	df=to_DataFrame(ds)
-	add_ID!(df,ds)
-	add_index!(df)
-	df.cv=df.ve+1im*df.vn
-	df
-end
-
 # ╔═╡ e909abc7-cb6a-4749-878f-3f12e73b6cc6
 md"""## Binning To Grid"""
-
-# ╔═╡ ffcf6be9-5f6d-40e1-8445-ad8e33d23ba0
-gdf=groupby(df,:index);
-
-# ╔═╡ b88c9152-250c-46be-a3e2-ee3af8d9853e
-(ve,vn)=to_Grid(gdf);
 
 # ╔═╡ d74cd331-4b42-4404-96b1-808152fa4dd6
 md"""## Regional Subset"""
 
-# ╔═╡ 9e9b1fc0-ab55-4a2d-8f40-5b6bbae3764f
-begin
-	lon = (-98, -78); lat = (18, 31)
-	#lon = (-150, -140); lat = (25, 35)
-	d0=DateTime("2000-01-1T00:00:00")
-	d1=DateTime("2020-12-31T00:00:00")
-	tim=(d0,d1)
-	df_subset=region_subset(df,lon,lat,tim)
-end
-
-# ╔═╡ 130d24de-78a7-4f94-839c-fe83a44f9edd
-let
-	ii=findall(isfinite.(df_subset.longitude.*df_subset.latitude))	
-	scatter(df_subset.longitude[ii], df_subset.latitude[ii], markersize=2,
-		color=sqrt.(df_subset.ve.^2+df_subset.vn.^2), colorrange=(0,2.5), colormap=:speed)
-end
-
 # ╔═╡ 05b32012-927d-42b4-8a18-fdfcb051a3fd
 md"""## Per Trajectory Statistics"""
-
-# ╔═╡ 324a59d3-e0bb-46a7-860c-d30f9a0c15dd
-begin
-	gdf2=groupby(df,:ID)
-	df2=trajectory_stats(gdf2)
-	df2[1,:]
-end
-
-# ╔═╡ a25027b5-5b0e-4190-b4b6-987f4e16ccd8
-begin
-	trajectory_periodogram(cv) = 1/24 *abs.(fft(cv[:])).^2
-	periodograms=[trajectory_periodogram(tmp.cv[:]) for tmp in gdf2];
-end
-
-# ╔═╡ efc6b8b3-a55b-4830-953c-2a51ce162604
-let
-	# ( for detail, see original notebook @ https://github.com/Cloud-Drift/earthcube-meeting-2022 )
-
-	ii=1
-	
-	# calculate inertial frequency in cycle per day [cpd] from the mean latitude of trajectory
-	omega = 7.2921159e-5  # Earth's rotation rate [rad/s]
-	seconds_per_day = 60*60*24  # [s]
-	fi = -2*omega*(seconds_per_day/(2*pi))*sind(df2[ii,:latitude])
-
-	# define frequency scale/abscissa
-	dt = 1/24  # [-]
-	f = fftfreq(length(periodograms[ii]), dt) /dt/dt
-	ss = log10.(periodograms[ii])  # spectrum of the ith trajectory 
-
-	# plot
-    fig1 = Figure()
-	ax1=Axis(fig1[1,1],ylabel="PSD (m^2 / s^2 / cpd)",xlabel="Frequency [cpd]")
-	lines!(ax1,fftshift(f), fftshift(ss),label="Spectrum")
-	lines!(ax1,[fi,fi], [-3.0,6.0], color=:red, linestyle=:dash, linewidth=2,label="Inertial frequency")
-	#fig1[1, 2] = Legend(fig1, ax1)
-	axislegend(position = :rt)
-
-	fig1
-end
 
 # ╔═╡ 89c82c13-9221-48b8-9138-79b91603d7e6
 md"""## Appendix
@@ -111,9 +36,6 @@ Packages, grid, functions used in the notebook are defined here.
 
 # ╔═╡ aeb6bc74-ffea-4465-8807-e5c352cbf632
 grid=(lon=-180.0+0.25:0.5:180.0,lat=-90.0+0.25:0.5:90.0)
-
-# ╔═╡ d4af67e7-2308-4135-929e-c7fc6572d6c7
-heatmap(grid.lon,grid.lat,ve)
 
 # ╔═╡ 4e788107-5910-4e65-b01f-8dfd6858856c
 """
@@ -159,6 +81,21 @@ function add_ID!(df,ds)
 	df.ID=ID
 end
 
+# ╔═╡ 8303dd1b-08da-48ca-a91f-3fc3707a8625
+begin
+	pth="data/"; file=joinpath(pth,"gdp_subset.nc")
+	#file="Drifter_hourly_v2p0/gdp_v2.00.nc"
+	ds=Dataset(file)
+	df=to_DataFrame(ds)
+	add_ID!(df,ds)
+	add_index!(df)
+	df.cv=df.ve+1im*df.vn
+	df
+end
+
+# ╔═╡ ffcf6be9-5f6d-40e1-8445-ad8e33d23ba0
+gdf=groupby(df,:index);
+
 # ╔═╡ 5f4ce74c-1a89-41af-b042-cc2bb5c74920
 """
     to_Grid(gdf)
@@ -176,6 +113,12 @@ function to_Grid(gdf)
 	ve,vn
 end
 
+# ╔═╡ b88c9152-250c-46be-a3e2-ee3af8d9853e
+(ve,vn)=to_Grid(gdf);
+
+# ╔═╡ d4af67e7-2308-4135-929e-c7fc6572d6c7
+heatmap(grid.lon,grid.lat,ve)
+
 # ╔═╡ 420e2ae3-6e61-467b-b35d-c563a19ac5ce
 """
     region_subset(df,lons,lats,dates)
@@ -186,6 +129,23 @@ region_subset(df,lons,lats,dates) =
     df[ (df.longitude .> lons[1]) .& (df.longitude .<= lons[2]) .&
     (df.latitude .> lats[1]) .& (df.latitude .<= lats[2]) .&
     (df.time .> dates[1]) .& (df.time .<= dates[2]) ,:]
+
+# ╔═╡ 9e9b1fc0-ab55-4a2d-8f40-5b6bbae3764f
+begin
+	lon = (-98, -78); lat = (18, 31)
+	#lon = (-150, -140); lat = (25, 35)
+	d0=DateTime("2000-01-1T00:00:00")
+	d1=DateTime("2020-12-31T00:00:00")
+	tim=(d0,d1)
+	df_subset=region_subset(df,lon,lat,tim)
+end
+
+# ╔═╡ 130d24de-78a7-4f94-839c-fe83a44f9edd
+let
+	ii=findall(isfinite.(df_subset.longitude.*df_subset.latitude))	
+	scatter(df_subset.longitude[ii], df_subset.latitude[ii], markersize=2,
+		color=sqrt.(df_subset.ve.^2+df_subset.vn.^2), colorrange=(0,2.5), colormap=:speed)
+end
 
 # ╔═╡ 96cec0ea-12b7-41d1-9a6a-78acfe621c9b
 """
@@ -199,6 +159,46 @@ function trajectory_stats(gdf)
 		sst=mean(skipmissing(df.sst)) , sst1=mean(skipmissing(df.sst1)), sst2=mean(skipmissing(df.sst2)))
 	end
 	df2
+end
+
+# ╔═╡ 324a59d3-e0bb-46a7-860c-d30f9a0c15dd
+begin
+	gdf2=groupby(df,:ID)
+	df2=trajectory_stats(gdf2)
+	df2[1,:]
+end
+
+# ╔═╡ a25027b5-5b0e-4190-b4b6-987f4e16ccd8
+begin
+	trajectory_periodogram(cv) = 1/24 *abs.(fft(cv[:])).^2
+	periodograms=[trajectory_periodogram(tmp.cv[:]) for tmp in gdf2];
+end
+
+# ╔═╡ efc6b8b3-a55b-4830-953c-2a51ce162604
+let
+	# ( for detail, see original notebook @ https://github.com/Cloud-Drift/earthcube-meeting-2022 )
+
+	ii=1
+	
+	# calculate inertial frequency in cycle per day [cpd] from the mean latitude of trajectory
+	omega = 7.2921159e-5  # Earth's rotation rate [rad/s]
+	seconds_per_day = 60*60*24  # [s]
+	fi = -2*omega*(seconds_per_day/(2*pi))*sind(df2[ii,:latitude])
+
+	# define frequency scale/abscissa
+	dt = 1/24  # [-]
+	f = fftfreq(length(periodograms[ii]), dt) /dt/dt
+	ss = log10.(periodograms[ii])  # spectrum of the ith trajectory 
+
+	# plot
+    fig1 = Figure()
+	ax1=Axis(fig1[1,1],ylabel="PSD (m^2 / s^2 / cpd)",xlabel="Frequency [cpd]")
+	lines!(ax1,fftshift(f), fftshift(ss),label="Spectrum")
+	lines!(ax1,[fi,fi], [-3.0,6.0], color=:red, linestyle=:dash, linewidth=2,label="Inertial frequency")
+	#fig1[1, 2] = Legend(fig1, ax1)
+	axislegend(position = :rt)
+
+	fig1
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001

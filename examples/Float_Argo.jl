@@ -199,16 +199,12 @@ end
 
 # ╔═╡ fc0340be-4671-406f-9dc0-e831009aa9b8
 function heatmap_profiles!(ax,TIME,TEMP,cmap)
-	x=TIME
-	y=-[z_std[i] for i in 1:nz, j in 1:size(TEMP,2)]
-	co=Float64.(reverse(permutedims(TEMP),dims=2))
-	rng=extrema(co[:])
-
+	x=TIME[1,:]; y=z_std
+	co=Float64.(permutedims(TEMP))
+	rng=extrema(TEMP[:])
 	sca=heatmap!(ax, x , y , co, colorrange=rng,colormap=cmap)
-
 	ax.xlabel="time (day)"
 	ax.ylabel="depth (m)"
-
 	sca
 end
 
@@ -254,15 +250,15 @@ function plot_standard(arr,spd,T_std,S_std)
 	ax=Axis(fig1[1,3],title="Float wmo="*string(wmo))
 	scatter!(ax,arr.PSAL[:],arr.TEMP[:],markersize=3.0)
 
-	lims=(nothing, nothing, -500.0, 0.0)
-
-	ax=Axis(fig1[2,1:3],title="Temperature, degree C", limits=lims)
+	ax=Axis(fig1[2,1:3],title="Temperature, degree C")
 	hm1=heatmap_profiles!(ax,arr.TIME,T_std,:thermal)
 	Colorbar(fig1[2,4], hm1, height=Relative(0.65))
+	ylims!(ax, 500, 0)
 
-	ax=Axis(fig1[3,1:3],title="Salinity, psu", limits=lims)
+	ax=Axis(fig1[3,1:3],title="Salinity, psu")
 	hm2=heatmap_profiles!(ax,arr.TIME,S_std,:viridis)
 	Colorbar(fig1[3,4], hm2, height=Relative(0.65))
+	ylims!(ax, 500, 0)
 
 	fig1
 end
@@ -277,7 +273,7 @@ end
 # ╔═╡ c176fd5e-b2f2-47e3-8145-a4c152389344
 function plot_samples(arr)
 	
-	fig1=Figure(resolution = (800, 400))
+	fig1=Figure(size = (800, 400))
 	lims=(nothing, nothing, -500.0, 0.0)
 
 	ttl="Float wmo="*string(wmo)
@@ -2188,8 +2184,8 @@ version = "3.5.0+0"
 # ╟─904c8a06-0552-40b4-aa9f-404d61b21c08
 # ╟─8418b9ca-2e7f-4468-a0fb-36f5a05dde2c
 # ╟─4d949835-4cf8-4493-b765-6e956019b777
-# ╟─49256e11-fbd2-40e7-8f0b-193e17e2b31b
 # ╟─2a1c12c9-21e9-479a-b56c-a893d1cbede6
+# ╟─49256e11-fbd2-40e7-8f0b-193e17e2b31b
 # ╟─9037e2ce-a04a-40d0-945e-ec3f19a4f3c4
 # ╟─3f5419f1-d131-42eb-86c8-44a385e88d51
 # ╟─533ea412-76ae-4060-bbc8-2650ee0d2774

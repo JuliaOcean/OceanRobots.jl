@@ -118,7 +118,8 @@ end
 # ╔═╡ b39d9b80-4674-424b-ad52-091033b07ce2
 begin
 	wmo=ds[:WMO][1]
-	ID=parse(Int,string(ds["ID"][ds["ID"][:].!=='\0']...))
+	ii1=findall( ds["ID"][:].!=='\0')
+	ID=parse.(Int,string.(ds["ID"][ii1]))
 	md""" Selected Buoy identifiers:
 	
 	- `GDP ID`=$(ID)

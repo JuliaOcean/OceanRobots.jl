@@ -125,16 +125,18 @@ jj=findall(list_platform_types.nameShort.==nam_platform_types)[1]
 # ╔═╡ b6a138b0-fce5-4767-b4d1-eed0d0560988
 let
 	fi0=Figure()
-	ax0=GeoAxis(fi0[1,1],coastlines = true)	
-	scatter!(argo_operational.lon,argo_operational.lat,
+	ax0=GeoAxis(fi0[1,1]) #,coastlines = true)	
+	sc1=scatter!(argo_operational.lon,argo_operational.lat,
 		label="Argo (operational)",color=:blue,markersize=4)
-	scatter!(argo_planned.lon,argo_planned.lat,
+	sc2=scatter!(argo_planned.lon,argo_planned.lat,
 		label="Argo (planned)",color=:red,marker=:xcross,markersize=8)
-	scatter!(drifter_operational.lon,drifter_operational.lat,
+	sc3=scatter!(drifter_operational.lon,drifter_operational.lat,
 		label="Drifter",color=:green2,marker='O',markersize=12)
-	scatter!(more_operational.lon,more_operational.lat,
+	sc4=scatter!(more_operational.lon,more_operational.lat,
 		label=list_platform_types.name[jj],color=:gold2,marker=:star5,markersize=16)
-	Legend(fi0[2, 1],ax0,orientation = :horizontal)
+	lines!(ax0, GeoMakie.coastlines(),color=:black)
+	Legend(fi0[2, 1],[sc1,sc2,sc3,sc4],[sc1.label,sc2.label,sc3.label,sc4.label],
+		orientation = :horizontal)
 	fi0
 end
 
@@ -151,25 +153,21 @@ end
 # ╔═╡ fbff1986-68c0-4558-b29b-2c6b87ca85fe
 function plot_base_Argo()
 	fi0=Figure()
-	ax0=GeoAxis(fi0[1,1],coastlines = true)	
+	ax0=GeoAxis(fi0[1,1])	
 	tab=OceanOPS.get_table(:Argo,1)
 	nam=OceanOPS.csv_listings()[:Argo][1]
-	scatter!(tab.LATEST_LOC_LON,tab.LATEST_LOC_LAT,label=nam,markersize=4)
-	fi0,ax0
+	sc0=scatter!(tab.LATEST_LOC_LON,tab.LATEST_LOC_LAT,label=nam,markersize=4)
+	lines!(ax0, GeoMakie.coastlines(),color=:black)
+	fi0,ax0,sc0
 end
 
 # ╔═╡ 4b3f3ede-f1f0-4df5-931b-982a29395a53
-begin
-	fi0,ax0=plot_base_Argo()
-	if s==:ArgoPlanned
-		plot_add(:Argo,2,col=:red)
-	else
-		plot_add(s,1,col=:red)
-	end
-	Legend(fi0[2, 1],ax0,orientation = :horizontal)
+let
+	fi0,ax0,sc0=plot_base_Argo()
+	sc1= (s==:ArgoPlanned ? plot_add(:Argo,2,col=:red) : plot_add(s,1,col=:red))
+	Legend(fi0[2, 1],[sc0,sc1],[sc0.label,sc1.label],orientation = :horizontal)
 	fi0
 end
-
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
