@@ -2,18 +2,26 @@
 
 module podaac_sla
 
-using NCDatasets, Dates, DataStructures
+using NCDatasets, Dates, DataStructures, Downloads
 
-url0="https://podaac-opendap.jpl.nasa.gov/opendap/allData/merged_alt/L4/cdr_grid/"
+#note : this need up-to-date credentials in ~/.netrc and ~/.ncrc
+url0="https://opendap.earthdata.nasa.gov/collections/C2270392799-POCLOUD/granules/"
+##url0="https://podaac-tools.jpl.nasa.gov/drive/files/allData/merged_alt/L4/cdr_grid/"
 path0=joinpath(pwd(),"SEA_SURFACE_HEIGHT_ALT_GRIDS_L4_2SATS_5DAY_6THDEG_V_JPL2205")*"/"
-##
+
+#url1="https://opendap.earthdata.nasa.gov/collections/C2102959417-POCLOUD/granules/"
+#url=url1*"oscar_currents_interim_20230101.nc"
+#path1=joinpath(pwd(),"OSCAR_L4_OC_INTERIM_V2.0")*"/"
 
 function get_grid(;url0=url0,
         range_lon=360.0.+(-35.0,-22),
         range_lat=(34.0,45),
         )
-    url=url0*"ssh_grids_v2205_1992101012.nc"
-    ds=Dataset(url)
+    url=url0*"ssh_grids_v2205_1992101012.dap.nc"
+#    fil=joinpath(tempdir(),"ssh_grids_v2205_1992101012.dap.nc")
+    fil=Downloads.download(url)
+
+    ds=Dataset(fil)
     lon=Float64.(ds["Longitude"][:])
     lat=Float64.(ds["Latitude"][:])
 
@@ -27,10 +35,12 @@ function file_name(n)
     d0=Date("1992-10-05")
     d=d0+Dates.Day(n*5)
     dtxt=string(d)
-    "ssh_grids_v2205_"*dtxt[1:4]*dtxt[6:7]*dtxt[9:10]*"12.nc"
+    "ssh_grids_v2205_"*dtxt[1:4]*dtxt[6:7]*dtxt[9:10]*"12.nc" #".dap.nc"
 end
 
 function read_slice(url,gr)
+    #fil=Downloads.download(url)
+    #ds=Dataset(fil)
     ds=Dataset(url)
     SLA=ds["SLA"][gr.ii,gr.jj,1]
     SLA[ismissing.(SLA)].=NaN
@@ -47,7 +57,7 @@ podaac_sla.subset()
 ```
 """
 function subset(;
-    url0="SEA_SURFACE_HEIGHT_ALT_GRIDS_L4_2SATS_5DAY_6THDEG_V_JPL2205/",
+    path0="SEA_SURFACE_HEIGHT_ALT_GRIDS_L4_2SATS_5DAY_6THDEG_V_JPL2205/",
     username="unknown",
     password="unknown",
     range_lon=360.0.+(-35.0,-22),
@@ -55,12 +65,13 @@ function subset(;
     save_to_file=true,
     )
     
-    gr=get_grid(url0=url0, range_lon=range_lon,range_lat=range_lat)
+    gr=get_grid(range_lon=range_lon,range_lat=range_lat)
+    show(gr)
     i0=1; i1=gr.nt    
     data=zeros(length(gr.ii),length(gr.jj),i1-i0+1)
     for n=i0:i1
         mod(n,100)==0 ? println(n) : nothing
-        data[:,:,n-i0+1]=read_slice(url0*file_name(n),gr)
+        data[:,:,n-i0+1]=read_slice(path0*file_name(n),gr)
     end
 
     if save_to_file
