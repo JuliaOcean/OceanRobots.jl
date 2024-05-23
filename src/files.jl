@@ -390,7 +390,7 @@ end
 
 module ArgoFiles
 
-using NCDatasets, Downloads, CSV, DataFrames
+using NCDatasets, Downloads, CSV, DataFrames, Interpolations, Statistics
 
 """
     ArgoFiles.download(files_list,wmo)
@@ -479,6 +479,43 @@ function scan_txt(fil="ar_index_global_prof.txt"; do_write=false)
     do_write ? CSV.write(outputfile, prof) : nothing
 
     return prof
+end
+
+function speed(arr)
+    (lon,lat)=(arr.lon,arr.lat)
+    EarthRadius=6378e3 #in meters
+    gcdist(lo1,lo2,la1,la2) = acos(sind(la1)*sind(la2)+cosd(la1)*cosd(la2)*cosd(lo1-lo2)) #in radians
+
+    dx_net=EarthRadius*gcdist(lon[1],lon[end],lat[1],lat[end])
+    dx=[EarthRadius*gcdist(lon[i],lon[i+1],lat[i],lat[i+1]) for i in 1:length(lon)-1]
+    dt=10.0*86400
+
+    dist_tot=sum(dx)/1000 #in km
+    dist_net=dx_net/1000 #in km
+    
+    speed_net=dx_net/dt/(length(lon)-1)
+    speed_mean=mean(dx/dt)
+
+    return (dx=dx,dist_tot=dist_tot,dist_net=dist_net,
+    speed_net=speed_net,speed_mean=speed_mean)
+end
+
+z_std=collect(0.0:5:500.0)
+nz=length(z_std)
+
+function interp_z(P,T)
+    k=findall((!ismissing).(P.*T))
+    interp_linear_extrap = LinearInterpolation(Float64.(P[k]), Float64.(T[k]), extrapolation_bc=Line()) 
+    interp_linear_extrap(z_std)
+end
+
+function interp_z_all(arr)
+    np=size(arr.PRES,2)
+    T_std=zeros(length(z_std),np)
+    S_std=zeros(length(z_std),np)
+    [T_std[:,i].=interp_z(arr.PRES[:,i],arr.TEMP[:,i]) for i in 1:np]
+    [S_std[:,i].=interp_z(arr.PRES[:,i],arr.PSAL[:,i]) for i in 1:np]
+    T_std,S_std
 end
 
 end

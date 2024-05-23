@@ -134,5 +134,86 @@ function make_movie(ds,tt; framerate = 90, dates=[])
     end
 end
 
+## Argo
+
+function heatmap_profiles!(ax,TIME,TEMP,cmap)
+	x=TIME[1,:]; y=collect(0.0:5:500.0)
+	co=Float64.(permutedims(TEMP))
+	rng=extrema(TEMP[:])
+	sca=heatmap!(ax, x , y , co, colorrange=rng,colormap=cmap)
+	ax.xlabel="time (day)"
+	ax.ylabel="depth (m)"
+	sca
+end
+
+function plot_profiles!(ax,TIME,PRES,TEMP,cmap)
+	ii=findall(((!ismissing).(PRES)).*((!ismissing).(TEMP)))
+
+	x=TIME[ii]
+	y=-PRES[ii] #pressure in decibars ~ depth in meters
+	co=Float64.(TEMP[ii])
+	rng=extrema(co)
+
+	sca=scatter!(ax, x , y ,color=co,colormap=cmap, markersize=5)
+
+	ax.xlabel="time (day)"
+	ax.ylabel="depth (m)"
+
+	sca
+end
+
+function plot_trajectory!(ax,lon,lat,dx)
+	dt=10.0*86400
+	co=(dx[2:end]+dx[1:end-1])/2
+	co=[dx[1];co[:];dx[end]]/dt
+
+	li=lines!(ax,lon, lat, linewidth=2, color=co, colormap=:turbo)
+	scatter!(ax,lon, lat, marker=:circle, markersize=2, color=:black)
+	ax.xlabel="longitude"
+	ax.ylabel="latitude"
+	ax.title="positions (dots) & speed (color)"
+
+	li
+end
+
+function plot_standard(wmo,arr,spd,T_std,S_std)
+	fig1=Figure()
+	
+	ax=Axis(fig1[1,1])
+	li=plot_trajectory!(ax,arr.lon,arr.lat,spd.dx)
+	Colorbar(fig1[1,2], li, height=Relative(0.65))
+	ax=Axis(fig1[1,3],title="Float wmo="*string(wmo))
+	scatter!(ax,arr.PSAL[:],arr.TEMP[:],markersize=3.0)
+
+	ax=Axis(fig1[2,1:3],title="Temperature, degree C")
+	hm1=heatmap_profiles!(ax,arr.TIME,T_std,:thermal)
+	Colorbar(fig1[2,4], hm1, height=Relative(0.65))
+	ylims!(ax, 500, 0)
+
+	ax=Axis(fig1[3,1:3],title="Salinity, psu")
+	hm2=heatmap_profiles!(ax,arr.TIME,S_std,:viridis)
+	Colorbar(fig1[3,4], hm2, height=Relative(0.65))
+	ylims!(ax, 500, 0)
+
+	fig1
+end
+
+function plot_samples(arr,wmo)
+	
+	fig1=Figure(size = (800, 400))
+	lims=(nothing, nothing, -500.0, 0.0)
+
+	ttl="Float wmo="*string(wmo)
+	ax=Axis(fig1[1,1],title=ttl*", temperature, degree C", limits=lims)
+	hm1=plot_profiles!(ax,arr.TIME,arr.PRES,arr.TEMP,:thermal)
+	Colorbar(fig1[1,2], hm1, height=Relative(0.65))
+
+	ax=Axis(fig1[2,1],title=ttl*", salinity, psu", limits=lims)
+	hm2=plot_profiles!(ax,arr.TIME,arr.PRES,arr.PSAL,:viridis)
+	Colorbar(fig1[2,2], hm2, height=Relative(0.65))
+
+	fig1
+end
+
 end
 
