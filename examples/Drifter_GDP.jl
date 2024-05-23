@@ -65,8 +65,6 @@ A subset of the drifter files is used for illustration in this notebook.
 
 # ╔═╡ e8f3749c-e009-45be-9f25-71354352c8ee
 begin
-	myread(ds,v) = Float64.(OceanRobots.GDP.cfvariable(ds,v,missing_value=-1.e+34))
-	
 	list_files=GDP.list_files()
 	jj=[1,5000,10000,15000] #subset of the files
 	list_files=list_files[jj,:]
@@ -80,30 +78,7 @@ begin
 end
 
 # ╔═╡ 156ff1f1-ca05-4ac6-8351-69b6c19ed8fa
-function plot_drifter(ds)	
-	la=myread(ds,"latitude")
-	lo=myread(ds,"longitude")
-	lon360=myread(ds,"lon360")
-	tst=maximum(lo)-minimum(lo)>maximum(lon360)-minimum(lon360)
-	tst ? lo.=lon360 : nothing
-
-	ve=myread(ds,"ve")
-	vn=myread(ds,"vn")
-	vel=sqrt.(ve.^2 .+ vn.^2)
-		
-	fig1 = Figure()
-	ax1 = Axis(fig1[1,1], title="positions", xlabel="longitude",ylabel="latitude")
-	lines!(ax1,lo[:],la[:])
-	ax1 = Axis(fig1[1,2], title="velocities", xlabel="ve",ylabel="vn")
-	scatter!(ax1,ve[:],vn[:],markersize=2.0)
-
-	ax2 = Axis(fig1[2,1:2], title="speed (red), ve (blue), vn (green)", xlabel="time",ylabel="m/s")
-	lines!(ax2,vel[:],color=:red)
-	lines!(ax2,ve[:],color=:blue)
-	lines!(ax2,vn[:],color=:green)
-	
-	fig1
-end
+OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
 
 # ╔═╡ 1af8da1e-8906-4042-91b0-bad3632d02bf
 begin
@@ -128,7 +103,7 @@ begin
 end
 
 # ╔═╡ 32810c75-efaf-4bb6-8e54-19077b4e5a00
-plot_drifter(ds)
+OceanRobotsMakieExt.plot_drifter(ds)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """

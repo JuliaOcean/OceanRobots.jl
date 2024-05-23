@@ -284,6 +284,8 @@ ds=GDP.read(fil)
 """
 read(filename::String) = Dataset(filename)
 
+read_v(ds,v) = Float64.(cfvariable(ds,v,missing_value=-1.e+34))
+
 end #module GDP
 
 ##
