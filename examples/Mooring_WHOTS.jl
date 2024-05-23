@@ -16,7 +16,7 @@ end
 
 # ╔═╡ 5fc8cc85-7bd4-4fea-8c6f-01dabee6eb5f
 begin
-	using OceanRobots, Dates, CairoMakie, PlutoUI
+	using OceanRobots, CairoMakie, PlutoUI
 	"Done with packages"
 end
 
@@ -102,40 +102,15 @@ end
 md"""### Julia Tools"""
 
 # ╔═╡ a8b006e1-90cd-4e51-b87b-fe02d983376f
-function plot_timeseries(d0,d1)
-	
-    tt=findall((arr.TIME.>d0).*(arr.TIME.<=d1))
-    t=Dates.value.(arr.TIME.-d0)/1000.0/86400.0
-	#or, e.g.:
-    #t=Dates.value.(arr.TIME.-TIME[1])/1000.0/86400.0
-    #tt=findall((t.>110).*(t.<140))
-
-    f=Figure()
-	ax1=Axis(f[1,1],xlabel="days",ylabel=units.wspeed,title="wspeed")
-    lines!(ax1,t[tt],arr.wspeed[tt])
-	ax1=Axis(f[2,1],xlabel="days",ylabel=units.AIRT,title="AIRT")
-    lines!(ax1,t[tt],arr.AIRT[tt])
-	ax1=Axis(f[3,1],xlabel="days",ylabel=units.TEMP,title="TEMP")
-    lines!(ax1,t[tt],arr.TEMP[tt])
-	
-	ax1=Axis(f[1,2],xlabel="days",ylabel=units.RAIN,title="RAIN")
-    lines!(ax1,t[tt],arr.RAIN[tt])
-	ax1=Axis(f[2,2],xlabel="days",ylabel=units.RELH,title="RELH")
-    lines!(ax1,t[tt],arr.RELH[tt])
-	ax1=Axis(f[3,2],xlabel="days",ylabel="x0"*units.PSAL,title="PSAL")
-    lines!(ax1,t[tt],arr.PSAL[tt])
-	
-    f
-end
+OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
 
 # ╔═╡ fc87b8e9-6863-4077-8435-80e74f1536c3
-plot_timeseries(DateTime(y0,m0,d0),DateTime(y1,m1,d1))
+OceanRobotsMakieExt.plot_WHOTS(arr,units,DateTime(y0,m0,d0),DateTime(y1,m1,d1))
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
-Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 OceanRobots = "0b51df41-3294-4961-8d23-db645e32016d"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 """
@@ -146,7 +121,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.3"
 manifest_format = "2.0"
-project_hash = "56e55372863abae274694e152251fcb6865e12a8"
+project_hash = "3d176982a7e409a871197b287fe1b56c0e1130ee"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -271,9 +246,9 @@ version = "1.0.5"
 
 [[deps.CairoMakie]]
 deps = ["CRC32c", "Cairo", "Colors", "FileIO", "FreeType", "GeometryBasics", "LinearAlgebra", "Makie", "PrecompileTools"]
-git-tree-sha1 = "aec444a07f2b3df8d41a47fabd02841b32be2dc5"
+git-tree-sha1 = "9e8eaaff3e5951d8c61b7c9261d935eb27e0304b"
 uuid = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
-version = "0.12.0"
+version = "0.12.2"
 
 [[deps.Cairo_jll]]
 deps = ["Artifacts", "Bzip2_jll", "CompilerSupportLibraries_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "JLLWrappers", "LZO_jll", "Libdl", "Pixman_jll", "Xorg_libXext_jll", "Xorg_libXrender_jll", "Zlib_jll", "libpng_jll"]
@@ -1060,15 +1035,15 @@ version = "0.5.13"
 
 [[deps.Makie]]
 deps = ["Animations", "Base64", "CRC32c", "ColorBrewer", "ColorSchemes", "ColorTypes", "Colors", "Contour", "Dates", "DelaunayTriangulation", "Distributions", "DocStringExtensions", "Downloads", "FFMPEG_jll", "FileIO", "FilePaths", "FixedPointNumbers", "Format", "FreeType", "FreeTypeAbstraction", "GeometryBasics", "GridLayoutBase", "ImageIO", "InteractiveUtils", "IntervalSets", "Isoband", "KernelDensity", "LaTeXStrings", "LinearAlgebra", "MacroTools", "MakieCore", "Markdown", "MathTeXEngine", "Observables", "OffsetArrays", "Packing", "PlotUtils", "PolygonOps", "PrecompileTools", "Printf", "REPL", "Random", "RelocatableFolders", "Scratch", "ShaderAbstractions", "Showoff", "SignedDistanceFields", "SparseArrays", "Statistics", "StatsBase", "StatsFuns", "StructArrays", "TriplotBase", "UnicodeFun", "Unitful"]
-git-tree-sha1 = "e96f6e1dba3c008d95b97103a330be6287411c67"
+git-tree-sha1 = "ec3a60c9de787bc6ef119d13e07d4bfacceebb83"
 uuid = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-version = "0.21.0"
+version = "0.21.2"
 
 [[deps.MakieCore]]
 deps = ["ColorTypes", "GeometryBasics", "IntervalSets", "Observables"]
-git-tree-sha1 = "f23e301d977e037ff8df4e1f5d8035cd78a1e250"
+git-tree-sha1 = "c1c9da1a69f6c635a60581c98da252958c844d70"
 uuid = "20f20a25-4f0e-4fdf-b5d1-57303727442b"
-version = "0.8.0"
+version = "0.8.2"
 
 [[deps.MappedArrays]]
 git-tree-sha1 = "2dab0221fe2b0f2cb6754eaa743cc266339f527e"
@@ -1162,9 +1137,9 @@ version = "0.5.5"
 
 [[deps.OceanRobots]]
 deps = ["CFTime", "CSV", "DataFrames", "DataStructures", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "URIs"]
-git-tree-sha1 = "df76320cc80f42a758912c2022b5a633f4292e4b"
+git-tree-sha1 = "bd895145d69e464912fd449a632efea32ec63af7"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
-version = "0.1.18"
+version = "0.1.19"
 
 [[deps.OffsetArrays]]
 git-tree-sha1 = "e64b4f5ea6b7389f6f046d13d4896a8f9c1ba71e"
@@ -1360,9 +1335,9 @@ uuid = "92933f4c-e287-5a05-a399-4b506db050ca"
 version = "1.10.0"
 
 [[deps.PtrArrays]]
-git-tree-sha1 = "077664975d750757f30e739c870fbbdc01db7913"
+git-tree-sha1 = "f011fbb92c4d401059b2212c05c0601b70f8b759"
 uuid = "43287f4e-b6f4-7ad1-bb20-aadabca52c3d"
-version = "1.1.0"
+version = "1.2.0"
 
 [[deps.QOI]]
 deps = ["ColorTypes", "FileIO", "FixedPointNumbers"]

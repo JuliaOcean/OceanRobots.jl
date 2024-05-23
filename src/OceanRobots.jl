@@ -1,5 +1,8 @@
 module OceanRobots
 
+using Dates
+export DateTime, Date
+
 include("thredds_servers.jl")
 include("files.jl")
 include("gridded_data.jl")

@@ -57,6 +57,9 @@ md"""## Appendix"""
 # ╔═╡ 37186681-41f5-4bbc-b8f6-fde37c7b5130
 md"""### Julia"""
 
+# ╔═╡ 156ff1f1-ca05-4ac6-8351-69b6c19ed8fa
+OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
+
 # ╔═╡ 1a5bf0e8-669b-47b7-ad1e-72a39d86e69e
 md"""### Files
 
@@ -76,9 +79,6 @@ begin
 	md"""Select one of the drifting buoys $(ii_select)
 	"""
 end
-
-# ╔═╡ 156ff1f1-ca05-4ac6-8351-69b6c19ed8fa
-OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
 
 # ╔═╡ 1af8da1e-8906-4042-91b0-bad3632d02bf
 begin
