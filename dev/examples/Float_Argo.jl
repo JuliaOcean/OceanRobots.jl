@@ -16,9 +16,7 @@ end
 
 # ╔═╡ 8539e67f-6361-409a-9dbe-e8dcb2c7e10d
 begin
-	using OceanRobots, ArgoData
-	using Statistics, Interpolations 
-	using CairoMakie, PlutoUI, PrettyTables
+	using OceanRobots, ArgoData, CairoMakie, PlutoUI, PrettyTables
 	"Done with packages"
 end
 
@@ -85,6 +83,11 @@ begin
 	"""
 end
 
+# ╔═╡ 2a1c12c9-21e9-479a-b56c-a893d1cbede6
+T_std,S_std=ArgoFiles.interp_z_all(arr)
+
+fig1=OceanRobotsMakieExt.plot_standard(wmo,arr,spd,T_std,S_std)
+
 # ╔═╡ 3f5419f1-d131-42eb-86c8-44a385e88d51
 begin
 	files_list=GDAC.files_list()
@@ -139,34 +142,9 @@ begin
 	"Done with data ingestion"
 end
 
-# ╔═╡ 5b814708-292a-45ed-8eab-386a7f097634
-begin
-	"Done reading data arrays"
-end
-
 # ╔═╡ 3fd610a8-80c1-4acc-b3ef-20883f77e32d
 begin
-	function speed(arr)
-		(lon,lat)=(arr.lon,arr.lat)
-		EarthRadius=6378e3 #in meters
-		gcdist(lo1,lo2,la1,la2) = acos(sind(la1)*sind(la2)+cosd(la1)*cosd(la2)*cosd(lo1-lo2)) #in radians
-
-		dx_net=EarthRadius*gcdist(lon[1],lon[end],lat[1],lat[end])
-		dx=[EarthRadius*gcdist(lon[i],lon[i+1],lat[i],lat[i+1]) for i in 1:length(lon)-1]
-		dt=10.0*86400
-
-		dist_tot=sum(dx)/1000 #in km
-		dist_net=dx_net/1000 #in km
-		
-		speed_net=dx_net/dt/(length(lon)-1)
-		speed_mean=mean(dx/dt)
-
-		return (dx=dx,dist_tot=dist_tot,dist_net=dist_net,
-		speed_net=speed_net,speed_mean=speed_mean)
-	end
-
-	spd=speed(arr)
-
+	spd=ArgoFiles.speed(arr)
 	"Done with reading data positions"
 end
 
@@ -177,130 +155,22 @@ md"""_Average estimated drift speed :_ $(round(spd.speed_mean; digits=4)) m/s"""
 md"""### Viz"""
 
 # ╔═╡ a42edc9d-9fa2-4775-83c4-2d9a5130105c
-begin
-	z_std=collect(0.0:5:500.0)
-	nz=length(z_std)
 
-	function interp_z(P,T)
-		k=findall((!ismissing).(P.*T))
-		interp_linear_extrap = LinearInterpolation(Float64.(P[k]), Float64.(T[k]), extrapolation_bc=Line()) 
-		interp_linear_extrap(z_std)
-	end
-
-	function interp_z_all(arr)
-		np=size(arr.PRES,2)
-		T_std=zeros(length(z_std),np)
-		S_std=zeros(length(z_std),np)
-		[T_std[:,i].=interp_z(arr.PRES[:,i],arr.TEMP[:,i]) for i in 1:np]
-		[S_std[:,i].=interp_z(arr.PRES[:,i],arr.PSAL[:,i]) for i in 1:np]
-		T_std,S_std
-	end
-end
-
-# ╔═╡ fc0340be-4671-406f-9dc0-e831009aa9b8
-function heatmap_profiles!(ax,TIME,TEMP,cmap)
-	x=TIME[1,:]; y=z_std
-	co=Float64.(permutedims(TEMP))
-	rng=extrema(TEMP[:])
-	sca=heatmap!(ax, x , y , co, colorrange=rng,colormap=cmap)
-	ax.xlabel="time (day)"
-	ax.ylabel="depth (m)"
-	sca
-end
-
-# ╔═╡ ce6b8cf0-2589-431b-a551-980f9ee763af
-function plot_profiles!(ax,TIME,PRES,TEMP,cmap)
-	ii=findall(((!ismissing).(PRES)).*((!ismissing).(TEMP)))
-
-	x=TIME[ii]
-	y=-PRES[ii] #pressure in decibars ~ depth in meters
-	co=Float64.(TEMP[ii])
-	rng=extrema(co)
-
-	sca=scatter!(ax, x , y ,color=co,colormap=cmap, markersize=5)
-
-	ax.xlabel="time (day)"
-	ax.ylabel="depth (m)"
-
-	sca
-end
-
-# ╔═╡ 2e35911d-3e5a-453f-bedd-2d621db20d09
-function plot_trajectory!(ax,lon,lat,dx)
-	dt=10.0*86400
-	co=(dx[2:end]+dx[1:end-1])/2
-	co=[dx[1];co[:];dx[end]]/dt
-
-	li=lines!(ax,lon, lat, linewidth=2, color=co, colormap=:turbo)
-	scatter!(ax,lon, lat, marker=:circle, markersize=2, color=:black)
-	ax.xlabel="longitude"
-	ax.ylabel="latitude"
-	ax.title="positions (dots) & speed (color)"
-
-	li
-end
-
-# ╔═╡ 9ef9ae19-d8c8-4816-9699-b157f122fc63
-function plot_standard(arr,spd,T_std,S_std)
-	fig1=Figure()
-	
-	ax=Axis(fig1[1,1])
-	li=plot_trajectory!(ax,arr.lon,arr.lat,spd.dx)
-	Colorbar(fig1[1,2], li, height=Relative(0.65))
-	ax=Axis(fig1[1,3],title="Float wmo="*string(wmo))
-	scatter!(ax,arr.PSAL[:],arr.TEMP[:],markersize=3.0)
-
-	ax=Axis(fig1[2,1:3],title="Temperature, degree C")
-	hm1=heatmap_profiles!(ax,arr.TIME,T_std,:thermal)
-	Colorbar(fig1[2,4], hm1, height=Relative(0.65))
-	ylims!(ax, 500, 0)
-
-	ax=Axis(fig1[3,1:3],title="Salinity, psu")
-	hm2=heatmap_profiles!(ax,arr.TIME,S_std,:viridis)
-	Colorbar(fig1[3,4], hm2, height=Relative(0.65))
-	ylims!(ax, 500, 0)
-
-	fig1
-end
-
-# ╔═╡ 2a1c12c9-21e9-479a-b56c-a893d1cbede6
-let
-	T_std,S_std=interp_z_all(arr)
-
-	fig1=plot_standard(arr,spd,T_std,S_std)
-end
 
 # ╔═╡ c176fd5e-b2f2-47e3-8145-a4c152389344
-function plot_samples(arr)
-	
-	fig1=Figure(size = (800, 400))
-	lims=(nothing, nothing, -500.0, 0.0)
-
-	ttl="Float wmo="*string(wmo)
-	ax=Axis(fig1[1,1],title=ttl*", temperature, degree C", limits=lims)
-	hm1=plot_profiles!(ax,arr.TIME,arr.PRES,arr.TEMP,:thermal)
-	Colorbar(fig1[1,2], hm1, height=Relative(0.65))
-
-	ax=Axis(fig1[2,1],title=ttl*", salinity, psu", limits=lims)
-	hm2=plot_profiles!(ax,arr.TIME,arr.PRES,arr.PSAL,:viridis)
-	Colorbar(fig1[2,2], hm2, height=Relative(0.65))
-
-	fig1
-end
+OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
 
 # ╔═╡ c85a1eea-e2db-4f7f-9b7c-00b29a4cb975
-plot_samples(arr)
+fig2=OceanRobotsMakieExt.plot_samples(arr,wmo)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 ArgoData = "9eb831cf-c491-48dc-bed4-6aca718df73c"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
-Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
 OceanRobots = "0b51df41-3294-4961-8d23-db645e32016d"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 PrettyTables = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
-Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -309,7 +179,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.3"
 manifest_format = "2.0"
-project_hash = "7698ba56ef3db3cb3df905945de9441fb0c9c772"
+project_hash = "6a78df21499371e6569e551b9a6e2170644f788e"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2192,14 +2062,9 @@ version = "3.5.0+0"
 # ╠═8539e67f-6361-409a-9dbe-e8dcb2c7e10d
 # ╟─916e5a50-ee01-4299-9314-2e3cc9c826e6
 # ╟─2558c88f-7fee-4a91-bfdd-46f1f61795b0
-# ╟─5b814708-292a-45ed-8eab-386a7f097634
 # ╟─3fd610a8-80c1-4acc-b3ef-20883f77e32d
 # ╟─66e41568-7825-4383-80cb-cc48bdf56397
 # ╟─a42edc9d-9fa2-4775-83c4-2d9a5130105c
-# ╟─fc0340be-4671-406f-9dc0-e831009aa9b8
-# ╟─ce6b8cf0-2589-431b-a551-980f9ee763af
-# ╟─2e35911d-3e5a-453f-bedd-2d621db20d09
-# ╟─9ef9ae19-d8c8-4816-9699-b157f122fc63
 # ╟─c176fd5e-b2f2-47e3-8145-a4c152389344
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

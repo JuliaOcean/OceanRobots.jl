@@ -15,10 +15,7 @@ macro bind(def, element)
 end
 
 # ╔═╡ ccf98691-9386-41b9-a957-3cdeba51312b
-begin
-	using OceanRobots, CairoMakie, PlutoUI, GeoMakie
-	using DataFrames, JSON3, HTTP
-end
+using OceanRobots, CairoMakie, PlutoUI, GeoMakie
 
 # ╔═╡ 5fa93c17-0a01-44c6-8679-d712c786907a
 md"""# OceanOPS : Global Ocean Metadata
@@ -101,16 +98,7 @@ md"""## List of Platform Types"""
 
 # ╔═╡ 33c56cf4-5954-49f8-bb26-4f0d028f9093
 begin
-	list_platform_types=DataFrame(:nameShort=>String[],:name=>String[],:description=>String[],:wigosCode=>String[],:id=>Int[])
-	list_platform_types=DataFrame(:nameShort=>String[],:name=>String[],:description=>Any[],:wigosCode=>Any[],:id=>Int[])
-	
-	url="https://www.ocean-ops.org/api/1/data/platformtype"
-	tmp=JSON3.read(String(HTTP.get(url).body))
-	for i in tmp.data
-		push!(list_platform_types,(nameShort=i.nameShort,name=i.name,
-					description=i.description,wigosCode=i.wigosCode,id=i.id))
-	end
-	list_platform_types
+    list_platform_types=OceanOPS.list_platform_types()
 end
 
 # ╔═╡ 3b80d06d-72b8-4f67-945e-0b18f61de6e9
@@ -120,54 +108,21 @@ end
 more_operational=OceanOPS.get_list_pos(Symbol(nam_platform_types))
 
 # ╔═╡ eb95a380-a0b0-4762-8342-89d0f634d1ec
-jj=findall(list_platform_types.nameShort.==nam_platform_types)[1]
 
 # ╔═╡ b6a138b0-fce5-4767-b4d1-eed0d0560988
-let
-	fi0=Figure()
-	ax0=GeoAxis(fi0[1,1]) #,coastlines = true)	
-	sc1=scatter!(argo_operational.lon,argo_operational.lat,
-		label="Argo (operational)",color=:blue,markersize=4)
-	sc2=scatter!(argo_planned.lon,argo_planned.lat,
-		label="Argo (planned)",color=:red,marker=:xcross,markersize=8)
-	sc3=scatter!(drifter_operational.lon,drifter_operational.lat,
-		label="Drifter",color=:green2,marker='O',markersize=12)
-	sc4=scatter!(more_operational.lon,more_operational.lat,
-		label=list_platform_types.name[jj],color=:gold2,marker=:star5,markersize=16)
-	lines!(ax0, GeoMakie.coastlines(),color=:black)
-	Legend(fi0[2, 1],[sc1,sc2,sc3,sc4],[sc1.label,sc2.label,sc3.label,sc4.label],
-		orientation = :horizontal)
-	fi0
-end
+OceanRobotsGeoMakieExt=Base.get_extension(OceanRobots, :OceanRobotsGeoMakieExt)
 
 # ╔═╡ 1bf99223-ef46-4202-bdcc-8d7d6c561822
 md"""## Appendices"""
 
 # ╔═╡ 6d4c35fc-1a18-4fd7-a194-61fb387c7091
-function plot_add(s=:OceanOPS,i=1;col=:red)
-	tab=OceanOPS.get_table(s,i)
-	nam=OceanOPS.csv_listings()[s][i]
-	scatter!(tab.DEPL_LON,tab.DEPL_LAT,label=nam,markersize=8,marker=:xcross,color=col)
-end
+fig1=OceanRobotsGeoMakieExt.plot_OceanOPS1(argo_operational,argo_planned,
+    drifter_operational,more_operational,nam_platform_types)
 
 # ╔═╡ fbff1986-68c0-4558-b29b-2c6b87ca85fe
-function plot_base_Argo()
-	fi0=Figure()
-	ax0=GeoAxis(fi0[1,1])	
-	tab=OceanOPS.get_table(:Argo,1)
-	nam=OceanOPS.csv_listings()[:Argo][1]
-	sc0=scatter!(tab.LATEST_LOC_LON,tab.LATEST_LOC_LAT,label=nam,markersize=4)
-	lines!(ax0, GeoMakie.coastlines(),color=:black)
-	fi0,ax0,sc0
-end
+fig2=OceanRobotsGeoMakieExt.plot_OceanOPS2(s)
 
 # ╔═╡ 4b3f3ede-f1f0-4df5-931b-982a29395a53
-let
-	fi0,ax0,sc0=plot_base_Argo()
-	sc1= (s==:ArgoPlanned ? plot_add(:Argo,2,col=:red) : plot_add(s,1,col=:red))
-	Legend(fi0[2, 1],[sc0,sc1],[sc0.label,sc1.label],orientation = :horizontal)
-	fi0
-end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
