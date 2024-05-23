@@ -662,4 +662,22 @@ function get_platform(i)
     )
 end
 
+"""
+    list_platform_types()
+
+List platform types.
+"""
+list_platform_types() = begin
+    list_platform_types=DataFrame(:nameShort=>String[],:name=>String[],:description=>String[],:wigosCode=>String[],:id=>Int[])
+    list_platform_types=DataFrame(:nameShort=>String[],:name=>String[],:description=>Any[],:wigosCode=>Any[],:id=>Int[])
+    
+    url="https://www.ocean-ops.org/api/1/data/platformtype"
+    tmp=JSON3.read(String(HTTP.get(url).body))
+    for i in tmp.data
+        push!(list_platform_types,(nameShort=i.nameShort,name=i.name,
+                    description=i.description,wigosCode=i.wigosCode,id=i.id))
+    end
+    list_platform_types
+end
+
 end
