@@ -1,5 +1,8 @@
 module OceanRobots
 
+using Dates
+export DateTime, Date
+
 include("thredds_servers.jl")
 include("files.jl")
 include("gridded_data.jl")
@@ -12,7 +15,7 @@ function check_for_file(set::String,args...)
     end
 end
 
-export GDP, NOAA, GliderFiles, ArgoFiles, OceanSites, OceanOPS
+export GDP, GDP_CloudDrift, NOAA, GliderFiles, ArgoFiles, OceanSites, OceanOPS
 export check_for_file, THREDDS, cmems_sla, podaac_sla
 
 end # module

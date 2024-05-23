@@ -6,8 +6,7 @@ using InteractiveUtils
 
 # ╔═╡ 920b7a98-8478-4ad7-8897-8e5d92737199
 begin
-	using PlutoUI, CSV, CairoMakie, Statistics, DataFrames
-	using Downloads, Dates, NCDatasets, OceanRobots
+	using PlutoUI, CairoMakie, Statistics, OceanRobots
 	"Done with packages"
 end
 
@@ -67,7 +66,7 @@ begin
 	ID=44013
 	years,_=THREDDS.parse_catalog_NOAA_buoy(ID)
 	mdf=NOAA.read_historical_monthly(ID,years)
-	gmdf=groupby(mdf,"MM")
+	gmdf=NOAA.groupby(mdf,"MM")
 	gmdf[1]
 end
 
@@ -75,37 +74,19 @@ end
 md"""## Packages and Functions"""
 
 # ╔═╡ 19f37008-9a63-4a28-8fe6-d91319f82df8
-function plot_summary(tbl,all)
-	f=Figure(); 
-	ax=Axis(f[1,1],title="full distribution of T1-T0 "); hist!(ax,all)
-	ax=Axis(f[1,2],title="mean(T1-T0) each month"); barplot!(ax,[mean(tbl[m].T1)-mean(tbl[m].T0) for m in 1:12])
-	ax=Axis(f[2,1:2],title="seasonal cycle");
-	lines!(ax,[mean(tbl[m].T0) for m in 1:12],label="mean(T0)")
-	lines!(ax,[mean(tbl[m].T1) for m in 1:12],label="mean(T1)")
-	axislegend(ax)
-	f
-end
+OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
 
 # ╔═╡ e76df21f-e3ad-4c1e-97d6-3b775abd59ea
-function summary_table(z,ny=25)
-    T=round.(z.WTMP * 1.8 .+32,digits=1)
-    p=[(T[z.YY.==y],T[z.YY.==y+ny]) for y in 1984:2001]
-    i=findall([length(pp[1])*length(pp[2])==1 for pp in p])
-    T0=[p[ii][1][1] for ii in i]
-    T1=[p[ii][2][1] for ii in i]
-    i=findall((!isnan).(T0.*T1))
-    DataFrame(T0 = T0[i], T1 = T1[i])
-end
 
 # ╔═╡ c201edba-f8cd-426e-bffa-75ba868c13a3
 begin
-	tbl=[summary_table(gmdf[m],25) for m in 1:12]
+	tbl=[NOAA.summary_table(gmdf[m],25) for m in 1:12]
 	all=[]; [push!(all,(tbl[m].T1-tbl[m].T0)...) for m in 1:12]
 	"Total number of data point pairs = "*string(length(all))
 end
 
 # ╔═╡ 051ea6ce-a699-4a08-a4cf-214875bd3ca7
-plot_summary(tbl,all)
+OceanRobotsMakieExt.plot_summary(tbl,all)
 
 # ╔═╡ aaf89c1f-bd6f-45d8-ae86-3c28bd0735ee
 md"""## Alternative Method

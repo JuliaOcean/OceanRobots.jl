@@ -52,6 +52,27 @@ function read(file::String)
 	df
 end
 
+function to_DataFrame(ds)
+	df=DataFrame(:lon => ds[:lon][:], :lat => ds[:lat][:], :ID => ds[:trajectory_index][:])
+	df.time=ds[:time][:]
+
+	df.T10=ds[:temperature][:,1]
+	df.T100=ds[:temperature][:,10]
+	df.T500=ds[:temperature][:,50]
+
+	df.S10=ds[:salinity][:,1]
+	df.S100=ds[:salinity][:,10]
+	df.S500=ds[:salinity][:,50]
+
+	df.u100=ds[:u][:,10]
+	df.v100=ds[:v][:,10]
+
+	df.u=ds[:u_depth_mean][:]
+	df.v=ds[:v_depth_mean][:]
+	
+	df
+end
+
 end #module GliderFiles
 
 ##
@@ -213,6 +234,16 @@ function read_historical_txt(ID,y)
     df
 end
 
+function summary_table(z,ny=25)
+    T=round.(z.WTMP * 1.8 .+32,digits=1)
+    p=[(T[z.YY.==y],T[z.YY.==y+ny]) for y in 1984:2001]
+    i=findall([length(pp[1])*length(pp[2])==1 for pp in p])
+    T0=[p[ii][1][1] for ii in i]
+    T1=[p[ii][2][1] for ii in i]
+    i=findall((!isnan).(T0.*T1))
+    DataFrame(T0 = T0[i], T1 = T1[i])
+end
+
 end #module NOAA
 
 ##
@@ -284,13 +315,103 @@ ds=GDP.read(fil)
 """
 read(filename::String) = Dataset(filename)
 
+read_v(ds,v) = Float64.(cfvariable(ds,v,missing_value=-1.e+34))
+
 end #module GDP
+
+##
+
+module GDP_CloudDrift
+
+using DataFrames, Statistics, NCDatasets
+
+"""
+    to_DataFrame(ds)
+"""
+function to_DataFrame(ds)
+	df=DataFrame(:sst => ds[:sst][:], :ve => ds[:ve][:], :vn => ds[:vn][:])
+	in("drogue_status",names(df)) ? df.drogue_status=ds[:drogue_status][:] : nothing
+	df.sst1=ds[:sst1][:]
+	df.sst2=ds[:sst2][:]
+	df.longitude=ds[:longitude][:]
+	df.latitude=ds[:latitude][:]
+	df.time=ds[:time][:]
+	df
+end
+
+"""
+    add_index!(df)
+"""
+function add_index!(df)
+	ii=(df.longitude[:] .+180 .+0.25)/0.5;
+	ilon=Int.(round.(ii))
+	#extrema(ilon)
+
+	ii=(df.latitude[:] .+90 .+0.25)/0.5;
+	ilat=Int.(round.(ii))
+	#extrema(ilat)
+
+	df.index=CartesianIndex.(ilon,ilat)
+end	
+
+"""
+    add_ID!(df,ds)
+"""
+function add_ID!(df,ds)
+	tmp=ds[:ID][:]
+	rowsize=ds[:rowsize][:]
+	ID=fill(0,0)
+	[push!(ID,fill(tmp[i],rowsize[i])...) for i in 1:length(rowsize)]
+
+	df.ID=ID
+end
+
+"""
+    to_Grid(gdf,grid)
+"""
+function to_Grid(gdf,grid)
+	df2=combine(gdf) do df
+		(ve=mean(df.ve) , vn=mean(df.vn) )
+	end
+		
+	ve=fill(NaN,(length(grid.lon),length(grid.lat)))
+	[ve[df2.index[i]]=df2.ve[i] for i in 1:size(df2,1)];
+	vn=fill(NaN,(length(grid.lon),length(grid.lat)))
+	[vn[df2.index[i]]=df2.vn[i] for i in 1:size(df2,1)];
+
+	ve,vn
+end
+
+"""
+    region_subset(df,lons,lats,dates)
+
+Subset of df that's within specified date and position ranges.    
+"""
+region_subset(df,lons,lats,dates) = 
+    df[ (df.longitude .> lons[1]) .& (df.longitude .<= lons[2]) .&
+    (df.latitude .> lats[1]) .& (df.latitude .<= lats[2]) .&
+    (df.time .> dates[1]) .& (df.time .<= dates[2]) ,:]
+
+"""
+    trajectory_stats(gdf)
+"""
+function trajectory_stats(gdf)
+	df2=combine(gdf) do df
+		(ve=mean(df.ve) , vn=mean(df.vn) , 
+		t0=minimum(skipmissing(df.time)) , t1=maximum(skipmissing(df.time)) ,
+		longitude=mean(skipmissing(df.longitude)) , latitude=mean(skipmissing(df.latitude)) ,
+		sst=mean(skipmissing(df.sst)) , sst1=mean(skipmissing(df.sst1)), sst2=mean(skipmissing(df.sst2)))
+	end
+	df2
+end
+
+end
 
 ##
 
 module ArgoFiles
 
-using NCDatasets, Downloads, CSV, DataFrames
+using NCDatasets, Downloads, CSV, DataFrames, Interpolations, Statistics
 
 """
     ArgoFiles.download(files_list,wmo)
@@ -379,6 +500,43 @@ function scan_txt(fil="ar_index_global_prof.txt"; do_write=false)
     do_write ? CSV.write(outputfile, prof) : nothing
 
     return prof
+end
+
+function speed(arr)
+    (lon,lat)=(arr.lon,arr.lat)
+    EarthRadius=6378e3 #in meters
+    gcdist(lo1,lo2,la1,la2) = acos(sind(la1)*sind(la2)+cosd(la1)*cosd(la2)*cosd(lo1-lo2)) #in radians
+
+    dx_net=EarthRadius*gcdist(lon[1],lon[end],lat[1],lat[end])
+    dx=[EarthRadius*gcdist(lon[i],lon[i+1],lat[i],lat[i+1]) for i in 1:length(lon)-1]
+    dt=10.0*86400
+
+    dist_tot=sum(dx)/1000 #in km
+    dist_net=dx_net/1000 #in km
+    
+    speed_net=dx_net/dt/(length(lon)-1)
+    speed_mean=mean(dx/dt)
+
+    return (dx=dx,dist_tot=dist_tot,dist_net=dist_net,
+    speed_net=speed_net,speed_mean=speed_mean)
+end
+
+z_std=collect(0.0:5:500.0)
+nz=length(z_std)
+
+function interp_z(P,T)
+    k=findall((!ismissing).(P.*T))
+    interp_linear_extrap = LinearInterpolation(Float64.(P[k]), Float64.(T[k]), extrapolation_bc=Line()) 
+    interp_linear_extrap(z_std)
+end
+
+function interp_z_all(arr)
+    np=size(arr.PRES,2)
+    T_std=zeros(length(z_std),np)
+    S_std=zeros(length(z_std),np)
+    [T_std[:,i].=interp_z(arr.PRES[:,i],arr.TEMP[:,i]) for i in 1:np]
+    [S_std[:,i].=interp_z(arr.PRES[:,i],arr.PSAL[:,i]) for i in 1:np]
+    T_std,S_std
 end
 
 end
@@ -658,6 +816,24 @@ function get_platform(i)
     deployed=tmp.data[1].ptfDepl.deplDate,
     ship=tmp.data[1].ptfDepl.ship.name,
     )
+end
+
+"""
+    list_platform_types()
+
+List platform types.
+"""
+list_platform_types() = begin
+    list_platform_types=DataFrame(:nameShort=>String[],:name=>String[],:description=>String[],:wigosCode=>String[],:id=>Int[])
+    list_platform_types=DataFrame(:nameShort=>String[],:name=>String[],:description=>Any[],:wigosCode=>Any[],:id=>Int[])
+    
+    url="https://www.ocean-ops.org/api/1/data/platformtype"
+    tmp=JSON3.read(String(HTTP.get(url).body))
+    for i in tmp.data
+        push!(list_platform_types,(nameShort=i.nameShort,name=i.name,
+                    description=i.description,wigosCode=i.wigosCode,id=i.id))
+    end
+    list_platform_types
 end
 
 end
