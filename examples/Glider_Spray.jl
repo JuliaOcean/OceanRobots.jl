@@ -16,7 +16,7 @@ end
 
 # ╔═╡ 0247a51e-c89b-11ec-071f-bb82fe257adc
 begin
-	using DataFrames, OceanRobots, PlutoUI, CairoMakie
+	using OceanRobots, PlutoUI, CairoMakie
 	"Done with Software Packages"
 end
 
@@ -90,37 +90,16 @@ md"""## Appendix
 ### Julia Packages, etc
 """
 
-# ╔═╡ 0a0842ff-aeb4-4561-857b-8ea31b10b32a
-function check_for_file_updated(args...)
-    if !isempty(args)
-	if args[1]=="CUGN_along.nc"
-	  url0="http://spraydata.ucsd.edu/erddap/files/binnedCUGNalong/"
-	elseif args[1]=="GulfStream.nc"
-       	  url0="http://spraydata.ucsd.edu/erddap/files/binnedGS/"
-	end
-	url1=url0*basename(args[1])
-		
-        pth0=dirname(args[1])
-        isempty(pth0) ? pth1=joinpath(tempdir(),"tmp_glider_data") : pth1=pth0
-        !isdir(pth1) ? mkdir(pth1) : nothing
-        fil1=joinpath(pth1,basename(args[1]))
-        !isfile(fil1) ? Downloads.download(url1,fil1) : fil1
-    else
-        pth0=joinpath(tempdir(),"tmp_glider_data")
-        glob("*.nc",pth0)
-    end
-end
-
 # ╔═╡ 9523dc0d-1758-4e0f-864c-4ab253bf11a9
 begin
 	#check_for_file("Glider_Spray","GulfStream.nc")
-	check_for_file_updated(MID)
+	GliderFiles.check_for_file_Spray(MID)
 	
 	pth0=joinpath(tempdir(),"tmp_glider_data")
 	fil0=joinpath(pth0,MID)
 
 	df=GliderFiles.read(fil0)
-	gdf=groupby(df,:ID)
+	gdf=GliderFiles.groupby(df,:ID)
 
 	ID_bind = @bind ID NumberField(1:gdf.ngroups, default=1)
 
@@ -131,57 +110,14 @@ end
 md"""- Select mission  : $(ID_bind)"""
 
 # ╔═╡ f72d308f-6a74-460d-ae88-cf994477e750
-begin
-	f=Figure()
-	
-	a_traj=Axis(f[1,1],title="Positions")
-	p=scatter!(a_traj,df.lon,df.lat,markersize=1)
-	p=scatter!(a_traj,gdf[ID].lon,gdf[ID].lat,color=:red)
+OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
 
-	a_uv=Axis(f[1,2],title="Velocity (m/s, depth mean)")
-	p=lines!(a_uv,gdf[ID].u[:])
-	p=lines!(a_uv,gdf[ID].v[:])
-	p=lines!(a_uv,sqrt.(gdf[ID].u[:].^2 + gdf[ID].v[:].^2))
-
-	a2=Axis(f[2,1],title="Temperature (degree C -- 10,100,500m depth)")
-
-	lines!(a2,gdf[ID].T10[:])	
-	lines!(a2,gdf[ID].T100[:])
-	lines!(a2,gdf[ID].T500[:])
-
-	a3=Axis(f[2,2],title="Salinity (psu -- 10,100,500m depth)")
-
-	lines!(a3,gdf[ID].S10[:],label="10m")	
-	lines!(a3,gdf[ID].S100[:],label="100m")
-	lines!(a3,gdf[ID].S500[:],label="500m")
-
-	f
-end
+fig1=OceanRobotsMakieExt.plot_glider(df,gdf,ID)
 
 # ╔═╡ d49320f0-06c3-4d82-93d1-6047edc37d47
 gdf[ID]
 
 # ╔═╡ 4edad6a6-0468-4443-b878-7c9e26921766
-function to_DataFrame(ds)
-	df=DataFrame(:lon => ds[:lon][:], :lat => ds[:lat][:], :ID => ds[:trajectory_index][:])
-	df.time=ds[:time][:]
-
-	df.T10=ds[:temperature][:,1]
-	df.T100=ds[:temperature][:,10]
-	df.T500=ds[:temperature][:,50]
-
-	df.S10=ds[:salinity][:,1]
-	df.S100=ds[:salinity][:,10]
-	df.S500=ds[:salinity][:,50]
-
-	df.u100=ds[:u][:,10]
-	df.v100=ds[:v][:,10]
-
-	df.u=ds[:u_depth_mean][:]
-	df.v=ds[:v_depth_mean][:]
-	
-	df
-end
 
 # ╔═╡ 5748bb5f-528f-42fd-8961-fd7c93d12554
 md"""### Typical File Content

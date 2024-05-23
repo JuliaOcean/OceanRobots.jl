@@ -215,5 +215,34 @@ function plot_samples(arr,wmo)
 	fig1
 end
 
+## Gliders
+
+function plot_glider(df,gdf,ID)
+	f=Figure()
+	
+	a_traj=Axis(f[1,1],title="Positions")
+	p=scatter!(a_traj,df.lon,df.lat,markersize=1)
+	p=scatter!(a_traj,gdf[ID].lon,gdf[ID].lat,color=:red)
+
+	a_uv=Axis(f[1,2],title="Velocity (m/s, depth mean)")
+	p=lines!(a_uv,gdf[ID].u[:])
+	p=lines!(a_uv,gdf[ID].v[:])
+	p=lines!(a_uv,sqrt.(gdf[ID].u[:].^2 + gdf[ID].v[:].^2))
+
+	a2=Axis(f[2,1],title="Temperature (degree C -- 10,100,500m depth)")
+
+	lines!(a2,gdf[ID].T10[:])	
+	lines!(a2,gdf[ID].T100[:])
+	lines!(a2,gdf[ID].T500[:])
+
+	a3=Axis(f[2,2],title="Salinity (psu -- 10,100,500m depth)")
+
+	lines!(a3,gdf[ID].S10[:],label="10m")	
+	lines!(a3,gdf[ID].S100[:],label="100m")
+	lines!(a3,gdf[ID].S500[:],label="500m")
+
+	f
+end
+
 end
 

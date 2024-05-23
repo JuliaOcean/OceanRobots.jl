@@ -52,6 +52,27 @@ function read(file::String)
 	df
 end
 
+function to_DataFrame(ds)
+	df=DataFrame(:lon => ds[:lon][:], :lat => ds[:lat][:], :ID => ds[:trajectory_index][:])
+	df.time=ds[:time][:]
+
+	df.T10=ds[:temperature][:,1]
+	df.T100=ds[:temperature][:,10]
+	df.T500=ds[:temperature][:,50]
+
+	df.S10=ds[:salinity][:,1]
+	df.S100=ds[:salinity][:,10]
+	df.S500=ds[:salinity][:,50]
+
+	df.u100=ds[:u][:,10]
+	df.v100=ds[:v][:,10]
+
+	df.u=ds[:u_depth_mean][:]
+	df.v=ds[:v_depth_mean][:]
+	
+	df
+end
+
 end #module GliderFiles
 
 ##

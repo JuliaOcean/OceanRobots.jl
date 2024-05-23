@@ -83,6 +83,11 @@ begin
 	"""
 end
 
+# ╔═╡ 2a1c12c9-21e9-479a-b56c-a893d1cbede6
+T_std,S_std=ArgoFiles.interp_z_all(arr)
+
+fig1=OceanRobotsMakieExt.plot_standard(wmo,arr,spd,T_std,S_std)
+
 # ╔═╡ 3f5419f1-d131-42eb-86c8-44a385e88d51
 begin
 	files_list=GDAC.files_list()
@@ -151,13 +156,9 @@ md"""### Viz"""
 
 # ╔═╡ a42edc9d-9fa2-4775-83c4-2d9a5130105c
 
+
 # ╔═╡ c176fd5e-b2f2-47e3-8145-a4c152389344
 OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
-
-# ╔═╡ 2a1c12c9-21e9-479a-b56c-a893d1cbede6
-T_std,S_std=ArgoFiles.interp_z_all(arr)
-
-fig1=OceanRobotsMakieExt.plot_standard(wmo,arr,spd,T_std,S_std)
 
 # ╔═╡ c85a1eea-e2db-4f7f-9b7c-00b29a4cb975
 fig2=OceanRobotsMakieExt.plot_samples(arr,wmo)
@@ -167,11 +168,9 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 ArgoData = "9eb831cf-c491-48dc-bed4-6aca718df73c"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
-Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
 OceanRobots = "0b51df41-3294-4961-8d23-db645e32016d"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 PrettyTables = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
-Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -180,7 +179,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.3"
 manifest_format = "2.0"
-project_hash = "7698ba56ef3db3cb3df905945de9441fb0c9c772"
+project_hash = "6a78df21499371e6569e551b9a6e2170644f788e"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2063,14 +2062,9 @@ version = "3.5.0+0"
 # ╠═8539e67f-6361-409a-9dbe-e8dcb2c7e10d
 # ╟─916e5a50-ee01-4299-9314-2e3cc9c826e6
 # ╟─2558c88f-7fee-4a91-bfdd-46f1f61795b0
-# ╟─5b814708-292a-45ed-8eab-386a7f097634
 # ╟─3fd610a8-80c1-4acc-b3ef-20883f77e32d
 # ╟─66e41568-7825-4383-80cb-cc48bdf56397
 # ╟─a42edc9d-9fa2-4775-83c4-2d9a5130105c
-# ╟─fc0340be-4671-406f-9dc0-e831009aa9b8
-# ╟─ce6b8cf0-2589-431b-a551-980f9ee763af
-# ╟─2e35911d-3e5a-453f-bedd-2d621db20d09
-# ╟─9ef9ae19-d8c8-4816-9699-b157f122fc63
 # ╟─c176fd5e-b2f2-47e3-8145-a4c152389344
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
