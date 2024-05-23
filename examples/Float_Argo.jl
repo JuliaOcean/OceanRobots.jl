@@ -83,11 +83,6 @@ begin
 	"""
 end
 
-# ╔═╡ 2a1c12c9-21e9-479a-b56c-a893d1cbede6
-T_std,S_std=ArgoFiles.interp_z_all(arr)
-
-fig1=OceanRobotsMakieExt.plot_standard(wmo,arr,spd,T_std,S_std)
-
 # ╔═╡ 3f5419f1-d131-42eb-86c8-44a385e88d51
 begin
 	files_list=GDAC.files_list()
@@ -142,6 +137,9 @@ begin
 	"Done with data ingestion"
 end
 
+# ╔═╡ a5db2d63-ec3e-4273-9138-4264388a4b7d
+T_std,S_std=ArgoFiles.interp_z_all(arr)
+
 # ╔═╡ 3fd610a8-80c1-4acc-b3ef-20883f77e32d
 begin
 	spd=ArgoFiles.speed(arr)
@@ -162,6 +160,9 @@ OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
 
 # ╔═╡ c85a1eea-e2db-4f7f-9b7c-00b29a4cb975
 fig2=OceanRobotsMakieExt.plot_samples(arr,wmo)
+
+# ╔═╡ e1d9253a-4ac4-47c8-97d7-edb92cd54397
+fig1=OceanRobotsMakieExt.plot_standard(wmo,arr,spd,T_std,S_std)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -310,9 +311,9 @@ version = "1.0.5"
 
 [[deps.CairoMakie]]
 deps = ["CRC32c", "Cairo", "Colors", "FileIO", "FreeType", "GeometryBasics", "LinearAlgebra", "Makie", "PrecompileTools"]
-git-tree-sha1 = "aec444a07f2b3df8d41a47fabd02841b32be2dc5"
+git-tree-sha1 = "d69c7593fe9d7d617973adcbe4762028c6899b2c"
 uuid = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
-version = "0.12.0"
+version = "0.11.11"
 
 [[deps.Cairo_jll]]
 deps = ["Artifacts", "Bzip2_jll", "CompilerSupportLibraries_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "JLLWrappers", "LZO_jll", "Libdl", "Pixman_jll", "Xorg_libXext_jll", "Xorg_libXrender_jll", "Zlib_jll", "libpng_jll"]
@@ -726,9 +727,9 @@ version = "1.3.14+0"
 
 [[deps.GridLayoutBase]]
 deps = ["GeometryBasics", "InteractiveUtils", "Observables"]
-git-tree-sha1 = "fc713f007cff99ff9e50accba6373624ddd33588"
+git-tree-sha1 = "6f93a83ca11346771a93bbde2bdad2f65b61498f"
 uuid = "3955a311-db13-416c-9275-1d80ed98e5e9"
-version = "0.11.0"
+version = "0.10.2"
 
 [[deps.Grisu]]
 git-tree-sha1 = "53bb909d1151e57e2484c3d1b53e19552b887fb2"
@@ -1141,16 +1142,16 @@ uuid = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
 version = "0.5.13"
 
 [[deps.Makie]]
-deps = ["Animations", "Base64", "CRC32c", "ColorBrewer", "ColorSchemes", "ColorTypes", "Colors", "Contour", "Dates", "DelaunayTriangulation", "Distributions", "DocStringExtensions", "Downloads", "FFMPEG_jll", "FileIO", "FilePaths", "FixedPointNumbers", "Format", "FreeType", "FreeTypeAbstraction", "GeometryBasics", "GridLayoutBase", "ImageIO", "InteractiveUtils", "IntervalSets", "Isoband", "KernelDensity", "LaTeXStrings", "LinearAlgebra", "MacroTools", "MakieCore", "Markdown", "MathTeXEngine", "Observables", "OffsetArrays", "Packing", "PlotUtils", "PolygonOps", "PrecompileTools", "Printf", "REPL", "Random", "RelocatableFolders", "Scratch", "ShaderAbstractions", "Showoff", "SignedDistanceFields", "SparseArrays", "Statistics", "StatsBase", "StatsFuns", "StructArrays", "TriplotBase", "UnicodeFun", "Unitful"]
-git-tree-sha1 = "e96f6e1dba3c008d95b97103a330be6287411c67"
+deps = ["Animations", "Base64", "CRC32c", "ColorBrewer", "ColorSchemes", "ColorTypes", "Colors", "Contour", "DelaunayTriangulation", "Distributions", "DocStringExtensions", "Downloads", "FFMPEG_jll", "FileIO", "FilePaths", "FixedPointNumbers", "Format", "FreeType", "FreeTypeAbstraction", "GeometryBasics", "GridLayoutBase", "ImageIO", "InteractiveUtils", "IntervalSets", "Isoband", "KernelDensity", "LaTeXStrings", "LinearAlgebra", "MacroTools", "MakieCore", "Markdown", "MathTeXEngine", "Observables", "OffsetArrays", "Packing", "PlotUtils", "PolygonOps", "PrecompileTools", "Printf", "REPL", "Random", "RelocatableFolders", "Scratch", "ShaderAbstractions", "Showoff", "SignedDistanceFields", "SparseArrays", "Statistics", "StatsBase", "StatsFuns", "StructArrays", "TriplotBase", "UnicodeFun"]
+git-tree-sha1 = "4d49c9ee830eec99d3e8de2425ff433ece7cc1bc"
 uuid = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-version = "0.21.0"
+version = "0.20.10"
 
 [[deps.MakieCore]]
-deps = ["ColorTypes", "GeometryBasics", "IntervalSets", "Observables"]
-git-tree-sha1 = "f23e301d977e037ff8df4e1f5d8035cd78a1e250"
+deps = ["Observables", "REPL"]
+git-tree-sha1 = "248b7a4be0f92b497f7a331aed02c1e9a878f46b"
 uuid = "20f20a25-4f0e-4fdf-b5d1-57303727442b"
-version = "0.8.0"
+version = "0.7.3"
 
 [[deps.MappedArrays]]
 git-tree-sha1 = "2dab0221fe2b0f2cb6754eaa743cc266339f527e"
@@ -1163,9 +1164,9 @@ uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 
 [[deps.MathTeXEngine]]
 deps = ["AbstractTrees", "Automa", "DataStructures", "FreeTypeAbstraction", "GeometryBasics", "LaTeXStrings", "REPL", "RelocatableFolders", "UnicodeFun"]
-git-tree-sha1 = "1865d0b8a2d91477c8b16b49152a32764c7b1f5f"
+git-tree-sha1 = "96ca8a313eb6437db5ffe946c457a401bbb8ce1d"
 uuid = "0a4f8689-d25c-4efe-a92b-7142dfc1aa53"
-version = "0.6.0"
+version = "0.5.7"
 
 [[deps.MbedTLS]]
 deps = ["Dates", "MbedTLS_jll", "MozillaCACerts_jll", "NetworkOptions", "Random", "Sockets"]
@@ -1271,10 +1272,18 @@ uuid = "510215fc-4207-5dde-b226-833fc4488ee2"
 version = "0.5.5"
 
 [[deps.OceanRobots]]
-deps = ["CFTime", "CSV", "DataFrames", "DataStructures", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "URIs"]
-git-tree-sha1 = "df76320cc80f42a758912c2022b5a633f4292e4b"
+deps = ["CFTime", "CSV", "DataFrames", "DataStructures", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "Interpolations", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "URIs"]
+git-tree-sha1 = "37857e00385549f519950a5495aa53da5a7331f9"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
-version = "0.1.18"
+version = "0.1.20"
+
+    [deps.OceanRobots.extensions]
+    OceanRobotsGeoMakieExt = ["GeoMakie"]
+    OceanRobotsMakieExt = ["Makie"]
+
+    [deps.OceanRobots.weakdeps]
+    GeoMakie = "db073c08-6b98-4ee5-b6a4-5efafb3259c6"
+    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 
 [[deps.OceanStateEstimation]]
 deps = ["DataDeps", "Dataverse", "Distributed", "Glob", "JLD2", "MeshArrays", "Pkg", "Printf", "Scratch", "SharedArrays", "Statistics", "TOML"]
@@ -1484,9 +1493,9 @@ uuid = "92933f4c-e287-5a05-a399-4b506db050ca"
 version = "1.10.0"
 
 [[deps.PtrArrays]]
-git-tree-sha1 = "077664975d750757f30e739c870fbbdc01db7913"
+git-tree-sha1 = "f011fbb92c4d401059b2212c05c0601b70f8b759"
 uuid = "43287f4e-b6f4-7ad1-bb20-aadabca52c3d"
-version = "1.1.0"
+version = "1.2.0"
 
 [[deps.QOI]]
 deps = ["ColorTypes", "FileIO", "FixedPointNumbers"]
@@ -2054,7 +2063,8 @@ version = "3.5.0+0"
 # ╟─904c8a06-0552-40b4-aa9f-404d61b21c08
 # ╟─8418b9ca-2e7f-4468-a0fb-36f5a05dde2c
 # ╟─4d949835-4cf8-4493-b765-6e956019b777
-# ╟─2a1c12c9-21e9-479a-b56c-a893d1cbede6
+# ╠═a5db2d63-ec3e-4273-9138-4264388a4b7d
+# ╠═e1d9253a-4ac4-47c8-97d7-edb92cd54397
 # ╟─49256e11-fbd2-40e7-8f0b-193e17e2b31b
 # ╟─9037e2ce-a04a-40d0-945e-ec3f19a4f3c4
 # ╟─3f5419f1-d131-42eb-86c8-44a385e88d51

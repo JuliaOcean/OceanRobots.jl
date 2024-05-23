@@ -32,6 +32,9 @@ md"""## Visualize Data Cover
 Each color represents one type of observing platform.
 """
 
+# ╔═╡ b6a138b0-fce5-4767-b4d1-eed0d0560988
+OceanRobotsGeoMakieExt=Base.get_extension(OceanRobots, :OceanRobotsGeoMakieExt)
+
 # ╔═╡ 52dc1cd5-e57a-43bb-82c9-feb1de25e5ca
 begin
 	argo_operational=OceanOPS.get_list_pos(:Argo)
@@ -48,6 +51,9 @@ begin
 
 	"Done with accessing latest positions."
 end
+
+# ╔═╡ eb95a380-a0b0-4762-8342-89d0f634d1ec
+
 
 # ╔═╡ ec963909-f9ee-4dd8-b9fa-4f34038c99e0
 md"""## Visualize Data Cover (2)
@@ -107,11 +113,6 @@ end
 # ╔═╡ fccdc273-2e9f-4f60-a659-8ee2790ae2fc
 more_operational=OceanOPS.get_list_pos(Symbol(nam_platform_types))
 
-# ╔═╡ eb95a380-a0b0-4762-8342-89d0f634d1ec
-
-# ╔═╡ b6a138b0-fce5-4767-b4d1-eed0d0560988
-OceanRobotsGeoMakieExt=Base.get_extension(OceanRobots, :OceanRobotsGeoMakieExt)
-
 # ╔═╡ 1bf99223-ef46-4202-bdcc-8d7d6c561822
 md"""## Appendices"""
 
@@ -122,16 +123,11 @@ fig1=OceanRobotsGeoMakieExt.plot_OceanOPS1(argo_operational,argo_planned,
 # ╔═╡ fbff1986-68c0-4558-b29b-2c6b87ca85fe
 fig2=OceanRobotsGeoMakieExt.plot_OceanOPS2(s)
 
-# ╔═╡ 4b3f3ede-f1f0-4df5-931b-982a29395a53
-
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
-DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 GeoMakie = "db073c08-6b98-4ee5-b6a4-5efafb3259c6"
-HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
 OceanRobots = "0b51df41-3294-4961-8d23-db645e32016d"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 """
@@ -142,7 +138,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.3"
 manifest_format = "2.0"
-project_hash = "047c472716cc26846f610d82160099ce32ee066c"
+project_hash = "9e8946d3a7694992fd8bc38ea85d440654285f87"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1212,10 +1208,15 @@ uuid = "510215fc-4207-5dde-b226-833fc4488ee2"
 version = "0.5.5"
 
 [[deps.OceanRobots]]
-deps = ["CFTime", "CSV", "DataFrames", "DataStructures", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "URIs"]
-git-tree-sha1 = "df76320cc80f42a758912c2022b5a633f4292e4b"
+deps = ["CFTime", "CSV", "DataFrames", "DataStructures", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "Interpolations", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "URIs"]
+git-tree-sha1 = "37857e00385549f519950a5495aa53da5a7331f9"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
-version = "0.1.18"
+version = "0.1.20"
+weakdeps = ["GeoMakie", "Makie"]
+
+    [deps.OceanRobots.extensions]
+    OceanRobotsGeoMakieExt = ["GeoMakie"]
+    OceanRobotsMakieExt = ["Makie"]
 
 [[deps.OffsetArrays]]
 git-tree-sha1 = "e64b4f5ea6b7389f6f046d13d4896a8f9c1ba71e"
@@ -1423,9 +1424,9 @@ uuid = "c94c279d-25a6-4763-9509-64d165bea63e"
 version = "1.7.0"
 
 [[deps.PtrArrays]]
-git-tree-sha1 = "077664975d750757f30e739c870fbbdc01db7913"
+git-tree-sha1 = "f011fbb92c4d401059b2212c05c0601b70f8b759"
 uuid = "43287f4e-b6f4-7ad1-bb20-aadabca52c3d"
-version = "1.1.0"
+version = "1.2.0"
 
 [[deps.QOI]]
 deps = ["ColorTypes", "FileIO", "FixedPointNumbers"]
@@ -1970,11 +1971,12 @@ version = "3.5.0+0"
 # ╟─b6a138b0-fce5-4767-b4d1-eed0d0560988
 # ╟─52dc1cd5-e57a-43bb-82c9-feb1de25e5ca
 # ╟─3b80d06d-72b8-4f67-945e-0b18f61de6e9
+# ╟─6d4c35fc-1a18-4fd7-a194-61fb387c7091
 # ╟─eb95a380-a0b0-4762-8342-89d0f634d1ec
 # ╟─fccdc273-2e9f-4f60-a659-8ee2790ae2fc
 # ╟─ec963909-f9ee-4dd8-b9fa-4f34038c99e0
 # ╟─f71390bd-6862-43be-84b9-005ff5742b5e
-# ╟─4b3f3ede-f1f0-4df5-931b-982a29395a53
+# ╟─fbff1986-68c0-4558-b29b-2c6b87ca85fe
 # ╟─596bce95-e13f-4439-858f-e944834c0924
 # ╟─aa80092c-80b9-489c-97b9-06c3d39ac594
 # ╟─401180a9-cb62-4dc6-b0a1-35df35f834db
@@ -1982,7 +1984,5 @@ version = "3.5.0+0"
 # ╟─33c56cf4-5954-49f8-bb26-4f0d028f9093
 # ╟─1bf99223-ef46-4202-bdcc-8d7d6c561822
 # ╠═ccf98691-9386-41b9-a957-3cdeba51312b
-# ╟─6d4c35fc-1a18-4fd7-a194-61fb387c7091
-# ╟─fbff1986-68c0-4558-b29b-2c6b87ca85fe
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
