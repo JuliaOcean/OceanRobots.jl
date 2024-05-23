@@ -20,10 +20,6 @@ begin
 	"Done with Software Packages"
 end
 
-# ╔═╡ 1f244746-363c-4e7e-8bf8-70141fce66a3
-#http://spraydata.ucsd.edu/erddap/files/binnedGS/GulfStream.nc
-using Downloads
-
 # ╔═╡ d9ffd0a8-85e3-4e2a-9d6a-81f3dbd3ee31
 TableOfContents()
 
@@ -37,8 +33,8 @@ _Spray gliders autonomously collect measurements in the upper kilometer of the o
 begin
 	url1="https://timesofsandiego.com/wp-content/uploads/2014/06/Spray-Glider.jpg"
 	url2="https://www.whoi.edu/wp-content/uploads/2019/01/GP020002-1-14_506075_510753-1.jpg"
-	url3="http://spraydata.ucsd.edu/media/GulfStream/GS_KE_for_web.png"
-	url4="http://spraydata.ucsd.edu/cugnclim-figs/66/meanmap/66_meanmap_xz_geov.png"
+	url3="https://spraydata.ucsd.edu/assets/img/GS_KE_for_web.png"
+	url4="https://spraydata.ucsd.edu/products/cugn-climatology/plots/66/meanmap/66_meanmap_xz_geov.png"
 	md"""
 	$(Resource(url2,:height => 100))
 	$(Resource(url1,:height => 100))
@@ -57,9 +53,6 @@ begin
 	- Select data set : $(MID_bind)"""
 end
 
-
-# ╔═╡ 3bab501f-badc-4633-83c9-4f2481521f46
-OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
 
 # ╔═╡ 1ab9daac-b631-4f3e-a868-14e95f71962b
 md"""## Data as a Table"""
@@ -112,14 +105,14 @@ end
 # ╔═╡ 428120da-1542-4265-a369-1273ae4718ac
 md"""- Select mission  : $(ID_bind)"""
 
-# ╔═╡ 3e5fd65e-e3d9-49e5-a9b0-87a2475cc3a0
-fig1=OceanRobotsMakieExt.plot_glider(df,gdf,ID)
-
 # ╔═╡ d49320f0-06c3-4d82-93d1-6047edc37d47
 gdf[ID]
 
-# ╔═╡ 4edad6a6-0468-4443-b878-7c9e26921766
+# ╔═╡ 3bab501f-badc-4633-83c9-4f2481521f46
+OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
 
+# ╔═╡ 3e5fd65e-e3d9-49e5-a9b0-87a2475cc3a0
+fig1=OceanRobotsMakieExt.plot_glider(df,gdf,ID)
 
 # ╔═╡ 5748bb5f-528f-42fd-8961-fd7c93d12554
 md"""### Typical File Content
@@ -150,7 +143,6 @@ md"""### Typical File Content
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
-Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 OceanRobots = "0b51df41-3294-4961-8d23-db645e32016d"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 """
@@ -161,7 +153,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.3"
 manifest_format = "2.0"
-project_hash = "1599f238c9f5710a32abbe43d0c14a51a97178ee"
+project_hash = "3d176982a7e409a871197b287fe1b56c0e1130ee"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1919,16 +1911,14 @@ version = "3.5.0+0"
 # ╟─0a016d12-de41-45f5-800d-af8f953720e4
 # ╟─b8db58ca-ed7a-4174-a6b0-e53925b5887a
 # ╟─428120da-1542-4265-a369-1273ae4718ac
-# ╠═3bab501f-badc-4633-83c9-4f2481521f46
-# ╠═3e5fd65e-e3d9-49e5-a9b0-87a2475cc3a0
+# ╟─3e5fd65e-e3d9-49e5-a9b0-87a2475cc3a0
 # ╟─1ab9daac-b631-4f3e-a868-14e95f71962b
 # ╟─d49320f0-06c3-4d82-93d1-6047edc37d47
 # ╟─440e4256-d6eb-4dfa-946b-22fac53432e8
 # ╟─68028522-205e-4b41-b3c0-2e3b09c2d8a7
 # ╟─0247a51e-c89b-11ec-071f-bb82fe257adc
 # ╟─9523dc0d-1758-4e0f-864c-4ab253bf11a9
-# ╠═1f244746-363c-4e7e-8bf8-70141fce66a3
-# ╟─4edad6a6-0468-4443-b878-7c9e26921766
+# ╟─3bab501f-badc-4633-83c9-4f2481521f46
 # ╟─5748bb5f-528f-42fd-8961-fd7c93d12554
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
