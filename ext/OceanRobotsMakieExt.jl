@@ -3,6 +3,8 @@ module OceanRobotsMakieExt
 using OceanRobots, Makie
 import OceanRobots: Dates
 
+## DRIFTERS
+
 """
     plot_drifter(ds)
 
@@ -33,6 +35,8 @@ function plot_drifter(ds)
 	fig1
 end
 
+## WHOTS
+
 function plot_WHOTS(arr,units,d0,d1)
 	
     tt=findall((arr.TIME.>d0).*(arr.TIME.<=d1))
@@ -59,6 +63,8 @@ function plot_WHOTS(arr,units,d0,d1)
     f
 end
 
+## NOAA
+
 mean=NOAA.mean
 
 function plot_summary(tbl,all)
@@ -72,6 +78,61 @@ function plot_summary(tbl,all)
 	f
 end
 
+## Satellite
+
+podaac_date(n)=Date("1992-10-05")+Dates.Day(5*n)
+podaac_sample_dates=podaac_date.(18:73:2190)
+cmems_date(n)=Date("1993-01-01")+Dates.Day(1*n)
+podaac_all_dates=podaac_date.(1:2190)
+cmems_all_dates=cmems_date.(1:10632)
+
+sla_dates(fil) = ( fil=="sla_podaac.nc" ? podaac_all_dates : cmems_all_dates)
+
+function prep_movie(ds, topo; colormap=:PRGn, color=:black, 
+	time=1, dates=[], showTopo=true, resolution = (600, 400))
+	lon=ds["lon"][:]
+	lat=ds["lat"][:]
+	store=ds["SLA"][:,:,:]
+
+	nt=size(store,3)
+	kk=findall((!isnan).(store[:,:,end]))
+
+	n=Observable(time)
+	SLA=@lift(store[:,:,$n])
+	SLA2=@lift($(SLA).-mean($(SLA)[kk]))
+
+	fig=Figure(size=resolution,fontsize=11)
+	ax=Axis(fig[1,1])
+    hm=heatmap!(lon,lat,SLA2,colorrange=0.25.*(-1.0,1.0),colormap=colormap)
+
+	if showTopo
+		lon[1]>0.0 ? lon_off=360.0 : lon_off=0.0
+		contour!(lon_off.+topo.lon,topo.lat,topo.z,levels=-300:100:300,color=color,linewidth=1)
+		contour!(lon_off.+topo.lon,topo.lat,topo.z,levels=-2500:500:-500,color=color,linewidth=0.25)
+		contour!(lon_off.+topo.lon,topo.lat,topo.z,levels=-6000:1000:-3000,color=color,linewidth=0.1)
+	end
+
+	lon0=minimum(lon)+(maximum(lon)-minimum(lon))/20.0
+	lat0=maximum(lat)-(maximum(lat)-minimum(lat))/10.0
+	
+	if isempty(dates)
+		println("no date")
+	else
+	    dtxt=@lift(string(dates[$n]))
+		text!(lon0,lat0,text=dtxt,color=:blue2,fontsize=14,font = :bold)	
+	end
+	
+	Colorbar(fig[1,2],hm)
+
+	fig,n,nt
+end
+
+function make_movie(ds,tt; framerate = 90, dates=[])
+	fig,n,nt=prep_movie(ds,dates=dates)
+    record(fig,tempname()*".mp4", tt; framerate = framerate) do t
+        n[] = t
+    end
+end
 
 end
 

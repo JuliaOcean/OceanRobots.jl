@@ -16,82 +16,9 @@ end
 
 # ╔═╡ a8e0b727-a416-4aad-b660-69e5470c7e9e
 begin
-	using PlutoUI
-	using CairoMakie, Statistics, NCDatasets, Dates, Dataverse
-	import ArchGDAL
+	using OceanRobots, CairoMakie, Dataverse, ArchGDAL, PlutoUI
+    OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
 end
-
-# ╔═╡ ec8cbf44-82d9-11ed-0131-1bdea9285f79
-module some_plots
-
-using CairoMakie, NCDatasets, Statistics, Dates
-import ArchGDAL
-
-podaac_date(n)=Date("1992-10-05")+Dates.Day(5*n)
-cmems_date(n)=Date("1993-01-01")+Dates.Day(1*n)
-podaac_all_dates=podaac_date.(1:2190)
-cmems_all_dates=cmems_date.(1:10632)
-pth0=joinpath(tempdir(),"azores_region_data")
-
-function get_topo()
-	dataset = ArchGDAL.read(joinpath(pth0,"exportImage_60arc.tiff"))
-	band =ArchGDAL.getband(dataset, 1)
-	geotransform = ArchGDAL.getgeotransform(dataset)
-	
-	(nx,ny)=size(band)
-	lon=geotransform[1] .+ geotransform[2]*(0.5:nx-0.5)
-	lat=geotransform[4] .+ geotransform[6]*(0.5:ny-0.5)
-	(lon=lon,lat=lat,z=band[:,:])
-end	
-
-function prep_movie(ds; colormap=:PRGn, color=:black, 
-	time=1, dates=[], showTopo=true, resolution = (600, 400))
-	lon=ds["lon"][:]
-	lat=ds["lat"][:]
-	store=ds["SLA"][:,:,:]
-
-	nt=size(store,3)
-	kk=findall((!isnan).(store[:,:,end]))
-
-	n=Observable(time)
-	SLA=@lift(store[:,:,$n])
-	SLA2=@lift($(SLA).-mean($(SLA)[kk]))
-
-	fig=Figure(size=resolution,fontsize=11)
-	ax=Axis(fig[1,1])
-    hm=heatmap!(lon,lat,SLA2,colorrange=0.25.*(-1.0,1.0),colormap=colormap)
-
-	if showTopo
-		lon[1]>0.0 ? lon_off=360.0 : lon_off=0.0
-		topo=get_topo()
-		contour!(lon_off.+topo.lon,topo.lat,topo.z,levels=-300:100:300,color=color,linewidth=1)
-		contour!(lon_off.+topo.lon,topo.lat,topo.z,levels=-2500:500:-500,color=color,linewidth=0.25)
-		contour!(lon_off.+topo.lon,topo.lat,topo.z,levels=-6000:1000:-3000,color=color,linewidth=0.1)
-	end
-
-	lon0=minimum(lon)+(maximum(lon)-minimum(lon))/20.0
-	lat0=maximum(lat)-(maximum(lat)-minimum(lat))/10.0
-	
-	if isempty(dates)
-		println("no date")
-	else
-	    dtxt=@lift(string(dates[$n]))
-		text!(lon0,lat0,text=dtxt,color=:blue2,fontsize=14,font = :bold)	
-	end
-	
-	Colorbar(fig[1,2],hm)
-
-	fig,n,nt
-end
-
-function make_movie(ds,tt; framerate = 90, dates=[])
-	fig,n,nt=prep_movie(ds,dates=dates)
-    record(fig,tempname()*".mp4", tt; framerate = framerate) do t
-        n[] = t
-    end
-end
-
-end #module some_plots
 
 # ╔═╡ 71e87ed3-5a9f-49aa-99af-cf144501c678
 md"""# Regional Sea Level
@@ -125,13 +52,11 @@ end
 
 # ╔═╡ 24a9fc25-b85b-4582-a36b-0a43e04ee799
 begin
-	begin
-		pth0=joinpath(tempdir(),"azores_region_data")
-		file0=joinpath(pth0,filename)
-		!ispath(pth0) ? mkdir(pth0) : nothing
-		!isfile(file0) ? Dataverse.file_download(df,filename,pth0) : nothing
-		"Downloaded to "*file0
-	end
+    pth0=joinpath(tempdir(),"azores_region_data")
+    file0=joinpath(pth0,filename)
+    !ispath(pth0) ? mkdir(pth0) : nothing
+    !isfile(file0) ? Dataverse.file_download(df,filename,pth0) : nothing
+    "Downloaded to "*file0
 end
 
 # ╔═╡ 62e0b8a9-0025-4ce7-9538-b6114d97b762
@@ -143,6 +68,13 @@ md"""## Visualize Data
 
 # ╔═╡ 311522c5-b456-4396-8503-d7cd208c3f9a
 @bind fil Select(["sla_podaac.nc","sla_cmems.nc"])
+
+dates=OceanRobotsMakieExt.sla_dates(fil)
+
+# ╔═╡ 128e1676-90b2-459d-ab42-1a863a2c7183
+@bind d0 Select(dates)
+
+t0=findall(dates.==d0)[1]
 
 # ╔═╡ 5fec1029-34a1-4d43-9183-7e6095194a3a
 md"""## Animate Data"""
@@ -168,43 +100,30 @@ begin
 	file1=joinpath(pth0,fil)
 	!isfile(file1) ? Dataverse.file_download(df,fil,pth0) : nothing
 	
-	ds=Dataset(joinpath(pth0,fil))
+	ds=podaac_sla.Dataset(joinpath(pth0,fil))
 end
 
 # ╔═╡ 1cf2cdb9-3c09-4b39-81cf-49318c16f531
 md"""## Julia Codes"""
 
-# ╔═╡ eeb9d308-ef62-4dcc-ba90-a2a1912ef2bd
-begin
-	podaac_date(n)=Date("1992-10-05")+Dates.Day(5*n)
-	podaac_sample_dates=podaac_date.(18:73:2190)
-	podaac_all_dates=podaac_date.(1:2190)
-	cmems_date(n)=Date("1993-01-01")+Dates.Day(1*n)
-	cmems_sample_dates=cmems_date.(3:366:10632)
-	cmems_all_dates=cmems_date.(1:10632)
-	"Time Parameters Defined"
-end
+# ╔═╡ ec8cbf44-82d9-11ed-0131-1bdea9285f79
 
-# ╔═╡ 128e1676-90b2-459d-ab42-1a863a2c7183
-begin
-	if fil=="sla_podaac.nc"
-		bind_d0 = @bind d0 Select(podaac_sample_dates)
-	else
-		bind_d0 = @bind d0 Select(cmems_sample_dates)
-	end
-	bind_d0
-end
+
+# ╔═╡ eeb9d308-ef62-4dcc-ba90-a2a1912ef2bd
+topo = begin
+	dataset = ArchGDAL.read(joinpath(pth0,"exportImage_60arc.tiff"))
+	band =ArchGDAL.getband(dataset, 1)
+	geotransform = ArchGDAL.getgeotransform(dataset)
+	
+	(nx,ny)=size(band)
+	lon=geotransform[1] .+ geotransform[2]*(0.5:nx-0.5)
+	lat=geotransform[4] .+ geotransform[6]*(0.5:ny-0.5)
+	(lon=lon,lat=lat,z=band[:,:])
+end	
 
 # ╔═╡ a45bbdbd-3793-4e69-b042-39a4a1ac7ed7
 begin
-	if fil=="sla_podaac.nc"
-		t0=findall(podaac_all_dates.==d0)[1]
-		dates=podaac_all_dates
-	else
-		t0=findall(cmems_all_dates.==d0)[1]
-		dates=cmems_all_dates
-	end
-	fig,n,nt=some_plots.prep_movie(ds,colormap=:PRGn,color=:black,time=t0,dates=dates)
+	fig,n,nt=OceanRobotsMakieExt.prep_movie(ds,topo,colormap=:PRGn,color=:black,time=t0,dates=dates)
 	framerate=Int(floor(nt/120))
 	fig
 end
@@ -215,10 +134,7 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 ArchGDAL = "c9ce4bd3-c3d5-55b8-8973-c0e20141b8c3"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 Dataverse = "9c0b9be8-e31e-490f-90fe-77697562404d"
-Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
-NCDatasets = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -227,7 +143,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.3"
 manifest_format = "2.0"
-project_hash = "5085f4b30989bd215cb190d45acffd81a92557b7"
+project_hash = "d13d4acb7485c91c87389b76fe7f479144a18a02"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -339,12 +255,6 @@ git-tree-sha1 = "389ad5c84de1ae7cf0e28e381131c98ea87d54fc"
 uuid = "fa961155-64e5-5f13-b03f-caf6b980ea82"
 version = "0.5.0"
 
-[[deps.CFTime]]
-deps = ["Dates", "Printf"]
-git-tree-sha1 = "5afb5c5ba2688ca43a9ad2e5a91cbb93921ccfa1"
-uuid = "179af706-886a-5703-950a-314cd64e0468"
-version = "0.1.3"
-
 [[deps.CRC32c]]
 uuid = "8bf52ea8-c179-5cab-976a-9e18b702a9bc"
 
@@ -433,12 +343,6 @@ deps = ["ColorTypes", "FixedPointNumbers", "Reexport"]
 git-tree-sha1 = "362a287c3aa50601b0bc359053d5c2468f0e7ce0"
 uuid = "5ae59095-9a9b-59fe-a467-6f913c188581"
 version = "0.12.11"
-
-[[deps.CommonDataModel]]
-deps = ["CFTime", "DataStructures", "Dates", "Preferences", "Printf", "Statistics"]
-git-tree-sha1 = "d6fb5bf939a2753c74984b11434ea25d6c397a58"
-uuid = "1fbeeb36-5f17-413c-809b-666fb144f157"
-version = "0.3.6"
 
 [[deps.Compat]]
 deps = ["TOML", "UUIDs"]
@@ -1269,12 +1173,6 @@ version = "0.3.4"
 [[deps.MozillaCACerts_jll]]
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
 version = "2023.1.10"
-
-[[deps.NCDatasets]]
-deps = ["CFTime", "CommonDataModel", "DataStructures", "Dates", "DiskArrays", "NetCDF_jll", "NetworkOptions", "Printf"]
-git-tree-sha1 = "a640912695952b074672edb5f9aaee2f7f9fd59a"
-uuid = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
-version = "0.14.4"
 
 [[deps.NaNMath]]
 deps = ["OpenLibm_jll"]
