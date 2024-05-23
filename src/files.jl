@@ -300,6 +300,94 @@ end #module GDP
 
 ##
 
+module GDP_CloudDrift
+
+using DataFrames, Statistics, NCDatasets
+
+"""
+    to_DataFrame(ds)
+"""
+function to_DataFrame(ds)
+	df=DataFrame(:sst => ds[:sst][:], :ve => ds[:ve][:], :vn => ds[:vn][:])
+	in("drogue_status",names(df)) ? df.drogue_status=ds[:drogue_status][:] : nothing
+	df.sst1=ds[:sst1][:]
+	df.sst2=ds[:sst2][:]
+	df.longitude=ds[:longitude][:]
+	df.latitude=ds[:latitude][:]
+	df.time=ds[:time][:]
+	df
+end
+
+"""
+    add_index!(df)
+"""
+function add_index!(df)
+	ii=(df.longitude[:] .+180 .+0.25)/0.5;
+	ilon=Int.(round.(ii))
+	#extrema(ilon)
+
+	ii=(df.latitude[:] .+90 .+0.25)/0.5;
+	ilat=Int.(round.(ii))
+	#extrema(ilat)
+
+	df.index=CartesianIndex.(ilon,ilat)
+end	
+
+"""
+    add_ID!(df,ds)
+"""
+function add_ID!(df,ds)
+	tmp=ds[:ID][:]
+	rowsize=ds[:rowsize][:]
+	ID=fill(0,0)
+	[push!(ID,fill(tmp[i],rowsize[i])...) for i in 1:length(rowsize)]
+
+	df.ID=ID
+end
+
+"""
+    to_Grid(gdf,grid)
+"""
+function to_Grid(gdf,grid)
+	df2=combine(gdf) do df
+		(ve=mean(df.ve) , vn=mean(df.vn) )
+	end
+		
+	ve=fill(NaN,(length(grid.lon),length(grid.lat)))
+	[ve[df2.index[i]]=df2.ve[i] for i in 1:size(df2,1)];
+	vn=fill(NaN,(length(grid.lon),length(grid.lat)))
+	[vn[df2.index[i]]=df2.vn[i] for i in 1:size(df2,1)];
+
+	ve,vn
+end
+
+"""
+    region_subset(df,lons,lats,dates)
+
+Subset of df that's within specified date and position ranges.    
+"""
+region_subset(df,lons,lats,dates) = 
+    df[ (df.longitude .> lons[1]) .& (df.longitude .<= lons[2]) .&
+    (df.latitude .> lats[1]) .& (df.latitude .<= lats[2]) .&
+    (df.time .> dates[1]) .& (df.time .<= dates[2]) ,:]
+
+"""
+    trajectory_stats(gdf)
+"""
+function trajectory_stats(gdf)
+	df2=combine(gdf) do df
+		(ve=mean(df.ve) , vn=mean(df.vn) , 
+		t0=minimum(skipmissing(df.time)) , t1=maximum(skipmissing(df.time)) ,
+		longitude=mean(skipmissing(df.longitude)) , latitude=mean(skipmissing(df.latitude)) ,
+		sst=mean(skipmissing(df.sst)) , sst1=mean(skipmissing(df.sst1)), sst2=mean(skipmissing(df.sst2)))
+	end
+	df2
+end
+
+end
+
+##
+
 module ArgoFiles
 
 using NCDatasets, Downloads, CSV, DataFrames
