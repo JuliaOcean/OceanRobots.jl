@@ -55,18 +55,6 @@ end
 # ╔═╡ eb95a380-a0b0-4762-8342-89d0f634d1ec
 
 
-# ╔═╡ ec963909-f9ee-4dd8-b9fa-4f34038c99e0
-md"""## Visualize Data Cover (2)
-
-Bue points show all Argo floats currently in operation. Red crosses shows the other selected data set.
-
-!!! note
-    This example use CSV files prepared by OceanOPS (rather than their API directly).
-"""
-
-# ╔═╡ f71390bd-6862-43be-84b9-005ff5742b5e
-@bind s Select([:ArgoPlanned,:OceanOPS,:DBCP,:OceanGliders])
-
 # ╔═╡ 596bce95-e13f-4439-858f-e944834c0924
 begin
 	bind_nam = @bind nam Select([:Argo,:Drifter])
@@ -113,15 +101,12 @@ end
 # ╔═╡ fccdc273-2e9f-4f60-a659-8ee2790ae2fc
 more_operational=OceanOPS.get_list_pos(Symbol(nam_platform_types))
 
-# ╔═╡ 1bf99223-ef46-4202-bdcc-8d7d6c561822
-md"""## Appendices"""
-
 # ╔═╡ 6d4c35fc-1a18-4fd7-a194-61fb387c7091
 fig1=OceanRobotsGeoMakieExt.plot_OceanOPS1(argo_operational,argo_planned,
     drifter_operational,more_operational,nam_platform_types)
 
-# ╔═╡ fbff1986-68c0-4558-b29b-2c6b87ca85fe
-fig2=OceanRobotsGeoMakieExt.plot_OceanOPS2(s)
+# ╔═╡ 1bf99223-ef46-4202-bdcc-8d7d6c561822
+md"""## Appendices"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1974,9 +1959,6 @@ version = "3.5.0+0"
 # ╟─6d4c35fc-1a18-4fd7-a194-61fb387c7091
 # ╟─eb95a380-a0b0-4762-8342-89d0f634d1ec
 # ╟─fccdc273-2e9f-4f60-a659-8ee2790ae2fc
-# ╟─ec963909-f9ee-4dd8-b9fa-4f34038c99e0
-# ╟─f71390bd-6862-43be-84b9-005ff5742b5e
-# ╟─fbff1986-68c0-4558-b29b-2c6b87ca85fe
 # ╟─596bce95-e13f-4439-858f-e944834c0924
 # ╟─aa80092c-80b9-489c-97b9-06c3d39ac594
 # ╟─401180a9-cb62-4dc6-b0a1-35df35f834db
