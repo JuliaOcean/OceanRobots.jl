@@ -213,6 +213,16 @@ function read_historical_txt(ID,y)
     df
 end
 
+function summary_table(z,ny=25)
+    T=round.(z.WTMP * 1.8 .+32,digits=1)
+    p=[(T[z.YY.==y],T[z.YY.==y+ny]) for y in 1984:2001]
+    i=findall([length(pp[1])*length(pp[2])==1 for pp in p])
+    T0=[p[ii][1][1] for ii in i]
+    T1=[p[ii][2][1] for ii in i]
+    i=findall((!isnan).(T0.*T1))
+    DataFrame(T0 = T0[i], T1 = T1[i])
+end
+
 end #module NOAA
 
 ##

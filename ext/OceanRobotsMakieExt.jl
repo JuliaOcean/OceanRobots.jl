@@ -59,5 +59,19 @@ function plot_WHOTS(arr,units,d0,d1)
     f
 end
 
+mean=NOAA.mean
+
+function plot_summary(tbl,all)
+	f=Figure(); 
+	ax=Axis(f[1,1],title="full distribution of T1-T0 "); hist!(ax,all)
+	ax=Axis(f[1,2],title="mean(T1-T0) each month"); barplot!(ax,[mean(tbl[m].T1)-mean(tbl[m].T0) for m in 1:12])
+	ax=Axis(f[2,1:2],title="seasonal cycle");
+	lines!(ax,[mean(tbl[m].T0) for m in 1:12],label="mean(T0)")
+	lines!(ax,[mean(tbl[m].T1) for m in 1:12],label="mean(T1)")
+	axislegend(ax)
+	f
+end
+
+
 end
 
