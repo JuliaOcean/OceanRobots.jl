@@ -16,7 +16,7 @@ end
 
 # ╔═╡ 8539e67f-6361-409a-9dbe-e8dcb2c7e10d
 begin
-	using OceanRobots, ArgoData, CairoMakie, PlutoUI, PrettyTables
+	using OceanRobots, ArgoData, CairoMakie, PlutoUI, PrettyTables, MeshArrays
 	"Done with packages"
 end
 
@@ -25,7 +25,7 @@ md"""# Argo Floats
 
 The standard Argo float drifts at 1000m depth and comes back to the surface every ten days, just after 
 collecting profiles, to transmit its data via satellite. For more information about 
-the international Argo program please refer to, for example, <https://argo.ucsd.edu>.
+the international Argo program please refer to, for example, <https://argo.ucsd.edu> or <https://biogeochemical-argo.org>.
 """
 
 # ╔═╡ 09a2aa6e-16bc-4582-9d5f-c50432e3f0ca
@@ -37,9 +37,9 @@ begin
 	md"""
 
 	
-	$(Resource(url1,:height => 100)) 
-	$(Resource(url2,:height => 100))
-	$(Resource(url4,:height => 100))
+	$(Resource(url1,:height => 150)) 
+	$(Resource(url2,:height => 150))
+	$(Resource(url4,:height => 150))
 
 	_Picture credits : Taiyo Kobayashi, IFREMER, NOAA._
 	"""
@@ -49,7 +49,7 @@ end
 TableOfContents()
 
 # ╔═╡ a9fd8646-7269-4f70-93cf-0e831d533237
-md"""## Data Samples
+md"""## One Float Data
 
 Temperature and salinity profiles recorded by the float as a function of time and depth.
 """
@@ -58,11 +58,11 @@ Temperature and salinity profiles recorded by the float as a function of time an
 begin
 	mywmo_bind = @bind wmo_txt confirm(TextField(default="6900900"))
 	
-	md"""## Select a Float
+	md"""## Select Float
 	
 	$(mywmo_bind)
 	
-	See later in the notebook for the full list of floats.
+	See later in the notebook for the full list of floats IDs (wmo numbers).
 	"""
 end
 
@@ -70,29 +70,17 @@ end
 wmo=parse(Int,wmo_txt)
 
 # ╔═╡ 4d949835-4cf8-4493-b765-6e956019b777
-begin
-	md"""## Positions, Speed, Profiles
+md"""## Visualize Data 
 
+Float position, estimated speed, temperature and salinity are shown as a function of time.
+
+!!! note
+	Methods: 
 	- extract the recorded float positions  (one every 10 days)
 	- estimate an approximate drift speed between consecutive float positions
 	- interpolate profile data to standard depth levels
-	
-	The result is shown below as function of time along for positions, estimate speed, temperature, salinity.
-	"""
-end
 
-# ╔═╡ 3f5419f1-d131-42eb-86c8-44a385e88d51
-begin
-	files_list=GDAC.files_list()
-	nf=size(files_list,1)
-end
-
-# ╔═╡ 8418b9ca-2e7f-4468-a0fb-36f5a05dde2c
-pretty_table(files_list[1:2000:nf,:],
-	header = names(files_list),
-	header_crayon = crayon"yellow bold",
-	highlighters  = ( hl_col(1, crayon"white"),hl_col(2, crayon"white") ),
-)
+"""
 
 # ╔═╡ 9037e2ce-a04a-40d0-945e-ec3f19a4f3c4
 md"""## Many More Floats
@@ -109,14 +97,27 @@ There are two official Argo data repositories (GDAC) that mirror the same files:
 
 In this notebook, we download the file that contains all profiles collected by float `wmo=`$(wmo). 
 
-**The Argo float chosen as default generated data for almost seven years!**
-
-**But there are $(nf) other floats to choose from!!**
-
-A full list can be [found here](https://juliaocean.github.io/ArgoData.jl/dev/Argo_float_files.csv), and a few are shown below. 
-
-Methods to download files in bulk & parallel is provided in [ArgoData.jl](https://github.com/JuliaOcean/ArgoData.jl).
+!!! note 
+    - The Argo float chosen as default generated data for almost seven years!
+	- There are $(nf) other floats to choose from. A full list is shown below. 
+	- Methods to download files in bulk & parallel is provided in [ArgoData.jl](https://github.com/JuliaOcean/ArgoData.jl).
 """
+
+# ╔═╡ 3f5419f1-d131-42eb-86c8-44a385e88d51
+begin
+	files_list=GDAC.files_list()
+	nf=size(files_list,1)
+end
+
+# ╔═╡ 8418b9ca-2e7f-4468-a0fb-36f5a05dde2c
+pretty_table(files_list[1:2000:nf,:],
+	header = names(files_list),
+	header_crayon = crayon"yellow bold",
+	highlighters  = ( hl_col(1, crayon"white"),hl_col(2, crayon"white") ),
+)
+
+# ╔═╡ 98dfd9c1-f4bd-42cd-bf0c-67471c347e74
+show(files_list)
 
 # ╔═╡ 533ea412-76ae-4060-bbc8-2650ee0d2774
 md"""## Appendix
@@ -150,9 +151,6 @@ md"""_Average estimated drift speed :_ $(round(spd.speed_mean; digits=4)) m/s"""
 # ╔═╡ 66e41568-7825-4383-80cb-cc48bdf56397
 md"""### Viz"""
 
-# ╔═╡ a42edc9d-9fa2-4775-83c4-2d9a5130105c
-
-
 # ╔═╡ c176fd5e-b2f2-47e3-8145-a4c152389344
 OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
 
@@ -167,9 +165,18 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 ArgoData = "9eb831cf-c491-48dc-bed4-6aca718df73c"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+MeshArrays = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
 OceanRobots = "0b51df41-3294-4961-8d23-db645e32016d"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 PrettyTables = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
+
+[compat]
+ArgoData = "~0.1.19"
+CairoMakie = "~0.11.11"
+MeshArrays = "~0.3.6"
+OceanRobots = "~0.1.20"
+PlutoUI = "~0.7.59"
+PrettyTables = "~2.3.1"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -178,7 +185,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.3"
 manifest_format = "2.0"
-project_hash = "6a78df21499371e6569e551b9a6e2170644f788e"
+project_hash = "9a6160de1146cbb423a498f6680e33eda7a360c5"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2061,18 +2068,18 @@ version = "3.5.0+0"
 # ╟─904c8a06-0552-40b4-aa9f-404d61b21c08
 # ╟─8418b9ca-2e7f-4468-a0fb-36f5a05dde2c
 # ╟─4d949835-4cf8-4493-b765-6e956019b777
-# ╠═a5db2d63-ec3e-4273-9138-4264388a4b7d
-# ╠═e1d9253a-4ac4-47c8-97d7-edb92cd54397
+# ╟─e1d9253a-4ac4-47c8-97d7-edb92cd54397
+# ╟─a5db2d63-ec3e-4273-9138-4264388a4b7d
 # ╟─49256e11-fbd2-40e7-8f0b-193e17e2b31b
 # ╟─9037e2ce-a04a-40d0-945e-ec3f19a4f3c4
 # ╟─3f5419f1-d131-42eb-86c8-44a385e88d51
+# ╟─98dfd9c1-f4bd-42cd-bf0c-67471c347e74
 # ╟─533ea412-76ae-4060-bbc8-2650ee0d2774
-# ╠═8539e67f-6361-409a-9dbe-e8dcb2c7e10d
+# ╟─8539e67f-6361-409a-9dbe-e8dcb2c7e10d
 # ╟─916e5a50-ee01-4299-9314-2e3cc9c826e6
 # ╟─2558c88f-7fee-4a91-bfdd-46f1f61795b0
 # ╟─3fd610a8-80c1-4acc-b3ef-20883f77e32d
 # ╟─66e41568-7825-4383-80cb-cc48bdf56397
-# ╟─a42edc9d-9fa2-4775-83c4-2d9a5130105c
 # ╟─c176fd5e-b2f2-47e3-8145-a4c152389344
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
