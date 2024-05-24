@@ -1306,9 +1306,9 @@ version = "0.4.3"
 
 [[deps.PROJ_jll]]
 deps = ["Artifacts", "JLLWrappers", "LibCURL_jll", "Libdl", "Libtiff_jll", "SQLite_jll"]
-git-tree-sha1 = "84aa844bd56f62282116b413fbefb45e370e54d6"
+git-tree-sha1 = "0d04367a7ab67636da8bbdb6338c94d1a577d8e2"
 uuid = "58948b4f-47e0-5654-a9ad-f609743f8632"
-version = "901.300.0+1"
+version = "901.400.0+0"
 
 [[deps.Packing]]
 deps = ["GeometryBasics"]
