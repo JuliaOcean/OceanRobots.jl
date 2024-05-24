@@ -54,6 +54,19 @@ md"""## One Float Data
 Temperature and salinity profiles recorded by the float as a function of time and depth.
 """
 
+# ╔═╡ 4d949835-4cf8-4493-b765-6e956019b777
+md"""## Visualize Data 
+
+Float position, estimated speed, temperature and salinity are shown as a function of time.
+
+!!! note
+	Methods: 
+	- extract the recorded float positions  (one every 10 days)
+	- estimate an approximate drift speed between consecutive float positions
+	- interpolate profile data to standard depth levels
+
+"""
+
 # ╔═╡ 1a835449-de37-4d08-9c91-c7affe7084cd
 begin
 	mywmo_bind = @bind wmo_txt confirm(TextField(default="6900900"))
@@ -69,21 +82,8 @@ end
 # ╔═╡ 904c8a06-0552-40b4-aa9f-404d61b21c08
 wmo=parse(Int,wmo_txt)
 
-# ╔═╡ 4d949835-4cf8-4493-b765-6e956019b777
-md"""## Visualize Data 
-
-Float position, estimated speed, temperature and salinity are shown as a function of time.
-
-!!! note
-	Methods: 
-	- extract the recorded float positions  (one every 10 days)
-	- estimate an approximate drift speed between consecutive float positions
-	- interpolate profile data to standard depth levels
-
-"""
-
 # ╔═╡ 9037e2ce-a04a-40d0-945e-ec3f19a4f3c4
-md"""## Many More Floats
+md"""## All Floats
 
 Argo is an international program that maintains an array of over 3000 profiling floats distributed 
 over the Global Ocean. It collectively provides a high-quality and global data set that plays a 
@@ -2064,13 +2064,13 @@ version = "3.5.0+0"
 # ╟─9d29d0f8-7b1c-11ec-1f16-b313a50cc5e7
 # ╟─a9fd8646-7269-4f70-93cf-0e831d533237
 # ╟─c85a1eea-e2db-4f7f-9b7c-00b29a4cb975
-# ╟─1a835449-de37-4d08-9c91-c7affe7084cd
-# ╟─904c8a06-0552-40b4-aa9f-404d61b21c08
-# ╟─8418b9ca-2e7f-4468-a0fb-36f5a05dde2c
 # ╟─4d949835-4cf8-4493-b765-6e956019b777
 # ╟─e1d9253a-4ac4-47c8-97d7-edb92cd54397
 # ╟─a5db2d63-ec3e-4273-9138-4264388a4b7d
 # ╟─49256e11-fbd2-40e7-8f0b-193e17e2b31b
+# ╟─904c8a06-0552-40b4-aa9f-404d61b21c08
+# ╟─1a835449-de37-4d08-9c91-c7affe7084cd
+# ╟─8418b9ca-2e7f-4468-a0fb-36f5a05dde2c
 # ╟─9037e2ce-a04a-40d0-945e-ec3f19a4f3c4
 # ╟─3f5419f1-d131-42eb-86c8-44a385e88d51
 # ╟─98dfd9c1-f4bd-42cd-bf0c-67471c347e74
