@@ -32,7 +32,6 @@ the international Argo program please refer to, for example, <https://argo.ucsd.
 begin
 	url1="https://www.researchgate.net/profile/Taiyo-Kobayashi/publication/236890114/figure/fig1/AS:299396928425984@1448393198754/Distribution-of-profiling-floats-under-Argo-by-country-Total-number-of-floats-is-3256-as.png"
 	url2="https://www.researchgate.net/profile/Taiyo-Kobayashi/publication/236890114/figure/fig2/AS:299396928425984@1448393198754/Distribution-of-profiling-floats-under-Argo-by-country-Total-number-of-floats-is-3256-as.png"
-	url3="https://wwz.ifremer.fr/var/storage/images/_aliases/fullsize/medias-ifremer/medias-institut/espace-presse/communiques/communiques-2020/images/a-ce-jour-environ-4000-flotteurs-argo-monitorent-les-oceans-de-notre-planete/1771207-1-fre-FR/A-ce-jour-environ-4000-flotteurs-Argo-monitorent-les-oceans-de-notre-planete.jpg"
 	url4="https://floats.pmel.noaa.gov/sites/default/files/photos/Deep%20Argo/15.%20Deep%20SOLO%20float%20starts%20its%20mission%20by%20sinking%20after%20deployment%20during%20HOT%20Cruise%20302.jpg"
 
 	md"""
@@ -40,7 +39,6 @@ begin
 	
 	$(Resource(url1,:height => 100)) 
 	$(Resource(url2,:height => 100))
-	$(Resource(url3,:height => 100))
 	$(Resource(url4,:height => 100))
 
 	_Picture credits : Taiyo Kobayashi, IFREMER, NOAA._
