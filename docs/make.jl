@@ -1,5 +1,7 @@
 using Documenter, OceanRobots, PlutoSliderServer
 
+ENV["DATADEPS_ALWAYS_ACCEPT"]=true
+
 ##
 
 makedocs(;
