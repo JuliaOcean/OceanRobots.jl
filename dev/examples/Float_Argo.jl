@@ -16,7 +16,7 @@ end
 
 # ╔═╡ 8539e67f-6361-409a-9dbe-e8dcb2c7e10d
 begin
-	using OceanRobots, ArgoData, CairoMakie, PlutoUI, PrettyTables
+	using OceanRobots, ArgoData, CairoMakie, PlutoUI, PrettyTables, MeshArrays
 	"Done with packages"
 end
 
@@ -25,23 +25,21 @@ md"""# Argo Floats
 
 The standard Argo float drifts at 1000m depth and comes back to the surface every ten days, just after 
 collecting profiles, to transmit its data via satellite. For more information about 
-the international Argo program please refer to, for example, <https://argo.ucsd.edu>.
+the international Argo program please refer to, for example, <https://argo.ucsd.edu> or <https://biogeochemical-argo.org>.
 """
 
 # ╔═╡ 09a2aa6e-16bc-4582-9d5f-c50432e3f0ca
 begin
 	url1="https://www.researchgate.net/profile/Taiyo-Kobayashi/publication/236890114/figure/fig1/AS:299396928425984@1448393198754/Distribution-of-profiling-floats-under-Argo-by-country-Total-number-of-floats-is-3256-as.png"
 	url2="https://www.researchgate.net/profile/Taiyo-Kobayashi/publication/236890114/figure/fig2/AS:299396928425984@1448393198754/Distribution-of-profiling-floats-under-Argo-by-country-Total-number-of-floats-is-3256-as.png"
-	url3="https://wwz.ifremer.fr/var/storage/images/_aliases/fullsize/medias-ifremer/medias-institut/espace-presse/communiques/communiques-2020/images/a-ce-jour-environ-4000-flotteurs-argo-monitorent-les-oceans-de-notre-planete/1771207-1-fre-FR/A-ce-jour-environ-4000-flotteurs-Argo-monitorent-les-oceans-de-notre-planete.jpg"
 	url4="https://floats.pmel.noaa.gov/sites/default/files/photos/Deep%20Argo/15.%20Deep%20SOLO%20float%20starts%20its%20mission%20by%20sinking%20after%20deployment%20during%20HOT%20Cruise%20302.jpg"
 
 	md"""
 
 	
-	$(Resource(url1,:height => 100)) 
-	$(Resource(url2,:height => 100))
-	$(Resource(url3,:height => 100))
-	$(Resource(url4,:height => 100))
+	$(Resource(url1,:height => 150)) 
+	$(Resource(url2,:height => 150))
+	$(Resource(url4,:height => 150))
 
 	_Picture credits : Taiyo Kobayashi, IFREMER, NOAA._
 	"""
@@ -51,37 +49,59 @@ end
 TableOfContents()
 
 # ╔═╡ a9fd8646-7269-4f70-93cf-0e831d533237
-md"""## Data Samples
+md"""## One Float Data
 
 Temperature and salinity profiles recorded by the float as a function of time and depth.
+"""
+
+# ╔═╡ 4d949835-4cf8-4493-b765-6e956019b777
+md"""## Visualize Data 
+
+Float position, estimated speed, temperature and salinity are shown as a function of time.
+
+!!! note
+	Methods: 
+	- extract the recorded float positions  (one every 10 days)
+	- estimate an approximate drift speed between consecutive float positions
+	- interpolate profile data to standard depth levels
+
 """
 
 # ╔═╡ 1a835449-de37-4d08-9c91-c7affe7084cd
 begin
 	mywmo_bind = @bind wmo_txt confirm(TextField(default="6900900"))
 	
-	md"""## Select a Float
+	md"""## Select Float
 	
 	$(mywmo_bind)
 	
-	See later in the notebook for the full list of floats.
+	See later in the notebook for the full list of floats IDs (wmo numbers).
 	"""
 end
 
 # ╔═╡ 904c8a06-0552-40b4-aa9f-404d61b21c08
 wmo=parse(Int,wmo_txt)
 
-# ╔═╡ 4d949835-4cf8-4493-b765-6e956019b777
-begin
-	md"""## Positions, Speed, Profiles
+# ╔═╡ 9037e2ce-a04a-40d0-945e-ec3f19a4f3c4
+md"""## All Floats
 
-	- extract the recorded float positions  (one every 10 days)
-	- estimate an approximate drift speed between consecutive float positions
-	- interpolate profile data to standard depth levels
-	
-	The result is shown below as function of time along for positions, estimate speed, temperature, salinity.
-	"""
-end
+Argo is an international program that maintains an array of over 3000 profiling floats distributed 
+over the Global Ocean. It collectively provides a high-quality and global data set that plays a 
+central role in climate research. The array has collected temperature and salinity profiles for 
+almost 2 decades (global coverage by the float array was achieved ~ 2005). 
+
+There are two official Argo data repositories (GDAC) that mirror the same files:
+
+- France Coriolis: <ftp://ftp.ifremer.fr/ifremer/argo>
+- US GODAE: <ftp://usgodae.org/pub/outgoing/argo>
+
+In this notebook, we download the file that contains all profiles collected by float `wmo=`$(wmo). 
+
+!!! note 
+    - The Argo float chosen as default generated data for almost seven years!
+	- There are $(nf) other floats to choose from. A full list is shown below. 
+	- Methods to download files in bulk & parallel is provided in [ArgoData.jl](https://github.com/JuliaOcean/ArgoData.jl).
+"""
 
 # ╔═╡ 3f5419f1-d131-42eb-86c8-44a385e88d51
 begin
@@ -96,29 +116,8 @@ pretty_table(files_list[1:2000:nf,:],
 	highlighters  = ( hl_col(1, crayon"white"),hl_col(2, crayon"white") ),
 )
 
-# ╔═╡ 9037e2ce-a04a-40d0-945e-ec3f19a4f3c4
-md"""## Many More Floats
-
-Argo is an international program that maintains an array of over 3000 profiling floats distributed 
-over the Global Ocean. It collectively provides a high-quality and global data set that plays a 
-central role in climate research. The array has collected temperature and salinity profiles for 
-almost 2 decades (global coverage by the float array was achieved ~ 2005). 
-
-There are two official Argo data repositories (GDAC) that mirror the same files:
-
-- France Coriolis: <ftp://ftp.ifremer.fr/ifremer/argo>
-- US GODAE: <ftp://usgodae.org/pub/outgoing/argo>
-
-In this notebook, we download the file that contains all profiles collected by float `wmo=`$(wmo). 
-
-**The Argo float chosen as default generated data for almost seven years!**
-
-**But there are $(nf) other floats to choose from!!**
-
-A full list can be [found here](https://juliaocean.github.io/ArgoData.jl/dev/Argo_float_files.csv), and a few are shown below. 
-
-Methods to download files in bulk & parallel is provided in [ArgoData.jl](https://github.com/JuliaOcean/ArgoData.jl).
-"""
+# ╔═╡ 98dfd9c1-f4bd-42cd-bf0c-67471c347e74
+show(files_list)
 
 # ╔═╡ 533ea412-76ae-4060-bbc8-2650ee0d2774
 md"""## Appendix
@@ -152,9 +151,6 @@ md"""_Average estimated drift speed :_ $(round(spd.speed_mean; digits=4)) m/s"""
 # ╔═╡ 66e41568-7825-4383-80cb-cc48bdf56397
 md"""### Viz"""
 
-# ╔═╡ a42edc9d-9fa2-4775-83c4-2d9a5130105c
-
-
 # ╔═╡ c176fd5e-b2f2-47e3-8145-a4c152389344
 OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
 
@@ -169,9 +165,18 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 ArgoData = "9eb831cf-c491-48dc-bed4-6aca718df73c"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+MeshArrays = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
 OceanRobots = "0b51df41-3294-4961-8d23-db645e32016d"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 PrettyTables = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
+
+[compat]
+ArgoData = "~0.1.19"
+CairoMakie = "~0.11.11"
+MeshArrays = "~0.3.6"
+OceanRobots = "~0.1.20"
+PlutoUI = "~0.7.59"
+PrettyTables = "~2.3.1"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -180,7 +185,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.3"
 manifest_format = "2.0"
-project_hash = "6a78df21499371e6569e551b9a6e2170644f788e"
+project_hash = "9a6160de1146cbb423a498f6680e33eda7a360c5"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -737,10 +742,10 @@ uuid = "42e2da0e-8278-4e71-bc24-59509adca0fe"
 version = "1.0.2"
 
 [[deps.HDF5_jll]]
-deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LLVMOpenMP_jll", "LazyArtifacts", "LibCURL_jll", "Libdl", "MPICH_jll", "MPIPreferences", "MPItrampoline_jll", "MicrosoftMPI_jll", "OpenMPI_jll", "OpenSSL_jll", "TOML", "Zlib_jll", "libaec_jll"]
-git-tree-sha1 = "38c8874692d48d5440d5752d6c74b0c6b0b60739"
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LazyArtifacts", "LibCURL_jll", "Libdl", "MPICH_jll", "MPIPreferences", "MPItrampoline_jll", "MicrosoftMPI_jll", "OpenMPI_jll", "OpenSSL_jll", "TOML", "Zlib_jll", "libaec_jll"]
+git-tree-sha1 = "82a471768b513dc39e471540fdadc84ff80ff997"
 uuid = "0234f1f7-429e-5d53-9886-15a909be8d59"
-version = "1.14.2+1"
+version = "1.14.3+3"
 
 [[deps.HTTP]]
 deps = ["Base64", "CodecZlib", "ConcurrentUtilities", "Dates", "ExceptionUnwrapping", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
@@ -1181,9 +1186,9 @@ version = "2.28.2+1"
 
 [[deps.MeshArrays]]
 deps = ["CatViews", "Dates", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SparseArrays", "Statistics", "Unitful"]
-git-tree-sha1 = "8358a82bd831029978764daa61f3dcc656660048"
+git-tree-sha1 = "05cd4a7ee5889c72eea9814d84a10fe9759690d9"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
-version = "0.3.6"
+version = "0.3.7"
 
     [deps.MeshArrays.extensions]
     MeshArraysDataDepsExt = ["DataDeps"]
@@ -1245,10 +1250,10 @@ uuid = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
 version = "0.4.16"
 
 [[deps.NetCDF_jll]]
-deps = ["Artifacts", "Blosc_jll", "Bzip2_jll", "HDF5_jll", "JLLWrappers", "LibCURL_jll", "Libdl", "OpenMPI_jll", "XML2_jll", "Zlib_jll", "Zstd_jll", "libzip_jll"]
-git-tree-sha1 = "a8af1798e4eb9ff768ce7fdefc0e957097793f15"
+deps = ["Artifacts", "Blosc_jll", "Bzip2_jll", "HDF5_jll", "JLLWrappers", "LazyArtifacts", "LibCURL_jll", "Libdl", "MPICH_jll", "MPIPreferences", "MPItrampoline_jll", "MicrosoftMPI_jll", "OpenMPI_jll", "TOML", "XML2_jll", "Zlib_jll", "Zstd_jll", "libzip_jll"]
+git-tree-sha1 = "ef30054d4e6eab74228cc7beae0c0873129bc078"
 uuid = "7243133f-43d8-5620-bbf4-c2c921802cf3"
-version = "400.902.209+0"
+version = "400.902.211+0"
 
 [[deps.Netpbm]]
 deps = ["FileIO", "ImageCore", "ImageMetadata"]
@@ -1337,10 +1342,10 @@ uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
 version = "0.8.1+2"
 
 [[deps.OpenMPI_jll]]
-deps = ["Artifacts", "CompilerSupportLibraries_jll", "Hwloc_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "MPIPreferences", "PMIx_jll", "TOML", "Zlib_jll", "libevent_jll", "prrte_jll"]
-git-tree-sha1 = "f46caf663e069027a06942d00dced37f1eb3d8ad"
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "MPIPreferences", "TOML"]
+git-tree-sha1 = "e25c1778a98e34219a00455d6e4384e017ea9762"
 uuid = "fe0851c0-eecd-5654-98d4-656369965a5c"
-version = "5.0.2+0"
+version = "4.1.6+0"
 
 [[deps.OpenSSL]]
 deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "OpenSSL_jll", "Sockets"]
@@ -1387,12 +1392,6 @@ deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse"]
 git-tree-sha1 = "949347156c25054de2db3b166c52ac4728cbad65"
 uuid = "90014a1f-27ba-587c-ab20-58faa44d9150"
 version = "0.11.31"
-
-[[deps.PMIx_jll]]
-deps = ["Artifacts", "Hwloc_jll", "JLLWrappers", "Libdl", "Zlib_jll", "libevent_jll"]
-git-tree-sha1 = "360f48126b5f2c2f0c833be960097f7c62705976"
-uuid = "32165bc3-0280-59bc-8c0b-c33b6203efab"
-version = "4.2.9+0"
 
 [[deps.PNGFiles]]
 deps = ["Base64", "CEnum", "ImageCore", "IndirectArrays", "OffsetArrays", "libpng_jll"]
@@ -1932,9 +1931,9 @@ version = "1.5.0+0"
 
 [[deps.YAML]]
 deps = ["Base64", "Dates", "Printf", "StringEncodings"]
-git-tree-sha1 = "e6330e4b731a6af7959673621e91645eb1356884"
+git-tree-sha1 = "669a78c59a307fa3ebc0a0bffd7ae83bd2184361"
 uuid = "ddb6d928-2868-570f-bddf-ab3f9cf99eb6"
-version = "0.4.9"
+version = "0.4.10"
 
 [[deps.ZipFile]]
 deps = ["Libdl", "Printf", "Zlib_jll"]
@@ -1982,12 +1981,6 @@ deps = ["Artifacts", "Libdl"]
 uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
 version = "5.8.0+1"
 
-[[deps.libevent_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "OpenSSL_jll"]
-git-tree-sha1 = "f04ec6d9a186115fb38f858f05c0c4e1b7fc9dcb"
-uuid = "1080aeaf-3a6a-583e-a51c-c537b09f60ec"
-version = "2.1.13+1"
-
 [[deps.libfdk_aac_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "daacc84a041563f965be61859a36e17c4e4fcd55"
@@ -2034,12 +2027,6 @@ deps = ["Artifacts", "Libdl"]
 uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
 version = "17.4.0+2"
 
-[[deps.prrte_jll]]
-deps = ["Artifacts", "Hwloc_jll", "JLLWrappers", "Libdl", "PMIx_jll", "libevent_jll"]
-git-tree-sha1 = "5adb2d7a18a30280feb66cad6f1a1dfdca2dc7b0"
-uuid = "eb928a42-fffd-568d-ab9c-3f5d54fc65b9"
-version = "3.0.2+0"
-
 [[deps.x264_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "4fea590b89e6ec504593146bf8b988b2c00922b2"
@@ -2059,22 +2046,22 @@ version = "3.5.0+0"
 # ╟─9d29d0f8-7b1c-11ec-1f16-b313a50cc5e7
 # ╟─a9fd8646-7269-4f70-93cf-0e831d533237
 # ╟─c85a1eea-e2db-4f7f-9b7c-00b29a4cb975
-# ╟─1a835449-de37-4d08-9c91-c7affe7084cd
-# ╟─904c8a06-0552-40b4-aa9f-404d61b21c08
-# ╟─8418b9ca-2e7f-4468-a0fb-36f5a05dde2c
 # ╟─4d949835-4cf8-4493-b765-6e956019b777
-# ╠═a5db2d63-ec3e-4273-9138-4264388a4b7d
-# ╠═e1d9253a-4ac4-47c8-97d7-edb92cd54397
+# ╟─e1d9253a-4ac4-47c8-97d7-edb92cd54397
+# ╟─a5db2d63-ec3e-4273-9138-4264388a4b7d
 # ╟─49256e11-fbd2-40e7-8f0b-193e17e2b31b
+# ╟─904c8a06-0552-40b4-aa9f-404d61b21c08
+# ╟─1a835449-de37-4d08-9c91-c7affe7084cd
+# ╟─8418b9ca-2e7f-4468-a0fb-36f5a05dde2c
 # ╟─9037e2ce-a04a-40d0-945e-ec3f19a4f3c4
 # ╟─3f5419f1-d131-42eb-86c8-44a385e88d51
+# ╟─98dfd9c1-f4bd-42cd-bf0c-67471c347e74
 # ╟─533ea412-76ae-4060-bbc8-2650ee0d2774
-# ╠═8539e67f-6361-409a-9dbe-e8dcb2c7e10d
+# ╟─8539e67f-6361-409a-9dbe-e8dcb2c7e10d
 # ╟─916e5a50-ee01-4299-9314-2e3cc9c826e6
 # ╟─2558c88f-7fee-4a91-bfdd-46f1f61795b0
 # ╟─3fd610a8-80c1-4acc-b3ef-20883f77e32d
 # ╟─66e41568-7825-4383-80cb-cc48bdf56397
-# ╟─a42edc9d-9fa2-4775-83c4-2d9a5130105c
 # ╟─c176fd5e-b2f2-47e3-8145-a4c152389344
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
