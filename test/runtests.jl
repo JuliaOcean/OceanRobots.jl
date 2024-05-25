@@ -1,4 +1,4 @@
-using OceanRobots, ClimateModels, DataFrames
+using OceanRobots, ClimateModels, DataFrames, ArgoData
 using Test
 
 @testset "OceanRobots.jl" begin
@@ -32,6 +32,18 @@ using Test
     ArgoFiles.scan_txt("argo_synthetic-profile_index.txt",do_write=true)
     @test isfile(joinpath(tempdir(),"argo_synthetic-profile_index.csv"))
 
+    files_list=GDAC.files_list()
+    fil=ArgoFiles.download(files_list,2900668)
+    arr=ArgoFiles.read(fil)
+    T_std,S_std=ArgoFiles.interp_z_all(arr)
+	spd=ArgoFiles.speed(arr)
+    @test isapprox(spd.speed_mean,0.06,atol=0.01)
+
+#OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
+#fig2=OceanRobotsMakieExt.plot_samples(arr,wmo)
+#OceanRobotsMakieExt.plot_TS(arr,wmo)
+
+#
     fil=check_for_file("Glider_Spray","GulfStream.nc")
     @test isfile(fil)
 
