@@ -1258,10 +1258,14 @@ uuid = "510215fc-4207-5dde-b226-833fc4488ee2"
 version = "0.5.5"
 
 [[deps.OceanRobots]]
-deps = ["CFTime", "CSV", "DataFrames", "DataStructures", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "URIs"]
-git-tree-sha1 = "bd895145d69e464912fd449a632efea32ec63af7"
+deps = ["CFTime", "CSV", "DataFrames", "DataStructures", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "Interpolations", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "URIs"]
+git-tree-sha1 = "e68b20c04fca157a299d7737c651b8ca68741b3e"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
-version = "0.1.19"
+version = "0.1.21"
+weakdeps = ["Makie"]
+
+    [deps.OceanRobots.extensions]
+    OceanRobotsMakieExt = ["Makie"]
 
 [[deps.OffsetArrays]]
 git-tree-sha1 = "e64b4f5ea6b7389f6f046d13d4896a8f9c1ba71e"
