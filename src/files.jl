@@ -514,11 +514,11 @@ function speed(arr)
     dist_tot=sum(dx)/1000 #in km
     dist_net=dx_net/1000 #in km
     
-    speed_net=dx_net/dt/(length(lon)-1)
-    speed_mean=mean(dx/dt)
+	speed=[dx[1] ; (dx[2:end]+dx[1:end-1])/2 ; dx[end]]/dt
+    speed_mean=mean(speed)
 
-    return (dx=dx,dist_tot=dist_tot,dist_net=dist_net,
-    speed_net=speed_net,speed_mean=speed_mean)
+    return (dist_tot=dist_tot,dist_net=dist_net,
+    speed_mean=speed_mean, speed=speed)
 end
 
 z_std=collect(0.0:5:500.0)
@@ -657,48 +657,7 @@ module OceanOPS
 
 using Downloads, CSV, DataFrames, JSON3, HTTP
 
-"""
-    csv_listings()
-
-List csv files available on the https://www.ocean-ops.org/share/ server.
-"""
-function csv_listings()
-    list_argo=("argo_operational.csv","argo_plans.csv","argo_all.csv","argo_inactive.csv",
-    "euro_argo_operational.csv","euro_argo_plans.csv","euro_argo_all.csv")    
-    list_dbcp=("dbcp_operational.csv","dbcp_all.csv")    
-    list_OceanGliders=("oceangliders_all.csv",)
-    list_OceanOPS=("oceanops_eulerian_all.csv",)    
-    list_OceanSITES=("oceansites_locations.kmz",)
-    list_SOT=("sot_notclosed.csv","sot_all.csv")
-
-    return (Argo=list_argo,DBCP=list_dbcp,OceanGliders=list_OceanGliders,
-        OceanOPS=list_OceanOPS,OceanSITES=list_OceanSITES,SOT=list_SOT)
-end
-
 status_url(s::Symbol)="https://www.ocean-ops.org/share/"*string(s)*"/Status/"  
-
-"""
-    get_table(s::Symbol,i=1)
-
-Read the `csv_listings()[s][i]` table. Download file if needed. 
-
-```
-using OceanRobots
-tab_Argo=OceanOPS.get_table(:Argo,1)
-```    
-"""
-function get_table(s::Symbol,i=1)
-    url0=status_url(s)
-    file0=csv_listings()[s][i]
-    path0=joinpath(tempdir(),"oceanops-tmp")
-    path1=joinpath(path0,file0)
-    url1=url0*file0
-
-    !isdir(path0) ? mkdir(path0) : nothing
-    !isfile(path1) ? Downloads.download(url1,path1) : nothing
-
-    CSV.read(path1, DataFrame)
-end
 
 """
     get_list(nam=:Argo; status="OPERATIONAL")
