@@ -15,7 +15,10 @@ macro bind(def, element)
 end
 
 # ╔═╡ ccf98691-9386-41b9-a957-3cdeba51312b
-using OceanRobots, CairoMakie, PlutoUI
+using OceanRobots, CairoMakie, PlutoUI, MeshArrays
+
+# ╔═╡ 30277358-0a8d-437e-9d2e-ebc7c307db31
+using Shapefile, GeoJSON, DataDeps, PrettyTables
 
 # ╔═╡ 5fa93c17-0a01-44c6-8679-d712c786907a
 md"""# OceanOPS : Global Ocean Metadata
@@ -52,9 +55,6 @@ begin
 	"Done with accessing latest positions."
 end
 
-# ╔═╡ eb95a380-a0b0-4762-8342-89d0f634d1ec
-
-
 # ╔═╡ 596bce95-e13f-4439-858f-e944834c0924
 begin
 	bind_nam = @bind nam Select([:Argo,:Drifter])
@@ -90,9 +90,17 @@ end
 # ╔═╡ cb5cce8c-f67f-496b-ba10-38eefe9285e1
 md"""## List of Platform Types"""
 
-# ╔═╡ 33c56cf4-5954-49f8-bb26-4f0d028f9093
+# ╔═╡ 9d4b4eed-2cc8-49cd-bb4d-2e7d51e9e4d9
 begin
-    list_platform_types=OceanOPS.list_platform_types()
+	list_platform_types=OceanOPS.list_platform_types()
+
+	tb=pretty_table(
+		[list_platform_types[:,:name] list_platform_types[:,:wigosCode] list_platform_types[:,:id]],
+		header = ["name","wigosCode","ID"],
+		header_crayon = crayon"yellow bold",
+		highlighters  = ( hl_col(1, crayon"yellow"),hl_col(2, crayon"white"),hl_col(3, crayon"white") ),
+	)
+	display(tb)
 end
 
 # ╔═╡ 3b80d06d-72b8-4f67-945e-0b18f61de6e9
@@ -101,27 +109,48 @@ end
 # ╔═╡ fccdc273-2e9f-4f60-a659-8ee2790ae2fc
 more_operational=OceanOPS.get_list_pos(Symbol(nam_platform_types))
 
+# ╔═╡ 1bf99223-ef46-4202-bdcc-8d7d6c561822
+md"""## Appendices"""
+
+# ╔═╡ 18cf7db9-f987-4c41-adf2-035e810c2da0
+begin
+	fil=demo.download_polygons("ne_110m_admin_0_countries.shp")
+	#fil=demo.download_polygons("countries.geojson")
+	pol=MeshArrays.read_polygons(fil)
+end
+
 # ╔═╡ 6d4c35fc-1a18-4fd7-a194-61fb387c7091
 let
 	fi0=Figure()
 	ax0=Axis(fi0[1,1])
 	OceanRobotsMakieExt.plot_OceanOPS1(fi0,ax0,argo_operational,argo_planned,
 		drifter_operational,more_operational,nam_platform_types)
+	[lines!(ax0,l1,color = :black, linewidth = 0.5) for l1 in pol]
+	xlims!(-180,180); ylims!(-90,90); 
+	fi0
 end
-
-# ╔═╡ 1bf99223-ef46-4202-bdcc-8d7d6c561822
-md"""## Appendices"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+DataDeps = "124859b0-ceae-595e-8997-d05f6a7a8dfe"
+GeoJSON = "61d90e0f-e114-555e-ac52-39dfb47a3ef9"
+MeshArrays = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
 OceanRobots = "0b51df41-3294-4961-8d23-db645e32016d"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+PrettyTables = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
+Shapefile = "8e980c4a-a4fe-5da2-b3a7-4b4b0353a2f4"
 
 [compat]
+CairoMakie = "~0.12.2"
+DataDeps = "~0.7.13"
+GeoJSON = "~0.8.1"
+MeshArrays = "~0.3.7"
 OceanRobots = "~0.1.20"
 PlutoUI = "~0.7.1"
+PrettyTables = "~2.3.1"
+Shapefile = "~0.13.0"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -130,7 +159,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.3"
 manifest_format = "2.0"
-project_hash = "86dae255c3aae28d61b1d8a59f89e93c19d5cce9"
+project_hash = "23dcd3555a9d064376e58d2d38e2cf7f7d9b7d62"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -271,6 +300,12 @@ git-tree-sha1 = "f641eb0a4f00c343bbc32346e1217b86f3ce9dad"
 uuid = "49dc2e85-a5d0-5ad3-a950-438e2897f1b9"
 version = "0.5.1"
 
+[[deps.CatViews]]
+deps = ["Random", "Test"]
+git-tree-sha1 = "23d1f1e10d4e24374112fcf800ac981d14a54b24"
+uuid = "81a5f4ea-a946-549a-aa7e-2a7f63a27d31"
+version = "1.0.0"
+
 [[deps.ChainRulesCore]]
 deps = ["Compat", "LinearAlgebra"]
 git-tree-sha1 = "575cd02e080939a33b6df6c5853d14924c08e35b"
@@ -369,10 +404,22 @@ git-tree-sha1 = "249fe38abf76d48563e2f4556bebd215aa317e15"
 uuid = "a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"
 version = "4.1.1"
 
+[[deps.DBFTables]]
+deps = ["Dates", "Printf", "Tables", "WeakRefStrings"]
+git-tree-sha1 = "ac519477f44e5b5259ce101b206255af9a4ef84e"
+uuid = "75c7ada1-017a-5fb6-b8c7-2125ff2d6c93"
+version = "1.2.5"
+
 [[deps.DataAPI]]
 git-tree-sha1 = "abe83f3a2f1b857aac70ef8b269080af17764bbe"
 uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
 version = "1.16.0"
+
+[[deps.DataDeps]]
+deps = ["HTTP", "Libdl", "Reexport", "SHA", "Scratch", "p7zip_jll"]
+git-tree-sha1 = "8ae085b71c462c2cb1cfedcb10c3c877ec6cf03f"
+uuid = "124859b0-ceae-595e-8997-d05f6a7a8dfe"
+version = "0.7.13"
 
 [[deps.DataFrames]]
 deps = ["Compat", "DataAPI", "DataStructures", "Future", "InlineStrings", "InvertedIndices", "IteratorInterfaceExtensions", "LinearAlgebra", "Markdown", "Missings", "PooledArrays", "PrecompileTools", "PrettyTables", "Printf", "REPL", "Random", "Reexport", "SentinelArrays", "SortingAlgorithms", "Statistics", "TableTraits", "Tables", "Unicode"]
@@ -406,6 +453,17 @@ deps = ["LRUCache", "OffsetArrays"]
 git-tree-sha1 = "ef25c513cad08d7ebbed158c91768ae32f308336"
 uuid = "3c3547ce-8d99-4f5e-a174-61eb10b00ae3"
 version = "0.3.23"
+
+[[deps.Distances]]
+deps = ["LinearAlgebra", "Statistics", "StatsAPI"]
+git-tree-sha1 = "66c4c81f259586e8f002eacebc177e1fb06363b0"
+uuid = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
+version = "0.10.11"
+weakdeps = ["ChainRulesCore", "SparseArrays"]
+
+    [deps.Distances.extensions]
+    DistancesChainRulesCoreExt = "ChainRulesCore"
+    DistancesSparseArraysExt = "SparseArrays"
 
 [[deps.Distributed]]
 deps = ["Random", "Serialization", "Sockets"]
@@ -585,11 +643,38 @@ deps = ["Artifacts", "Libdl"]
 uuid = "781609d7-10c4-51f6-84f2-b8444358ff6d"
 version = "6.2.1+6"
 
+[[deps.GeoFormatTypes]]
+git-tree-sha1 = "59107c179a586f0fe667024c5eb7033e81333271"
+uuid = "68eda718-8dee-11e9-39e7-89f7f65f511f"
+version = "0.4.2"
+
 [[deps.GeoInterface]]
 deps = ["Extents"]
 git-tree-sha1 = "801aef8228f7f04972e596b09d4dba481807c913"
 uuid = "cf35fbd7-0cd7-5166-be24-54bfbe79505f"
 version = "1.3.4"
+
+[[deps.GeoInterfaceMakie]]
+deps = ["GeoInterface", "GeometryBasics", "MakieCore"]
+git-tree-sha1 = "b6c01b714e37cb6e5102f30544e8185a33f528c1"
+uuid = "0edc0954-3250-4c18-859d-ec71c1660c08"
+version = "0.1.6"
+
+[[deps.GeoInterfaceRecipes]]
+deps = ["GeoInterface", "RecipesBase"]
+git-tree-sha1 = "fb1156076f24f1dfee45b3feadb31d05730a49ac"
+uuid = "0329782f-3d07-4b52-b9f6-d3137cf03c7a"
+version = "1.0.2"
+
+[[deps.GeoJSON]]
+deps = ["Extents", "GeoFormatTypes", "GeoInterface", "GeoInterfaceMakie", "GeoInterfaceRecipes", "JSON3", "StructTypes", "Tables"]
+git-tree-sha1 = "e2ae0c6d4f6b8c49eccc261fef29c290998e44a5"
+uuid = "61d90e0f-e114-555e-ac52-39dfb47a3ef9"
+version = "0.8.1"
+weakdeps = ["Makie"]
+
+    [deps.GeoJSON.extensions]
+    GeoJSONMakieExt = "Makie"
 
 [[deps.GeometryBasics]]
 deps = ["EarCut_jll", "Extents", "GeoInterface", "IterTools", "LinearAlgebra", "StaticArrays", "StructArrays", "Tables"]
@@ -783,16 +868,12 @@ version = "0.22.12"
 git-tree-sha1 = "dba9ddf07f77f60450fe5d2e2beb9854d9a49bd0"
 uuid = "8197267c-284f-5f27-9208-e0e47529a953"
 version = "0.7.10"
+weakdeps = ["Random", "RecipesBase", "Statistics"]
 
     [deps.IntervalSets.extensions]
     IntervalSetsRandomExt = "Random"
     IntervalSetsRecipesBaseExt = "RecipesBase"
     IntervalSetsStatisticsExt = "Statistics"
-
-    [deps.IntervalSets.weakdeps]
-    Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
-    RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
-    Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [[deps.InvertedIndices]]
 git-tree-sha1 = "0dc7b50b8d436461be01300fd8cd45aa0274b038"
@@ -1080,6 +1161,28 @@ deps = ["Artifacts", "Libdl"]
 uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
 version = "2.28.2+1"
 
+[[deps.MeshArrays]]
+deps = ["CatViews", "Dates", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SparseArrays", "Statistics", "Unitful"]
+git-tree-sha1 = "05cd4a7ee5889c72eea9814d84a10fe9759690d9"
+uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
+version = "0.3.7"
+
+    [deps.MeshArrays.extensions]
+    MeshArraysDataDepsExt = ["DataDeps"]
+    MeshArraysGeoJSONExt = ["GeoJSON"]
+    MeshArraysJLD2Ext = ["JLD2"]
+    MeshArraysMakieExt = ["Makie"]
+    MeshArraysProjExt = ["Proj"]
+    MeshArraysShapefileExt = ["Shapefile"]
+
+    [deps.MeshArrays.weakdeps]
+    DataDeps = "124859b0-ceae-595e-8997-d05f6a7a8dfe"
+    GeoJSON = "61d90e0f-e114-555e-ac52-39dfb47a3ef9"
+    JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
+    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+    Proj = "c94c279d-25a6-4763-9509-64d165bea63e"
+    Shapefile = "8e980c4a-a4fe-5da2-b3a7-4b4b0353a2f4"
+
 [[deps.MicrosoftMPI_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "f12a29c4400ba812841c6ace3f4efbb6dbb3ba01"
@@ -1117,6 +1220,12 @@ git-tree-sha1 = "0877504529a3e5c3343c6f8b4c0381e57e4387e4"
 uuid = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
 version = "1.0.2"
 
+[[deps.NearestNeighbors]]
+deps = ["Distances", "StaticArrays"]
+git-tree-sha1 = "ded64ff6d4fdd1cb68dfcbb818c69e144a5b2e4c"
+uuid = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
+version = "0.4.16"
+
 [[deps.NetCDF_jll]]
 deps = ["Artifacts", "Blosc_jll", "Bzip2_jll", "HDF5_jll", "JLLWrappers", "LazyArtifacts", "LibCURL_jll", "Libdl", "MPICH_jll", "MPIPreferences", "MPItrampoline_jll", "MicrosoftMPI_jll", "OpenMPI_jll", "TOML", "XML2_jll", "Zlib_jll", "Zstd_jll", "libzip_jll"]
 git-tree-sha1 = "ef30054d4e6eab74228cc7beae0c0873129bc078"
@@ -1146,7 +1255,7 @@ version = "0.5.5"
 
 [[deps.OceanRobots]]
 deps = ["CFTime", "CSV", "DataFrames", "DataStructures", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "Interpolations", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "URIs"]
-git-tree-sha1 = "37857e00385549f519950a5495aa53da5a7331f9"
+git-tree-sha1 = "e68b20c04fca157a299d7737c651b8ca68741b3e"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
 version = "0.1.21"
 weakdeps = ["Makie"]
@@ -1381,6 +1490,12 @@ weakdeps = ["FixedPointNumbers"]
     [deps.Ratios.extensions]
     RatiosFixedPointNumbersExt = "FixedPointNumbers"
 
+[[deps.RecipesBase]]
+deps = ["PrecompileTools"]
+git-tree-sha1 = "5c3d09cc4f31f5fc6af001c250bf1278733100ff"
+uuid = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
+version = "1.3.4"
+
 [[deps.Reexport]]
 git-tree-sha1 = "45e428421666073eab6f2da5c9d310d99bb12f9b"
 uuid = "189a3867-3050-52da-a836-e630ba90ab69"
@@ -1445,6 +1560,20 @@ deps = ["ColorTypes", "FixedPointNumbers", "GeometryBasics", "LinearAlgebra", "O
 git-tree-sha1 = "79123bc60c5507f035e6d1d9e563bb2971954ec8"
 uuid = "65257c39-d410-5151-9873-9b3e5be5013e"
 version = "0.4.1"
+
+[[deps.Shapefile]]
+deps = ["DBFTables", "Extents", "GeoFormatTypes", "GeoInterface", "GeoInterfaceMakie", "GeoInterfaceRecipes", "OrderedCollections", "RecipesBase", "Tables"]
+git-tree-sha1 = "52472ea9c28d92896fa89f62e65439d68b66c0d1"
+uuid = "8e980c4a-a4fe-5da2-b3a7-4b4b0353a2f4"
+version = "0.13.0"
+
+    [deps.Shapefile.extensions]
+    ShapefileMakieExt = "Makie"
+    ShapefileZipFileExt = "ZipFile"
+
+    [deps.Shapefile.weakdeps]
+    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+    ZipFile = "a5390f91-8eb1-5f08-bee0-b1d1ffed6cea"
 
 [[deps.SharedArrays]]
 deps = ["Distributed", "Mmap", "Random", "Serialization"]
@@ -1880,14 +2009,15 @@ version = "3.5.0+0"
 # ╟─52dc1cd5-e57a-43bb-82c9-feb1de25e5ca
 # ╟─3b80d06d-72b8-4f67-945e-0b18f61de6e9
 # ╟─6d4c35fc-1a18-4fd7-a194-61fb387c7091
-# ╟─eb95a380-a0b0-4762-8342-89d0f634d1ec
-# ╟─fccdc273-2e9f-4f60-a659-8ee2790ae2fc
 # ╟─596bce95-e13f-4439-858f-e944834c0924
 # ╟─aa80092c-80b9-489c-97b9-06c3d39ac594
 # ╟─401180a9-cb62-4dc6-b0a1-35df35f834db
 # ╟─cb5cce8c-f67f-496b-ba10-38eefe9285e1
-# ╟─33c56cf4-5954-49f8-bb26-4f0d028f9093
+# ╟─9d4b4eed-2cc8-49cd-bb4d-2e7d51e9e4d9
 # ╟─1bf99223-ef46-4202-bdcc-8d7d6c561822
 # ╠═ccf98691-9386-41b9-a957-3cdeba51312b
+# ╠═30277358-0a8d-437e-9d2e-ebc7c307db31
+# ╟─18cf7db9-f987-4c41-adf2-035e810c2da0
+# ╟─fccdc273-2e9f-4f60-a659-8ee2790ae2fc
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
