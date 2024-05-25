@@ -1221,9 +1221,9 @@ version = "2.28.2+1"
 
 [[deps.MeshArrays]]
 deps = ["CatViews", "Dates", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SparseArrays", "Statistics", "Unitful"]
-git-tree-sha1 = "05cd4a7ee5889c72eea9814d84a10fe9759690d9"
+git-tree-sha1 = "9406d9f4cfe5bc2aa99608ca2d8582cde9d420fa"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
-version = "0.3.7"
+version = "0.3.8"
 
     [deps.MeshArrays.extensions]
     MeshArraysDataDepsExt = ["DataDeps"]
@@ -1313,9 +1313,9 @@ version = "0.5.5"
 
 [[deps.OceanRobots]]
 deps = ["CFTime", "CSV", "DataFrames", "DataStructures", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "Interpolations", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "URIs"]
-git-tree-sha1 = "37857e00385549f519950a5495aa53da5a7331f9"
+git-tree-sha1 = "9d454066f0227944f8b706e218f727bfb5d5967a"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
-version = "0.1.21"
+version = "0.1.22"
 weakdeps = ["Makie"]
 
     [deps.OceanRobots.extensions]
@@ -2111,7 +2111,7 @@ version = "3.5.0+0"
 # ╟─09a2aa6e-16bc-4582-9d5f-c50432e3f0ca
 # ╟─9d29d0f8-7b1c-11ec-1f16-b313a50cc5e7
 # ╟─4d949835-4cf8-4493-b765-6e956019b777
-# ╟─e1d9253a-4ac4-47c8-97d7-edb92cd54397
+# ╠═e1d9253a-4ac4-47c8-97d7-edb92cd54397
 # ╟─a5db2d63-ec3e-4273-9138-4264388a4b7d
 # ╟─49256e11-fbd2-40e7-8f0b-193e17e2b31b
 # ╟─904c8a06-0552-40b4-aa9f-404d61b21c08
