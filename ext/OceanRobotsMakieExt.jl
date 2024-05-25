@@ -268,13 +268,13 @@ function plot_base_Argo(f0,ax0)
 end
 
 plot_OceanOPS1(fi0,ax0,argo_operational,argo_planned,drifter_operational,more_operational,more_platform_name)=begin
-	sc1=scatter!(argo_operational.lon,argo_operational.lat,
+	sc1=scatter!(ax0,argo_operational.lon,argo_operational.lat,
 		label="Argo (operational)",color=:blue,markersize=4)
-	sc2=scatter!(argo_planned.lon,argo_planned.lat,
+	sc2=scatter!(ax0,argo_planned.lon,argo_planned.lat,
 		label="Argo (planned)",color=:red,marker=:xcross,markersize=8)
-	sc3=scatter!(drifter_operational.lon,drifter_operational.lat,
+	sc3=scatter!(ax0,drifter_operational.lon,drifter_operational.lat,
 		label="Drifter",color=:green2,marker='O',markersize=12)
-	sc4=scatter!(more_operational.lon,more_operational.lat,
+	sc4=scatter!(ax0,more_operational.lon,more_operational.lat,
 		label=more_platform_name,color=:gold2,marker=:star5,markersize=16)
 	#lines!(ax0, GeoMakie.coastlines(),color=:black)
 	Legend(fi0[2, 1],[sc1,sc2,sc3,sc4],[sc1.label,sc2.label,sc3.label,sc4.label],

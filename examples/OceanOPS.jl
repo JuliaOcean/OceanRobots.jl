@@ -18,7 +18,7 @@ end
 using OceanRobots, CairoMakie, PlutoUI, MeshArrays
 
 # ╔═╡ 30277358-0a8d-437e-9d2e-ebc7c307db31
-using Shapefile, GeoJSON, DataDeps, PrettyTables
+using Shapefile, GeoJSON, DataDeps, PrettyTables, Proj
 
 # ╔═╡ 5fa93c17-0a01-44c6-8679-d712c786907a
 md"""# OceanOPS : Global Ocean Metadata
@@ -106,9 +106,6 @@ end
 # ╔═╡ 3b80d06d-72b8-4f67-945e-0b18f61de6e9
 @bind nam_platform_types Select(list_platform_types.nameShort,default="TROPICAL_MB")
 
-# ╔═╡ fccdc273-2e9f-4f60-a659-8ee2790ae2fc
-more_operational=OceanOPS.get_list_pos(Symbol(nam_platform_types))
-
 # ╔═╡ 1bf99223-ef46-4202-bdcc-8d7d6c561822
 md"""## Appendices"""
 
@@ -119,15 +116,48 @@ begin
 	pol=MeshArrays.read_polygons(fil)
 end
 
-# ╔═╡ 6d4c35fc-1a18-4fd7-a194-61fb387c7091
+# ╔═╡ fccdc273-2e9f-4f60-a659-8ee2790ae2fc
+more_operational=OceanOPS.get_list_pos(Symbol(nam_platform_types))
+
+# ╔═╡ 56fb760b-326e-45e1-b05b-14fa41e6b10d
+function myscatter!(pr_ax,lon,lat,kargs...; kwargs...)
+	tmp=pr_ax.proj.(lon[:],lat[:])
+	x=[a[1] for a in tmp]
+	y=[a[2] for a in tmp]
+	x=reshape(x,size(lon))
+	y=reshape(y,size(lon))
+	scatter!(pr_ax.ax,x,y,kargs...; kwargs...)
+end
+
+# ╔═╡ c5f24071-1c1f-4edf-b7b2-b6194c33b571
 let
-	fi0=Figure()
-	ax0=Axis(fi0[1,1])
-	OceanRobotsMakieExt.plot_OceanOPS1(fi0,ax0,argo_operational,argo_planned,
-		drifter_operational,more_operational,nam_platform_types)
-	[lines!(ax0,l1,color = :black, linewidth = 0.5) for l1 in pol]
-	xlims!(-180,180); ylims!(-90,90); 
-	fi0
+	function demofigure()
+		lon0=-160
+		proj=Proj.Transformation(MA_preset=2,lon0=lon0)
+	
+		fi0=Figure()
+		ax0=Axis(fi0[1,1])
+		pr_ax=MeshArrays.ProjAxis(ax0; proj=proj,lon0=lon0)
+		lines!(pr_ax,polygons=pol;color=:white, linewidth = 0.5)
+	
+		sc1=myscatter!(pr_ax,argo_operational.lon,argo_operational.lat,
+			markersize=4.0,label="Argo (operational)",color=:deepskyblue)
+		sc2=myscatter!(pr_ax,argo_planned.lon,argo_planned.lat,
+			markersize=4.0,label="Argo (planned)",color=:violet)
+		sc3=myscatter!(pr_ax,drifter_operational.lon,drifter_operational.lat,
+			markersize=4.0,label="Drifter",color=:green1)
+		sc4=myscatter!(pr_ax,more_operational.lon,more_operational.lat,
+			markersize=10.0,label="more_platform_name",color=:red,marker=:star5)
+		
+		MeshArrays.grid_lines!(pr_ax;color=:yellow,linewidth=0.5)
+
+		Legend(fi0[2, 1],[sc1,sc2,sc3,sc4],[sc1.label,sc2.label,sc3.label,sc4.label],
+			orientation = :horizontal)
+		
+		fi0
+	end
+
+	with_theme(demofigure, theme_dark())
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -140,6 +170,7 @@ MeshArrays = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
 OceanRobots = "0b51df41-3294-4961-8d23-db645e32016d"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 PrettyTables = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
+Proj = "c94c279d-25a6-4763-9509-64d165bea63e"
 Shapefile = "8e980c4a-a4fe-5da2-b3a7-4b4b0353a2f4"
 
 [compat]
@@ -150,6 +181,7 @@ MeshArrays = "~0.3.7"
 OceanRobots = "~0.1.20"
 PlutoUI = "~0.7.1"
 PrettyTables = "~2.3.1"
+Proj = "~1.7.0"
 Shapefile = "~0.13.0"
 """
 
@@ -159,7 +191,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.3"
 manifest_format = "2.0"
-project_hash = "23dcd3555a9d064376e58d2d38e2cf7f7d9b7d62"
+project_hash = "3e1e0db4f1567144473c632589f4828d34198d66"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -251,9 +283,9 @@ uuid = "6e34b625-4abd-537c-b88f-471c36dfa7a0"
 version = "1.0.8+1"
 
 [[deps.CEnum]]
-git-tree-sha1 = "389ad5c84de1ae7cf0e28e381131c98ea87d54fc"
+git-tree-sha1 = "eb4cb44a499229b3b8426dcfb5dd85333951ff90"
 uuid = "fa961155-64e5-5f13-b03f-caf6b980ea82"
-version = "0.5.0"
+version = "0.4.2"
 
 [[deps.CFTime]]
 deps = ["Dates", "Printf"]
@@ -397,6 +429,12 @@ weakdeps = ["IntervalSets", "StaticArrays"]
 [[deps.Contour]]
 git-tree-sha1 = "439e35b0b36e2e5881738abc8857bd92ad6ff9a8"
 uuid = "d38c429a-6771-53c6-b99e-75d170b6e991"
+version = "0.6.3"
+
+[[deps.CoordinateTransformations]]
+deps = ["LinearAlgebra", "StaticArrays"]
+git-tree-sha1 = "f9d7112bfff8a19a3a4ea4e03a8e6a91fe8456bf"
+uuid = "150eb455-5306-5404-9cee-2592286d6298"
 version = "0.6.3"
 
 [[deps.Crayons]]
@@ -949,6 +987,12 @@ git-tree-sha1 = "170b660facf5df5de098d866564877e119141cbd"
 uuid = "c1c5ebd0-6772-5130-a774-d5fcae4a789d"
 version = "3.100.2+0"
 
+[[deps.LERC_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "bf36f528eec6634efc60d7ec062008f171071434"
+uuid = "88015f11-f218-50d7-93a8-a6af411a945d"
+version = "3.0.0+1"
+
 [[deps.LLVMOpenMP_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "d986ce2d884d49126836ea94ed5bfb0f12679713"
@@ -1040,6 +1084,12 @@ deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "0c4f9c4f1a50d8f35048fa0532dabbadf702f81e"
 uuid = "4b2f31a3-9ecc-558c-b454-b3730dcb73e9"
 version = "2.40.1+0"
+
+[[deps.Libtiff_jll]]
+deps = ["Artifacts", "JLLWrappers", "JpegTurbo_jll", "LERC_jll", "Libdl", "XZ_jll", "Zlib_jll", "Zstd_jll"]
+git-tree-sha1 = "6355fb9a4d22d867318db186fd09b09b35bd2ed7"
+uuid = "89763e89-9b03-5906-acba-b20f662cd828"
+version = "4.6.0+0"
 
 [[deps.Libuuid_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -1358,6 +1408,12 @@ git-tree-sha1 = "67186a2bc9a90f9f85ff3cc8277868961fb57cbd"
 uuid = "f57f5aa1-a3ce-4bc8-8ab9-96f992907883"
 version = "0.4.3"
 
+[[deps.PROJ_jll]]
+deps = ["Artifacts", "JLLWrappers", "LibCURL_jll", "Libdl", "Libtiff_jll", "SQLite_jll"]
+git-tree-sha1 = "0d04367a7ab67636da8bbdb6338c94d1a577d8e2"
+uuid = "58948b4f-47e0-5654-a9ad-f609743f8632"
+version = "901.400.0+0"
+
 [[deps.Packing]]
 deps = ["GeometryBasics"]
 git-tree-sha1 = "ec3edfe723df33528e085e632414499f26650501"
@@ -1450,6 +1506,12 @@ git-tree-sha1 = "763a8ceb07833dd51bb9e3bbca372de32c0605ad"
 uuid = "92933f4c-e287-5a05-a399-4b506db050ca"
 version = "1.10.0"
 
+[[deps.Proj]]
+deps = ["CEnum", "CoordinateTransformations", "GeoFormatTypes", "GeoInterface", "NetworkOptions", "PROJ_jll"]
+git-tree-sha1 = "76ab3cbf876f3c859b6cc5817d8262809add3e13"
+uuid = "c94c279d-25a6-4763-9509-64d165bea63e"
+version = "1.7.0"
+
 [[deps.PtrArrays]]
 git-tree-sha1 = "f011fbb92c4d401059b2212c05c0601b70f8b759"
 uuid = "43287f4e-b6f4-7ad1-bb20-aadabca52c3d"
@@ -1539,6 +1601,12 @@ deps = ["PrecompileTools"]
 git-tree-sha1 = "2803cab51702db743f3fda07dd1745aadfbf43bd"
 uuid = "fdea26ae-647d-5447-a871-4b548cad5224"
 version = "3.5.0"
+
+[[deps.SQLite_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Zlib_jll"]
+git-tree-sha1 = "004fffbe2711abdc7263a980bbb1af9620781dd9"
+uuid = "76ed43ae-9a5d-5a62-8c75-30186b810ce8"
+version = "3.45.3+0"
 
 [[deps.Scratch]]
 deps = ["Dates"]
@@ -2008,7 +2076,7 @@ version = "3.5.0+0"
 # ╟─b6a138b0-fce5-4767-b4d1-eed0d0560988
 # ╟─52dc1cd5-e57a-43bb-82c9-feb1de25e5ca
 # ╟─3b80d06d-72b8-4f67-945e-0b18f61de6e9
-# ╟─6d4c35fc-1a18-4fd7-a194-61fb387c7091
+# ╟─c5f24071-1c1f-4edf-b7b2-b6194c33b571
 # ╟─596bce95-e13f-4439-858f-e944834c0924
 # ╟─aa80092c-80b9-489c-97b9-06c3d39ac594
 # ╟─401180a9-cb62-4dc6-b0a1-35df35f834db
@@ -2019,5 +2087,6 @@ version = "3.5.0+0"
 # ╠═30277358-0a8d-437e-9d2e-ebc7c307db31
 # ╟─18cf7db9-f987-4c41-adf2-035e810c2da0
 # ╟─fccdc273-2e9f-4f60-a659-8ee2790ae2fc
+# ╟─56fb760b-326e-45e1-b05b-14fa41e6b10d
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
