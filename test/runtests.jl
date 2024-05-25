@@ -86,4 +86,7 @@ using Test
 
     tmp=OceanOPS.get_list_pos(:Drifter)
     @test isa(tmp.lon,Vector)
+
+    tmp=OceanOPS.list_platform_types()
+    @test isa(tmp.name,Vector)
 end
