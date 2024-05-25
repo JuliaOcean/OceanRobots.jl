@@ -162,28 +162,35 @@ function plot_profiles!(ax,TIME,PRES,TEMP,cmap)
 	sca
 end
 
-function plot_trajectory!(ax,lon,lat,dx)
+function plot_trajectory!(ax,lon,lat,dx;
+		markersize=2,pol=Any[],xlims=(-180,180),ylims=(-90,90))
 	dt=10.0*86400
 	co=(dx[2:end]+dx[1:end-1])/2
 	co=[dx[1];co[:];dx[end]]/dt
 
 	li=lines!(ax,lon, lat, linewidth=2, color=co, colormap=:turbo)
-	scatter!(ax,lon, lat, marker=:circle, markersize=2, color=:black)
+	scatter!(ax,lon, lat, marker=:circle, markersize=markersize, color=:black)
 	ax.xlabel="longitude"
 	ax.ylabel="latitude"
-	ax.title="positions (dots) & speed (color)"
+	ax.title="estimated speed (m/s)"
+
+	!isempty(pol) ? [lines!(ax,l1,color = :black, linewidth = 0.5) for l1 in pol] : nothing
+
+	xlims!(xlims...); ylims!(ylims...)
 
 	li
 end
 
-function plot_standard(wmo,arr,spd,T_std,S_std)
-	fig1=Figure()
+function plot_standard(wmo,arr,spd,T_std,S_std;
+		markersize=2,pol=Any[],xlims=(-180,180),ylims=(-90,90))
+	fig1=Figure(size=(900,1200))
 	
 	ax=Axis(fig1[1,1])
-	li=plot_trajectory!(ax,arr.lon,arr.lat,spd.dx)
+	li=plot_trajectory!(ax,arr.lon,arr.lat,spd.dx;
+		markersize=2,pol=pol,xlims=xlims,ylims=ylims)
 	Colorbar(fig1[1,2], li, height=Relative(0.65))
-	ax=Axis(fig1[1,3],title="Float wmo="*string(wmo))
-	scatter!(ax,arr.PSAL[:],arr.TEMP[:],markersize=3.0)
+	ax=Axis(fig1[1,3],title="Float wmo="*string(wmo),xlabel="Salinity",ylabel="Temperature")
+	scatter!(ax,arr.PSAL[:],arr.TEMP[:],markersize=2.0)
 
 	ax=Axis(fig1[2,1:3],title="Temperature, °C")
 	hm1=heatmap_profiles!(ax,arr.TIME,T_std,:thermal)
@@ -261,13 +268,13 @@ function plot_base_Argo(f0,ax0)
 end
 
 plot_OceanOPS1(fi0,ax0,argo_operational,argo_planned,drifter_operational,more_operational,more_platform_name)=begin
-	sc1=scatter!(argo_operational.lon,argo_operational.lat,
+	sc1=scatter!(ax0,argo_operational.lon,argo_operational.lat,
 		label="Argo (operational)",color=:blue,markersize=4)
-	sc2=scatter!(argo_planned.lon,argo_planned.lat,
+	sc2=scatter!(ax0,argo_planned.lon,argo_planned.lat,
 		label="Argo (planned)",color=:red,marker=:xcross,markersize=8)
-	sc3=scatter!(drifter_operational.lon,drifter_operational.lat,
+	sc3=scatter!(ax0,drifter_operational.lon,drifter_operational.lat,
 		label="Drifter",color=:green2,marker='O',markersize=12)
-	sc4=scatter!(more_operational.lon,more_operational.lat,
+	sc4=scatter!(ax0,more_operational.lon,more_operational.lat,
 		label=more_platform_name,color=:gold2,marker=:star5,markersize=16)
 	#lines!(ax0, GeoMakie.coastlines(),color=:black)
 	Legend(fi0[2, 1],[sc1,sc2,sc3,sc4],[sc1.label,sc2.label,sc3.label,sc4.label],
