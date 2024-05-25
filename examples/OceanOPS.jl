@@ -24,36 +24,18 @@ using Shapefile, GeoJSON, DataDeps, PrettyTables, Proj
 md"""# OceanOPS : Global Ocean Metadata
 
 Source : <https://www.ocean-ops.org/board>, <https://www.ocean-ops.org/share/>
+
+## Visualize Data Cover
 """
 
 # ╔═╡ 31fe91d7-dea2-49e3-902b-31aa62075986
 TableOfContents()
 
 # ╔═╡ 1042f70c-4337-4bf2-b533-edf27a422365
-md"""## Visualize Data Cover
+md"""## Select a Platform Type
 
 Each color represents one type of observing platform.
 """
-
-# ╔═╡ b6a138b0-fce5-4767-b4d1-eed0d0560988
-OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
-
-# ╔═╡ 52dc1cd5-e57a-43bb-82c9-feb1de25e5ca
-begin
-	argo_operational=OceanOPS.get_list_pos(:Argo)
-	
-	a0=OceanOPS.get_list_pos(:Argo,status=:PROBABLE)
-	a1=OceanOPS.get_list_pos(:Argo,status=:CONFIRMED)
-	a2=OceanOPS.get_list_pos(:Argo,status=:REGISTERED)
-	
-	argo_planned=( lon=vcat(a0.lon,a1.lon,a2.lon),
-				lat=vcat(a0.lat,a1.lat,a2.lat),
-				flag=vcat(a0.flag,a1.flag,a2.flag))
-
-	drifter_operational=OceanOPS.get_list_pos(:Drifter)
-
-	"Done with accessing latest positions."
-end
 
 # ╔═╡ 596bce95-e13f-4439-858f-e944834c0924
 begin
@@ -106,6 +88,12 @@ end
 # ╔═╡ 3b80d06d-72b8-4f67-945e-0b18f61de6e9
 @bind nam_platform_types Select(list_platform_types.nameShort,default="TROPICAL_MB")
 
+# ╔═╡ 34855d22-aace-4d14-a1b7-d7b60a8fa678
+begin
+	more_platform_ii=findall(list_platform_types.nameShort.==nam_platform_types)[1]
+	more_platform_name=list_platform_types[more_platform_ii,:name]
+end
+
 # ╔═╡ 1bf99223-ef46-4202-bdcc-8d7d6c561822
 md"""## Appendices"""
 
@@ -119,14 +107,24 @@ end
 # ╔═╡ fccdc273-2e9f-4f60-a659-8ee2790ae2fc
 more_operational=OceanOPS.get_list_pos(Symbol(nam_platform_types))
 
-# ╔═╡ 56fb760b-326e-45e1-b05b-14fa41e6b10d
-function myscatter!(pr_ax,lon,lat,kargs...; kwargs...)
-	tmp=pr_ax.proj.(lon[:],lat[:])
-	x=[a[1] for a in tmp]
-	y=[a[2] for a in tmp]
-	x=reshape(x,size(lon))
-	y=reshape(y,size(lon))
-	scatter!(pr_ax.ax,x,y,kargs...; kwargs...)
+# ╔═╡ b6a138b0-fce5-4767-b4d1-eed0d0560988
+OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
+
+# ╔═╡ 52dc1cd5-e57a-43bb-82c9-feb1de25e5ca
+begin
+	argo_operational=OceanOPS.get_list_pos(:Argo)
+	
+	a0=OceanOPS.get_list_pos(:Argo,status=:PROBABLE)
+	a1=OceanOPS.get_list_pos(:Argo,status=:CONFIRMED)
+	a2=OceanOPS.get_list_pos(:Argo,status=:REGISTERED)
+	
+	argo_planned=( lon=vcat(a0.lon,a1.lon,a2.lon),
+				lat=vcat(a0.lat,a1.lat,a2.lat),
+				flag=vcat(a0.flag,a1.flag,a2.flag))
+
+	drifter_operational=OceanOPS.get_list_pos(:Drifter)
+
+	"Done with accessing latest positions."
 end
 
 # ╔═╡ c5f24071-1c1f-4edf-b7b2-b6194c33b571
@@ -135,24 +133,25 @@ let
 		lon0=-160
 		proj=Proj.Transformation(MA_preset=2,lon0=lon0)
 	
-		fi0=Figure()
-		ax0=Axis(fi0[1,1])
+		fi0=Figure(size=(900,600),fontsize=24)
+		ax0=Axis(fi0[1,1],backgroundcolor = :gray20,
+			title="Distribution of Ocean Observing Platforms")
 		pr_ax=MeshArrays.ProjAxis(ax0; proj=proj,lon0=lon0)
 		lines!(pr_ax,polygons=pol;color=:white, linewidth = 0.5)
 	
-		sc1=myscatter!(pr_ax,argo_operational.lon,argo_operational.lat,
-			markersize=4.0,label="Argo (operational)",color=:deepskyblue)
-		sc2=myscatter!(pr_ax,argo_planned.lon,argo_planned.lat,
-			markersize=4.0,label="Argo (planned)",color=:violet)
-		sc3=myscatter!(pr_ax,drifter_operational.lon,drifter_operational.lat,
-			markersize=4.0,label="Drifter",color=:green1)
-		sc4=myscatter!(pr_ax,more_operational.lon,more_operational.lat,
-			markersize=10.0,label="more_platform_name",color=:red,marker=:star5)
+		sc1=scatter!(pr_ax,argo_operational.lon,argo_operational.lat,
+			markersize=6.0,label="Argo (operational)",color=:deepskyblue)
+		sc2=scatter!(pr_ax,argo_planned.lon,argo_planned.lat,
+			markersize=6.0,label="Argo (planned)",color=:violet)
+		sc3=scatter!(pr_ax,drifter_operational.lon,drifter_operational.lat,
+			markersize=8.0,label="Drifter",color=:green1)
+		sc4=scatter!(pr_ax,more_operational.lon,more_operational.lat,
+			markersize=12.0,label=more_platform_name,color=:red,marker=:star5)
 		
 		MeshArrays.grid_lines!(pr_ax;color=:yellow,linewidth=0.5)
 
 		Legend(fi0[2, 1],[sc1,sc2,sc3,sc4],[sc1.label,sc2.label,sc3.label,sc4.label],
-			orientation = :horizontal)
+			orientation = :horizontal, fontsize=16)
 		
 		fi0
 	end
@@ -2072,11 +2071,10 @@ version = "3.5.0+0"
 # ╔═╡ Cell order:
 # ╟─5fa93c17-0a01-44c6-8679-d712c786907a
 # ╟─31fe91d7-dea2-49e3-902b-31aa62075986
-# ╟─1042f70c-4337-4bf2-b533-edf27a422365
-# ╟─b6a138b0-fce5-4767-b4d1-eed0d0560988
-# ╟─52dc1cd5-e57a-43bb-82c9-feb1de25e5ca
-# ╟─3b80d06d-72b8-4f67-945e-0b18f61de6e9
 # ╟─c5f24071-1c1f-4edf-b7b2-b6194c33b571
+# ╟─1042f70c-4337-4bf2-b533-edf27a422365
+# ╟─3b80d06d-72b8-4f67-945e-0b18f61de6e9
+# ╟─34855d22-aace-4d14-a1b7-d7b60a8fa678
 # ╟─596bce95-e13f-4439-858f-e944834c0924
 # ╟─aa80092c-80b9-489c-97b9-06c3d39ac594
 # ╟─401180a9-cb62-4dc6-b0a1-35df35f834db
@@ -2087,6 +2085,7 @@ version = "3.5.0+0"
 # ╠═30277358-0a8d-437e-9d2e-ebc7c307db31
 # ╟─18cf7db9-f987-4c41-adf2-035e810c2da0
 # ╟─fccdc273-2e9f-4f60-a659-8ee2790ae2fc
-# ╟─56fb760b-326e-45e1-b05b-14fa41e6b10d
+# ╟─b6a138b0-fce5-4767-b4d1-eed0d0560988
+# ╟─52dc1cd5-e57a-43bb-82c9-feb1de25e5ca
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
