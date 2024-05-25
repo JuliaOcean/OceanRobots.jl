@@ -185,12 +185,12 @@ function plot_standard(wmo,arr,spd,T_std,S_std)
 	ax=Axis(fig1[1,3],title="Float wmo="*string(wmo))
 	scatter!(ax,arr.PSAL[:],arr.TEMP[:],markersize=3.0)
 
-	ax=Axis(fig1[2,1:3],title="Temperature, degree C")
+	ax=Axis(fig1[2,1:3],title="Temperature, °C")
 	hm1=heatmap_profiles!(ax,arr.TIME,T_std,:thermal)
 	Colorbar(fig1[2,4], hm1, height=Relative(0.65))
 	ylims!(ax, 500, 0)
 
-	ax=Axis(fig1[3,1:3],title="Salinity, psu")
+	ax=Axis(fig1[3,1:3],title="Salinity, [PSS-78]")
 	hm2=heatmap_profiles!(ax,arr.TIME,S_std,:viridis)
 	Colorbar(fig1[3,4], hm2, height=Relative(0.65))
 	ylims!(ax, 500, 0)
@@ -242,6 +242,44 @@ function plot_glider(df,gdf,ID)
 	lines!(a3,gdf[ID].S500[:],label="500m")
 
 	f
+end
+
+## OceanOPS
+
+function plot_add(s=:OceanOPS,i=1;col=:red)
+	tab=OceanOPS.get_table(s,i)
+	nam=OceanOPS.csv_listings()[s][i]
+	scatter!(tab.DEPL_LON,tab.DEPL_LAT,label=nam,markersize=8,marker=:xcross,color=col)
+end
+
+function plot_base_Argo(f0,ax0)
+	tab=OceanOPS.get_table(:Argo,1)
+	nam=OceanOPS.csv_listings()[:Argo][1]
+	sc0=scatter!(tab.LATEST_LOC_LON,tab.LATEST_LOC_LAT,label=nam,markersize=4)
+	#lines!(ax0, GeoMakie.coastlines(),color=:black)
+	fi0,ax0,sc0
+end
+
+plot_OceanOPS1(fi0,ax0,argo_operational,argo_planned,drifter_operational,more_operational,more_platform_name)=begin
+	sc1=scatter!(argo_operational.lon,argo_operational.lat,
+		label="Argo (operational)",color=:blue,markersize=4)
+	sc2=scatter!(argo_planned.lon,argo_planned.lat,
+		label="Argo (planned)",color=:red,marker=:xcross,markersize=8)
+	sc3=scatter!(drifter_operational.lon,drifter_operational.lat,
+		label="Drifter",color=:green2,marker='O',markersize=12)
+	sc4=scatter!(more_operational.lon,more_operational.lat,
+		label=more_platform_name,color=:gold2,marker=:star5,markersize=16)
+	#lines!(ax0, GeoMakie.coastlines(),color=:black)
+	Legend(fi0[2, 1],[sc1,sc2,sc3,sc4],[sc1.label,sc2.label,sc3.label,sc4.label],
+		orientation = :horizontal)
+fi0
+end
+
+plot_OceanOPS2(fi0,ax0,s)=begin
+	fi1,ax1,sc1=plot_base_Argo(fi0,ax0)
+	sc1= (s==:ArgoPlanned ? plot_add(:Argo,2,col=:red) : plot_add(s,1,col=:red))
+	Legend(fi1[2, 1],[sc0,sc1],[sc0.label,sc1.label],orientation = :horizontal)
+	fi1
 end
 
 end
