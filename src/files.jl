@@ -514,11 +514,11 @@ function speed(arr)
     dist_tot=sum(dx)/1000 #in km
     dist_net=dx_net/1000 #in km
     
-    speed_net=dx_net/dt/(length(lon)-1)
-    speed_mean=mean(dx/dt)
+	speed=[dx[1] ; (dx[2:end]+dx[1:end-1])/2 ; dx[end]]/dt
+    speed_mean=mean(speed)
 
-    return (dx=dx,dist_tot=dist_tot,dist_net=dist_net,
-    speed_net=speed_net,speed_mean=speed_mean)
+    return (dist_tot=dist_tot,dist_net=dist_net,
+    speed_mean=speed_mean, speed=speed)
 end
 
 z_std=collect(0.0:5:500.0)

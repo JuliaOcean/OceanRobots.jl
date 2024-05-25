@@ -162,35 +162,32 @@ function plot_profiles!(ax,TIME,PRES,TEMP,cmap)
 	sca
 end
 
-function plot_trajectory!(ax,lon,lat,dx;
-		markersize=2,pol=Any[],xlims=(-180,180),ylims=(-90,90))
-	dt=10.0*86400
-	co=(dx[2:end]+dx[1:end-1])/2
-	co=[dx[1];co[:];dx[end]]/dt
-
-	li=lines!(ax,lon, lat, linewidth=2, color=co, colormap=:turbo)
+function plot_trajectory!(ax,lon,lat,co;
+		markersize=2,linewidth=3, pol=Any[],xlims=(-180,180),ylims=(-90,90),title="")
+	li=lines!(ax,lon, lat, linewidth=linewidth, color=co, colormap=:turbo)
 	scatter!(ax,lon, lat, marker=:circle, markersize=markersize, color=:black)
-	ax.xlabel="longitude"
-	ax.ylabel="latitude"
-	ax.title="estimated speed (m/s)"
-
 	!isempty(pol) ? [lines!(ax,l1,color = :black, linewidth = 0.5) for l1 in pol] : nothing
-
+	ax.xlabel="longitude";  ax.ylabel="latitude"; ax.title=title
 	xlims!(xlims...); ylims!(ylims...)
-
 	li
 end
 
 function plot_standard(wmo,arr,spd,T_std,S_std;
-		markersize=2,pol=Any[],xlims=(-180,180),ylims=(-90,90))
-	fig1=Figure(size=(900,1200))
+	markersize=2,pol=Any[],xlims=(-180,180),ylims=(-90,90))
 	
+	fig1=Figure(size=(900,900))
+
 	ax=Axis(fig1[1,1])
-	li=plot_trajectory!(ax,arr.lon,arr.lat,spd.dx;
-		markersize=2,pol=pol,xlims=xlims,ylims=ylims)
-	Colorbar(fig1[1,2], li, height=Relative(0.65))
-	ax=Axis(fig1[1,3],title="Float wmo="*string(wmo),xlabel="Salinity",ylabel="Temperature")
-	scatter!(ax,arr.PSAL[:],arr.TEMP[:],markersize=2.0)
+	li1=plot_trajectory!(ax,arr.lon,arr.lat,arr.TIME[1,:];
+		linewidth=5,pol=pol,xlims=(-180,180),ylims=(-80,90),
+		title="time since launch, in days")
+	Colorbar(fig1[1,2], li1, height=Relative(0.65))
+
+	ax=Axis(fig1[1,3])
+	li2=plot_trajectory!(ax,arr.lon,arr.lat,spd.speed;
+		markersize=2,pol=pol,xlims=xlims,ylims=ylims,
+		title="estimated speed (m/s)")
+	Colorbar(fig1[1,4], li2, height=Relative(0.65))
 
 	ax=Axis(fig1[2,1:3],title="Temperature, °C")
 	hm1=heatmap_profiles!(ax,arr.TIME,T_std,:thermal)
@@ -202,21 +199,29 @@ function plot_standard(wmo,arr,spd,T_std,S_std;
 	Colorbar(fig1[3,4], hm2, height=Relative(0.65))
 	ylims!(ax, 500, 0)
 
+	rowsize!(fig1.layout, 1, Relative(1/2))
+
+	fig1
+end
+function plot_TS(arr,wmo)
+	fig1=Figure(size=(600,600))
+	ax=Axis(fig1[1,1],title="Float wmo="*string(wmo),xlabel="Salinity",ylabel="Temperature")
+	scatter!(ax,arr.PSAL[:],arr.TEMP[:],markersize=2.0)
 	fig1
 end
 
-function plot_samples(arr,wmo)
+function plot_samples(arr,wmo;ylims=(-2000.0, 0.0))
 	
-	fig1=Figure(size = (800, 400))
-	lims=(nothing, nothing, -500.0, 0.0)
+	fig1=Figure(size = (1200, 900))
+	lims=(nothing, nothing, ylims...)
 
 	ttl="Float wmo="*string(wmo)
 	ax=Axis(fig1[1,1],title=ttl*", temperature, degree C", limits=lims)
-	hm1=plot_profiles!(ax,arr.TIME,arr.PRES,arr.TEMP,:thermal)
+	hm1=OceanRobotsMakieExt.plot_profiles!(ax,arr.TIME,arr.PRES,arr.TEMP,:thermal)
 	Colorbar(fig1[1,2], hm1, height=Relative(0.65))
 
 	ax=Axis(fig1[2,1],title=ttl*", salinity, psu", limits=lims)
-	hm2=plot_profiles!(ax,arr.TIME,arr.PRES,arr.PSAL,:viridis)
+	hm2=OceanRobotsMakieExt.plot_profiles!(ax,arr.TIME,arr.PRES,arr.PSAL,:viridis)
 	Colorbar(fig1[2,2], hm2, height=Relative(0.65))
 
 	fig1

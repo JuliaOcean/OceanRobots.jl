@@ -72,7 +72,11 @@ Position, estimated speed, temperature and salinity are shown as a function of t
 """
 
 # ╔═╡ 014d989d-e7d2-4312-9e2f-657abcc615ea
-md"""### Pointwise Data"""
+md"""### Pointwise Data
+
+!!! note
+    The depth range of most Argo floats is 0-2000m depth.
+"""
 
 # ╔═╡ 1a835449-de37-4d08-9c91-c7affe7084cd
 begin
@@ -153,7 +157,14 @@ begin
 end
 
 # ╔═╡ 49256e11-fbd2-40e7-8f0b-193e17e2b31b
-md"""_Average estimated drift speed :_ $(round(spd.speed_mean; digits=4)) m/s"""
+md"""_Average estimated drift speed :_ $(round(spd.speed_mean; digits=4)) m/s
+
+## Temperature-Salinity relationship
+
+!!! note
+    This is a classical way to depict ocean water masses, as part of physical oceanography, which often helps characterize the regions that water masses were formed.
+
+"""
 
 # ╔═╡ 66e41568-7825-4383-80cb-cc48bdf56397
 md"""### Viz"""
@@ -163,6 +174,9 @@ OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
 
 # ╔═╡ c85a1eea-e2db-4f7f-9b7c-00b29a4cb975
 fig2=OceanRobotsMakieExt.plot_samples(arr,wmo)
+
+# ╔═╡ 2a3509c4-0743-43ba-b539-151c29fb030b
+OceanRobotsMakieExt.plot_TS(arr,wmo)
 
 # ╔═╡ ef320c95-860f-4222-ae0f-e2cd52a3a776
 begin
@@ -2111,12 +2125,13 @@ version = "3.5.0+0"
 # ╟─09a2aa6e-16bc-4582-9d5f-c50432e3f0ca
 # ╟─9d29d0f8-7b1c-11ec-1f16-b313a50cc5e7
 # ╟─4d949835-4cf8-4493-b765-6e956019b777
-# ╠═e1d9253a-4ac4-47c8-97d7-edb92cd54397
+# ╟─e1d9253a-4ac4-47c8-97d7-edb92cd54397
 # ╟─a5db2d63-ec3e-4273-9138-4264388a4b7d
-# ╟─49256e11-fbd2-40e7-8f0b-193e17e2b31b
 # ╟─904c8a06-0552-40b4-aa9f-404d61b21c08
 # ╟─014d989d-e7d2-4312-9e2f-657abcc615ea
 # ╟─c85a1eea-e2db-4f7f-9b7c-00b29a4cb975
+# ╟─49256e11-fbd2-40e7-8f0b-193e17e2b31b
+# ╟─2a3509c4-0743-43ba-b539-151c29fb030b
 # ╟─1a835449-de37-4d08-9c91-c7affe7084cd
 # ╟─8418b9ca-2e7f-4468-a0fb-36f5a05dde2c
 # ╟─9037e2ce-a04a-40d0-945e-ec3f19a4f3c4
