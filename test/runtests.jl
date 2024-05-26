@@ -59,6 +59,7 @@ using Test
     stations=[41046, 44065]		
 	NOAA.download(stations)
     b=read(NOAAbuoy(),41046)
+    plot(b,"PRES")
     @test isa(b,NOAAbuoy)
 
     ##
@@ -70,15 +71,17 @@ using Test
     df=NOAA.read_historical_txt(buoyID,years[1])
     @test isa(df,DataFrame)
 
-    df=NOAA.read_historical_monthly()
-    @test isa(df,DataFrame)
+    b=read(NOAAbuoy_monthly(),buoyID,years)
+    @test isa(b,NOAAbuoy_monthly)
 
-    gdf=NOAA.groupby(df,"MM")
+    gdf=NOAA.groupby(b.df,"MM")
     sdf=NOAA.summary_table(gdf[1],25)
     @test isa(sdf,DataFrame)
 
     files_year,files_url=THREDDS.parse_catalog_NOAA_buoy()
     @test !isempty(files_url)
+
+    ##
 
     list_Argo=OceanOPS.get_list(:Argo)
     @test isa(list_Argo,Vector)

@@ -2,6 +2,8 @@ module OceanRobotsMakieExt
 
 using OceanRobots, Makie
 import OceanRobots: Dates
+import Makie: plot
+import OceanRobots: NOAAbuoy
 
 ## DRIFTERS
 
@@ -64,6 +66,16 @@ function plot_WHOTS(arr,units,d0,d1)
 end
 
 ## NOAA
+
+plot(x::NOAAbuoy,var) = begin
+	f=Figure()
+	u=x.units[var]
+	sta=x.ID
+	ax=Axis(f[1,1],title="Station $(sta), Variable $(var), Units $(u)",ylabel=u,xlabel="days")
+	lines!(ax,x.data.dt,x.data[!,Symbol(var)])
+	println(x.descriptions[var])
+	f
+end
 
 mean=NOAA.mean
 

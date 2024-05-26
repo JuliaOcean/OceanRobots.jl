@@ -80,7 +80,8 @@ end #module GliderFiles
 module NOAA
 
 using Downloads, CSV, DataFrames, Dates, NCDatasets, Statistics
-import OceanRobots: NOAAbuoy
+import OceanRobots: NOAAbuoy, NOAAbuoy_monthly, THREDDS
+import Base: read
 
 """
     NOAA.download(stations::Union(Array,Int),path=tempdir())
@@ -253,6 +254,15 @@ function summary_table(z,ny=25)
     T1=[p[ii][2][1] for ii in i]
     i=findall((!isnan).(T0.*T1))
     DataFrame(T0 = T0[i], T1 = T1[i])
+end
+
+read_monthly(ID=44013,years=[])=begin
+    isempty(years) ? (Y,_=THREDDS.parse_catalog_NOAA_buoy(ID)) : Y=years
+    isa(Y,UnitRange) ? Y=collect(Y) : nothing
+    isa(Y,Int) ? Y=[Y] : nothing
+    isa(Y[1],UnitRange) ? Y=collect(Y[1]) : nothing
+    mdf=read_historical_monthly(ID,Y)
+    NOAAbuoy_monthly(ID,mdf,NOAA.units,NOAA.descriptions)
 end
 
 end #module NOAA
