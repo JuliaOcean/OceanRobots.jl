@@ -3,7 +3,7 @@ module OceanRobotsMakieExt
 using OceanRobots, Makie
 import OceanRobots: Dates
 import Makie: plot
-import OceanRobots: NOAAbuoy
+import OceanRobots: NOAAbuoy, NOAAbuoy_monthly
 
 ## DRIFTERS
 
@@ -75,6 +75,17 @@ plot(x::NOAAbuoy,var) = begin
 	lines!(ax,x.data.dt,x.data[!,Symbol(var)])
 	println(x.descriptions[var])
 	f
+end
+
+plot(x::NOAAbuoy_monthly, var=""; option=:demo) = begin
+	if option==:demo
+		gmdf=NOAA.groupby(x.data,"MM")
+		tbl=[NOAA.summary_table(gmdf[m],25) for m in 1:12]
+		all=[]; [push!(all,(tbl[m].T1-tbl[m].T0)...) for m in 1:12]
+		plot_summary(tbl,all)
+	else
+		@warn "case not implemented"
+	end
 end
 
 mean=NOAA.mean

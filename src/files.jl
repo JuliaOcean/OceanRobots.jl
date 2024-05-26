@@ -257,7 +257,7 @@ function summary_table(z,ny=25)
 end
 
 read_monthly(ID=44013,years=[])=begin
-    isempty(years) ? (Y,_=THREDDS.parse_catalog_NOAA_buoy(ID)) : Y=years
+    Y = (isempty(years) ? THREDDS.parse_catalog_NOAA_buoy(ID)[1] : years)
     isa(Y,UnitRange) ? Y=collect(Y) : nothing
     isa(Y,Int) ? Y=[Y] : nothing
     isa(Y[1],UnitRange) ? Y=collect(Y[1]) : nothing

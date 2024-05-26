@@ -74,9 +74,9 @@ using Test
     b=read(NOAAbuoy_monthly(),buoyID,years)
     @test isa(b,NOAAbuoy_monthly)
 
-    gdf=NOAA.groupby(b.df,"MM")
-    sdf=NOAA.summary_table(gdf[1],25)
-    @test isa(sdf,DataFrame)
+    a=read(NOAAbuoy_monthly(),44013)
+    b=plot(a;option=:demo)
+    @test isa(b,Figure)
 
     files_year,files_url=THREDDS.parse_catalog_NOAA_buoy()
     @test !isempty(files_url)
