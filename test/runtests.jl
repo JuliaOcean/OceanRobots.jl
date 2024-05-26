@@ -1,4 +1,4 @@
-using OceanRobots, ClimateModels, DataFrames, ArgoData, CairoMakie
+using OceanRobots, DataFrames, ArgoData, CairoMakie
 using Test
 
 @testset "OceanRobots.jl" begin
@@ -56,12 +56,10 @@ using Test
 
     ##
 
-    parameters=Dict("stations" => [41046, 44065])		
-	MC=ModelConfig(model=NOAA.download,inputs=parameters)
-	setup(MC)
-	launch(MC)
-    df=NOAA.read(MC,41046)
-    @test isa(df,DataFrame)
+    stations=[41046, 44065]		
+	NOAA.download(stations)
+    b=read(NOAAbuoy(),41046)
+    @test isa(b,NOAAbuoy)
 
     ##
 
@@ -74,6 +72,10 @@ using Test
 
     df=NOAA.read_historical_monthly()
     @test isa(df,DataFrame)
+
+    gdf=NOAA.groupby(df,"MM")
+    sdf=NOAA.summary_table(gdf[1],25)
+    @test isa(sdf,DataFrame)
 
     files_year,files_url=THREDDS.parse_catalog_NOAA_buoy()
     @test !isempty(files_url)

@@ -80,6 +80,25 @@ end #module GliderFiles
 module NOAA
 
 using Downloads, CSV, DataFrames, Dates, NCDatasets, Statistics
+import OceanRobots: NOAAbuoy
+
+"""
+    NOAA.download(stations::Union(Array,Int),path=tempdir())
+
+Download files listed in `stations` from `ndbc.noaa.gov` to `path`.
+"""
+function download(stations::Union{Array,Int},path=tempdir())
+    url0="https://www.ndbc.noaa.gov/data/realtime2/"
+    files=String[]
+    for f in stations
+        fil="$f.txt"
+        url1=url0*fil
+        fil1=joinpath(path,fil)
+        Downloads.download(url1,fil1)
+        push!(files,fil1)
+    end
+    files
+end
 
 """
     NOAA.download(MC::ModelConfig)
@@ -87,28 +106,20 @@ using Downloads, CSV, DataFrames, Dates, NCDatasets, Statistics
 Download files listed in `MC.inputs["stations"]` from `ndbc.noaa.gov` to `pathof(MC)`.
 """
 function download(MC)
-    url0="https://www.ndbc.noaa.gov/data/realtime2/"
-    pth0=pathof(MC)
-
-    for f in MC.inputs["stations"]
-        fil="$f.txt"
-        url1=url0*fil
-        fil1=joinpath(pth0,fil)
-        Downloads.download(url1,fil1)
-    end
-    
+    download(MC.inputs["stations"],pathof(MC))
     return MC
 end
 
-"""
-    NOAA.read(MC,sta)
+read(MC,sta) = read(sta,pathof(MC))
 
-Read station `sta` file from `pathof(MC)`. Meta-data is provided in `NOAA.units` and `NOAA.descriptions`.
 """
-function read(MC,sta)
-    pth0=pathof(MC)
-        
-    fil1=joinpath(pth0,"$sta.txt")
+    NOAA.read(station,path=tempdir())
+
+Read station file from specified path, and add meta-data (`units` and `descriptions`).
+"""
+function read(station::Int,path=tempdir())        
+    fil1=joinpath(path,"$station.txt")
+    !isfile(fil1) ? download(station,path)  : nothing
 
     x=DataFrame(CSV.File(fil1,skipto=3,
     missingstring="MM",delim=' ',header=1,ignorerepeated=true))
@@ -123,7 +134,7 @@ function read(MC,sta)
     #sort by time
     sort!(x,:time)
 
-    return x
+    return NOAAbuoy(station,x,units,descriptions)
 end
 
 tmp1=split("YY  MM DD hh mm WDIR WSPD GST  WVHT   DPD   APD MWD   PRES  ATMP  WTMP  DEWP  VIS PTDY  TIDE")
