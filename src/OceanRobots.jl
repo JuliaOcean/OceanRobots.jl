@@ -21,9 +21,6 @@ end
 export GDP, GDP_CloudDrift, NOAA, GliderFiles, ArgoFiles, OceanSites, OceanOPS
 export check_for_file, THREDDS, cmems_sla, podaac_sla
 
-export NOAAbuoy, NOAAbuoy_monthly
-
-read(x::NOAAbuoy,args...) = NOAA.read(args...)
-read(x::NOAAbuoy_monthly,args...) = NOAA.read_monthly(args...)
+export NOAAbuoy, NOAAbuoy_monthly, ArgoFloat
 
 end # module

@@ -113,6 +113,9 @@ end
 
 read(MC,sta) = read(sta,pathof(MC))
 
+read(x::NOAAbuoy,args...) = read(args...)
+read(x::NOAAbuoy_monthly,args...) = read_monthly(args...)
+
 """
     NOAA.read(station,path=tempdir())
 

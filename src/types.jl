@@ -22,3 +22,12 @@ end
 
 NOAAbuoy_monthly() = NOAAbuoy_monthly(0,DataFrame(),NOAA.units,NOAA.descriptions)
 NOAAbuoy_monthly(ID,gdf) = NOAAbuoy_monthly(ID,gdf,NOAA.units,NOAA.descriptions)
+
+##
+
+struct ArgoFloat <: AbstractOceanRobotData
+    ID::Int64
+    data::NamedTuple
+end
+
+ArgoFloat() = ArgoFloat(0,NamedTuple())

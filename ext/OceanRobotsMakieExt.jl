@@ -195,8 +195,21 @@ function plot_trajectory!(ax,lon,lat,co;
 	li
 end
 
-function plot_standard(wmo,arr,spd,T_std,S_std;
-	markersize=2,pol=Any[],xlims=(-180,180),ylims=(-90,90))
+xrng(lon)=begin
+	a=[floor(minimum(lon)) ceil(maximum(lon))]
+	dx=diff(a[:])[1]
+	b=[max(a[1]-dx/2,-180) min(a[2]+dx/2,180)]
+end
+yrng(lat)=begin
+	a=[floor(minimum(lat)) ceil(maximum(lat))]
+	dx=diff(a[:])[1]
+	b=[max(a[1]-dx/2,-90) min(a[2]+dx/2,90)]
+end
+
+function plot_standard(wmo,arr,spd,T_std,S_std; markersize=2,pol=Any[])
+
+	xlims=xrng(arr.lon)
+	ylims=xrng(arr.lat)
 	
 	fig1=Figure(size=(900,900))
 
@@ -226,6 +239,26 @@ function plot_standard(wmo,arr,spd,T_std,S_std;
 
 	fig1
 end
+
+"""
+plot(x::ArgoFloat; option=:standard, markersize=2,pol=Any[])
+
+T_std,S_std=ArgoFiles.interp_z_all(arr)
+spd=ArgoFiles.speed(arr)
+plot_standard(wmo,arr,spd,T_std,S_std; markersize=3)
+"""
+plot(x::ArgoFloat; option=:standard, markersize=2,pol=Any[]) = begin
+	if option==:standard
+	T_std,S_std=ArgoFiles.interp_z_all(x.data)
+	spd=ArgoFiles.speed(x.data)
+	plot_standard(x.ID,x.data,spd,T_std,S_std; markersize=markersize, pol=pol)
+	elseif option==:samples
+		plot_samples(x.data,x.ID)
+	elseif option==:TS
+		plot_TS(x.data,x.ID)
+	end
+end
+
 function plot_TS(arr,wmo)
 	fig1=Figure(size=(600,600))
 	ax=Axis(fig1[1,1],title="Float wmo="*string(wmo),xlabel="Salinity",ylabel="Temperature")

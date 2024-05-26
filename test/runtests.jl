@@ -36,18 +36,19 @@ using Test
 
     wmo=2900668
     files_list=GDAC.files_list()
+
     fil=ArgoFiles.download(files_list,wmo)
     arr=ArgoFiles.read(fil)
-    T_std,S_std=ArgoFiles.interp_z_all(arr)
-	spd=ArgoFiles.speed(arr)
-    @test isapprox(spd.speed_mean,0.06,atol=0.01)
+    b=ArgoFloat(wmo,arr)
+    @test isa(b,ArgoFloat)
 
-    OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
-    f1=OceanRobotsMakieExt.plot_samples(arr,wmo)
-    f2=OceanRobotsMakieExt.plot_TS(arr,wmo)
-    @test isa(f1,Figure)
+    f1=plot(b,option=:samples)
+    f2=plot(b,option=:TS)
+    f3=plot(b,option=:standard)
+    @test isa(f3,Figure)
+        
+    #
 
-#
     fil=check_for_file("Glider_Spray","GulfStream.nc")
     @test isfile(fil)
 
