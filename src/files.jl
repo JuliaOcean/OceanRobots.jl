@@ -1,7 +1,9 @@
 
 module GliderFiles
 
+import OceanRobots: Gliders
 using Downloads, Glob, DataFrames, NCDatasets
+import Base: read
 
 function check_for_file_Spray(args...)
     if !isempty(args)
@@ -25,31 +27,14 @@ function check_for_file_Spray(args...)
 end
 
 """
-    GliderFiles.read(file::String)
+    GliderFiles.read(x::Gliders, file::String)
 
 Read a Spray Glider file.    
 """
-function read(file::String)
-    ds=Dataset(file)
-    
-	df=DataFrame(:lon => ds[:lon][:], :lat => ds[:lat][:], :ID => ds[:trajectory_index][:])
-	df.time=ds[:time][:]
-
-	df.T10=ds[:temperature][:,1]
-	df.T100=ds[:temperature][:,10]
-	df.T500=ds[:temperature][:,50]
-
-	df.S10=ds[:salinity][:,1]
-	df.S100=ds[:salinity][:,10]
-	df.S500=ds[:salinity][:,50]
-
-	df.u100=ds[:u][:,10]
-	df.v100=ds[:v][:,10]
-
-	df.u=ds[:u_depth_mean][:]
-	df.v=ds[:v_depth_mean][:]
-	
-	df
+read(x::Gliders, file::String) = begin
+    f=check_for_file_Spray(file)
+    df=to_DataFrame(Dataset(f))
+    Gliders(f,df)
 end
 
 function to_DataFrame(ds)

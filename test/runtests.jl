@@ -50,11 +50,10 @@ using Test
         
     #
 
-    fil=check_for_file("Glider_Spray","GulfStream.nc")
-    @test isfile(fil)
-
-    df=GliderFiles.read(fil)
-    @test isa(df,DataFrame)
+    b=read(Gliders(),"GulfStream.nc")
+    @test isa(b,Gliders)
+    f3=plot(b,1)
+    @test isa(f3,Figure)
 
     ##
 

@@ -3,7 +3,6 @@ module OceanRobotsMakieExt
 using OceanRobots, Makie
 import OceanRobots: Dates
 import Makie: plot
-#import OceanRobots: NOAAbuoy, NOAAbuoy_monthly, SurfaceDrifter, ArgoFloat
 
 ## DRIFTERS
 
@@ -313,6 +312,11 @@ function plot_glider(df,gdf,ID)
 	lines!(a3,gdf[ID].S500[:],label="500m")
 
 	f
+end
+
+plot(x::Gliders,ID) = begin
+	gdf=GliderFiles.groupby(x.data,:ID)
+	plot_glider(x.data,gdf,ID)
 end
 
 ## OceanOPS

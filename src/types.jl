@@ -40,3 +40,10 @@ struct SurfaceDrifter <: AbstractOceanRobotData
 end
 
 SurfaceDrifter() = SurfaceDrifter(0,[],0,DataFrame())
+
+struct Gliders <: AbstractOceanRobotData
+    file::String
+    data::DataFrame
+end
+
+Gliders() = Gliders("",DataFrame())
