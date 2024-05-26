@@ -563,6 +563,24 @@ end
 module OceanSites
 
 using NCDatasets, FTPClient, CSV, DataFrames, Dates
+import OceanRobots: OceanSite
+import Base: read
+
+"""
+    GliderFiles.read(x::Gliders, file::String)
+
+Read a Spray Glider file.    
+"""
+read(x::OceanSite,ID::Symbol) = begin
+    if ID==:WHOTS
+        (arr,units)=read_WHOTS()
+        OceanSite(ID,arr,units)
+    else
+        @warn "site not yet supported"
+        OceanSite()
+    end
+end
+
 
 """
     read_WHOTS(fil)
@@ -638,16 +656,16 @@ function ncread(f::String,v::String)
 end
 
 """
-    read(file,args...)
+    read_variables(file,args...)
 
 Open file from opendap server.
 
 ```
 file="DATA_GRIDDED/WHOTS/OS_WHOTS_200408-201809_D_MLTS-1H.nc"
-OceanSites.read(file,:lon,:lat,:time,:TEMP)
+OceanSites.read_variables(file,:lon,:lat,:time,:TEMP)
 ```
 """
-function read(file,args...)
+function read_variables(file,args...)
     url0="http://tds0.ifremer.fr/thredds/dodsC/CORIOLIS-OCEANSITES-GDAC-OBS/"
     fil0=url0*file*"#fillmismatch"
     store=[]

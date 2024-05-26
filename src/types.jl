@@ -47,3 +47,11 @@ struct Gliders <: AbstractOceanRobotData
 end
 
 Gliders() = Gliders("",DataFrame())
+
+struct OceanSite <: AbstractOceanRobotData
+    ID::Symbol
+    data::NamedTuple
+    units::NamedTuple
+end
+
+OceanSite() = OceanSite(:unknown,NamedTuple(),NamedTuple())

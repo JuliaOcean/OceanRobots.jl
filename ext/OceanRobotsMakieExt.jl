@@ -41,6 +41,8 @@ plot(x::SurfaceDrifter) = plot_drifter(x.data)
 
 ## WHOTS
 
+plot(x::OceanSite,args...)=plot_WHOTS(x.data,x.units,args...)
+
 function plot_WHOTS(arr,units,d0,d1)
 	
     tt=findall((arr.TIME.>d0).*(arr.TIME.<=d1))

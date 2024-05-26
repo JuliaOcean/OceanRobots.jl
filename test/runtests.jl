@@ -16,15 +16,17 @@ using Test
     f3=plot(b)
     @test isa(f3,Figure)
 
+    #
+
     oceansites_index=OceanSites.index()
     @test !isempty(oceansites_index)
 
-    data,units=OceanSites.read_WHOTS()
-    @test !isempty(data.TIME)
-    @test !isempty(units.TIME)
+    b=read(OceanSite(),:WHOTS)
+    f3=plot(b,DateTime(2005,1,1),DateTime(2005,2,1))
+    @test isa(f3,Figure)
 
     file="DATA_GRIDDED/WHOTS/OS_WHOTS_200408-201809_D_MLTS-1H.nc"
-    data=OceanSites.read(file,:lon,:lat,:time,:TEMP)
+    data=OceanSites.read_variables(file,:lon,:lat,:time,:TEMP)
     @test !isempty(data.TEMP)
 
     #
