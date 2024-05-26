@@ -9,11 +9,12 @@ using Test
     @test isa(files[1],String)
     @test isempty(folders)
 
-    list_files=GDP.list_files()
-    fil=GDP.download(list_files,1)
-    ds=GDP.read(fil)
+    lst=GDP.list_files()
+    b=read(SurfaceDrifter(),1,list_files=lst)
+    @test haskey(b.data,"ve")
 
-    @test haskey(ds,"ve")
+    f3=plot(b)
+    @test isa(f3,Figure)
 
     oceansites_index=OceanSites.index()
     @test !isempty(oceansites_index)

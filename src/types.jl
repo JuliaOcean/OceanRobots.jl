@@ -1,5 +1,5 @@
 
-using DataFrames
+using DataFrames, NCDatasets
 
 abstract type AbstractOceanRobotData <: Any end
 
@@ -30,4 +30,13 @@ struct ArgoFloat <: AbstractOceanRobotData
     data::NamedTuple
 end
 
-ArgoFloat() = ArgoFloat(0,NamedTuple())
+ArgoFloat() = ArgoFloat(0,DataFrame())
+
+struct SurfaceDrifter <: AbstractOceanRobotData
+    ID::Int64
+    data::Union{Array,Dataset}
+    wmo::Int64
+    list_files::DataFrame
+end
+
+SurfaceDrifter() = SurfaceDrifter(0,[],0,DataFrame())

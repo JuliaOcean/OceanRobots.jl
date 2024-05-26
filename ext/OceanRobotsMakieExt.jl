@@ -3,7 +3,7 @@ module OceanRobotsMakieExt
 using OceanRobots, Makie
 import OceanRobots: Dates
 import Makie: plot
-import OceanRobots: NOAAbuoy, NOAAbuoy_monthly
+#import OceanRobots: NOAAbuoy, NOAAbuoy_monthly, SurfaceDrifter, ArgoFloat
 
 ## DRIFTERS
 
@@ -36,6 +36,9 @@ function plot_drifter(ds)
 	
 	fig1
 end
+
+plot(x::SurfaceDrifter) = plot_drifter(x.data)
+
 
 ## WHOTS
 

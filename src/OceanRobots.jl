@@ -21,6 +21,6 @@ end
 export GDP, GDP_CloudDrift, NOAA, GliderFiles, ArgoFiles, OceanSites, OceanOPS
 export check_for_file, THREDDS, cmems_sla, podaac_sla
 
-export NOAAbuoy, NOAAbuoy_monthly, ArgoFloat
+export NOAAbuoy, NOAAbuoy_monthly, ArgoFloat, SurfaceDrifter
 
 end # module

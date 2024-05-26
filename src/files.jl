@@ -111,7 +111,7 @@ function download(MC)
     return MC
 end
 
-read(MC,sta) = read(sta,pathof(MC))
+#read(MC,sta) = read(sta,pathof(MC))
 
 read(x::NOAAbuoy,args...) = read(args...)
 read(x::NOAAbuoy_monthly,args...) = read_monthly(args...)
@@ -275,6 +275,8 @@ end #module NOAA
 module GDP
 
 using DataFrames, FTPClient, NCDatasets
+import OceanRobots: SurfaceDrifter
+import Base: read
 
 """
     list_files()
@@ -289,6 +291,7 @@ function list_files()
     ftp=FTP("ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/")
     tmp=readdir(ftp)
     append!(list_files,DataFrame("folder" => "","filename" => tmp))
+    list_files.ID=[parse(Int,split(f,"_")[2][1:end-3]) for f in list_files.filename]
     list_files
 end
 
@@ -324,20 +327,25 @@ function download(list_files,ii=1)
 end
 
 """
-    read(filename::String)
+    read(x::SurfaceDrifter,ii::Int; list_files=[])
 
-Open file from NOAA ftp server using `NCDatasets.Dataset`.
+Open file `list_files.filename[ii]` from NOAA ftp server using `NCDatasets.Dataset`.
 
 <ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/>
 or the corresponding webpage 
 
 ```
-list_files=GDP.list_files()
-fil=GDP.download(list_files,1)
-ds=GDP.read(fil)
+lst=GDP.list_files()
+sd=read(SurfaceDrifter(),1,list_files=lst)
 ```
 """
-read(filename::String) = Dataset(filename)
+read(x::SurfaceDrifter,ii::Int; list_files=[]) = begin
+    lst=(isempty(list_files) ? GDP.list_files() : list_files)
+	fil=GDP.download(lst,ii)
+	ds=Dataset(fil)
+    wmo=ds[:WMO][1]
+    SurfaceDrifter(lst.ID[ii],ds,wmo,lst)
+end
 
 read_v(ds,v) = Float64.(cfvariable(ds,v,missing_value=-1.e+34))
 
