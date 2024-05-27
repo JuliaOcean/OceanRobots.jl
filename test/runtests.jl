@@ -1,4 +1,4 @@
-using OceanRobots, ClimateModels, DataFrames
+using OceanRobots, DataFrames, ArgoData, CairoMakie
 using Test
 
 @testset "OceanRobots.jl" begin
@@ -9,22 +9,32 @@ using Test
     @test isa(files[1],String)
     @test isempty(folders)
 
-    list_files=GDP.list_files()
-    fil=GDP.download(list_files,1)
-    ds=GDP.read(fil)
+    lst=GDP.list_files()
+    b=read(SurfaceDrifter(),1,list_files=lst)
+    @test haskey(b.data,"ve")
 
-    @test haskey(ds,"ve")
+    f3=plot(b)
+    @test isa(f3,Figure)
+
+    #
+
+    b=read(CloudDrift(),"")
+    @test isa(b,CloudDrift)
+
+    #
 
     oceansites_index=OceanSites.index()
     @test !isempty(oceansites_index)
 
-    data,units=OceanSites.read_WHOTS()
-    @test !isempty(data.TIME)
-    @test !isempty(units.TIME)
+    b=read(OceanSite(),:WHOTS)
+    f3=plot(b,DateTime(2005,1,1),DateTime(2005,2,1))
+    @test isa(f3,Figure)
 
     file="DATA_GRIDDED/WHOTS/OS_WHOTS_200408-201809_D_MLTS-1H.nc"
-    data=OceanSites.read(file,:lon,:lat,:time,:TEMP)
+    data=OceanSites.read_variables(file,:lon,:lat,:time,:TEMP)
     @test !isempty(data.TEMP)
+
+    #
 
     ArgoFiles.scan_txt("ar_index_global_prof.txt",do_write=true)
     @test isfile(joinpath(tempdir(),"ar_index_global_prof.csv"))
@@ -32,20 +42,33 @@ using Test
     ArgoFiles.scan_txt("argo_synthetic-profile_index.txt",do_write=true)
     @test isfile(joinpath(tempdir(),"argo_synthetic-profile_index.csv"))
 
-    fil=check_for_file("Glider_Spray","GulfStream.nc")
-    @test isfile(fil)
+    wmo=2900668
+    files_list=GDAC.files_list()
 
-    df=GliderFiles.read(fil)
-    @test isa(df,DataFrame)
+    fil=ArgoFiles.download(files_list,wmo)
+    arr=ArgoFiles.read(fil)
+    b=ArgoFloat(wmo,arr)
+    @test isa(b,ArgoFloat)
+
+    f1=plot(b,option=:samples)
+    f2=plot(b,option=:TS)
+    f3=plot(b,option=:standard)
+    @test isa(f3,Figure)
+        
+    #
+
+    b=read(Gliders(),"GulfStream.nc")
+    @test isa(b,Gliders)
+    f3=plot(b,1)
+    @test isa(f3,Figure)
 
     ##
 
-    parameters=Dict("stations" => [41046, 44065])		
-	MC=ModelConfig(model=NOAA.download,inputs=parameters)
-	setup(MC)
-	launch(MC)
-    df=NOAA.read(MC,41046)
-    @test isa(df,DataFrame)
+    stations=[41046, 44065]		
+	NOAA.download(stations)
+    b=read(NOAAbuoy(),41046)
+    plot(b,"PRES")
+    @test isa(b,NOAAbuoy)
 
     ##
 
@@ -56,11 +79,17 @@ using Test
     df=NOAA.read_historical_txt(buoyID,years[1])
     @test isa(df,DataFrame)
 
-    df=NOAA.read_historical_monthly()
-    @test isa(df,DataFrame)
+    b=read(NOAAbuoy_monthly(),buoyID,years)
+    @test isa(b,NOAAbuoy_monthly)
+
+    a=read(NOAAbuoy_monthly(),44013)
+    b=plot(a;option=:demo)
+    @test isa(b,Figure)
 
     files_year,files_url=THREDDS.parse_catalog_NOAA_buoy()
     @test !isempty(files_url)
+
+    ##
 
     list_Argo=OceanOPS.get_list(:Argo)
     @test isa(list_Argo,Vector)
@@ -70,4 +99,7 @@ using Test
 
     tmp=OceanOPS.get_list_pos(:Drifter)
     @test isa(tmp.lon,Vector)
+
+    tmp=OceanOPS.list_platform_types()
+    @test isa(tmp.name,Vector)
 end

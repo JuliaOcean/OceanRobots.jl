@@ -1,7 +1,9 @@
 
 module GliderFiles
 
+import OceanRobots: Gliders
 using Downloads, Glob, DataFrames, NCDatasets
+import Base: read
 
 function check_for_file_Spray(args...)
     if !isempty(args)
@@ -25,31 +27,14 @@ function check_for_file_Spray(args...)
 end
 
 """
-    GliderFiles.read(file::String)
+    GliderFiles.read(x::Gliders, file::String)
 
 Read a Spray Glider file.    
 """
-function read(file::String)
-    ds=Dataset(file)
-    
-	df=DataFrame(:lon => ds[:lon][:], :lat => ds[:lat][:], :ID => ds[:trajectory_index][:])
-	df.time=ds[:time][:]
-
-	df.T10=ds[:temperature][:,1]
-	df.T100=ds[:temperature][:,10]
-	df.T500=ds[:temperature][:,50]
-
-	df.S10=ds[:salinity][:,1]
-	df.S100=ds[:salinity][:,10]
-	df.S500=ds[:salinity][:,50]
-
-	df.u100=ds[:u][:,10]
-	df.v100=ds[:v][:,10]
-
-	df.u=ds[:u_depth_mean][:]
-	df.v=ds[:v_depth_mean][:]
-	
-	df
+read(x::Gliders, file::String) = begin
+    f=check_for_file_Spray(file)
+    df=to_DataFrame(Dataset(f))
+    Gliders(f,df)
 end
 
 function to_DataFrame(ds)
@@ -80,6 +65,26 @@ end #module GliderFiles
 module NOAA
 
 using Downloads, CSV, DataFrames, Dates, NCDatasets, Statistics
+import OceanRobots: NOAAbuoy, NOAAbuoy_monthly, THREDDS
+import Base: read
+
+"""
+    NOAA.download(stations::Union(Array,Int),path=tempdir())
+
+Download files listed in `stations` from `ndbc.noaa.gov` to `path`.
+"""
+function download(stations::Union{Array,Int},path=tempdir())
+    url0="https://www.ndbc.noaa.gov/data/realtime2/"
+    files=String[]
+    for f in stations
+        fil="$f.txt"
+        url1=url0*fil
+        fil1=joinpath(path,fil)
+        Downloads.download(url1,fil1)
+        push!(files,fil1)
+    end
+    files
+end
 
 """
     NOAA.download(MC::ModelConfig)
@@ -87,28 +92,23 @@ using Downloads, CSV, DataFrames, Dates, NCDatasets, Statistics
 Download files listed in `MC.inputs["stations"]` from `ndbc.noaa.gov` to `pathof(MC)`.
 """
 function download(MC)
-    url0="https://www.ndbc.noaa.gov/data/realtime2/"
-    pth0=pathof(MC)
-
-    for f in MC.inputs["stations"]
-        fil="$f.txt"
-        url1=url0*fil
-        fil1=joinpath(pth0,fil)
-        Downloads.download(url1,fil1)
-    end
-    
+    download(MC.inputs["stations"],pathof(MC))
     return MC
 end
 
-"""
-    NOAA.read(MC,sta)
+#read(MC,sta) = read(sta,pathof(MC))
 
-Read station `sta` file from `pathof(MC)`. Meta-data is provided in `NOAA.units` and `NOAA.descriptions`.
+read(x::NOAAbuoy,args...) = read(args...)
+read(x::NOAAbuoy_monthly,args...) = read_monthly(args...)
+
 """
-function read(MC,sta)
-    pth0=pathof(MC)
-        
-    fil1=joinpath(pth0,"$sta.txt")
+    NOAA.read(station,path=tempdir())
+
+Read station file from specified path, and add meta-data (`units` and `descriptions`).
+"""
+function read(station::Int,path=tempdir())        
+    fil1=joinpath(path,"$station.txt")
+    !isfile(fil1) ? download(station,path)  : nothing
 
     x=DataFrame(CSV.File(fil1,skipto=3,
     missingstring="MM",delim=' ',header=1,ignorerepeated=true))
@@ -123,7 +123,7 @@ function read(MC,sta)
     #sort by time
     sort!(x,:time)
 
-    return x
+    return NOAAbuoy(station,x,units,descriptions)
 end
 
 tmp1=split("YY  MM DD hh mm WDIR WSPD GST  WVHT   DPD   APD MWD   PRES  ATMP  WTMP  DEWP  VIS PTDY  TIDE")
@@ -185,14 +185,18 @@ end
 Read files from https://www.ndbc.noaa.gov to temporary folder for chosen float `ID` and year `y`.
 """
 function read_historical_nc(ID,y)
-    url0="https://dods.ndbc.noaa.gov/thredds/dodsC/data/stdmet/"
-    ds=Dataset(url0*"$(ID)/$(ID)h$(y).nc")
+    #url0="https://dods.ndbc.noaa.gov/thredds/dodsC/data/stdmet/"
+    url0="https://dods.ndbc.noaa.gov/thredds/fileServer/data/stdmet/"
     
+    fil=joinpath(tempdir(),"$(ID)h$(y).nc")
+    url=url0*"$(ID)/$(ID)h$(y).nc"
+    !isfile(fil) ? Downloads.download(url,fil) : nothing
+
+    ds=Dataset(fil)    
     df=DataFrame(YY=year.(ds["time"][:]),MM=month.(ds["time"][:]),
     air_temperature=ds["air_temperature"][1,1,:],
     sea_surface_temperature=ds["sea_surface_temperature"][1,1,:],    
     wind_spd=ds["wind_spd"][1,1,:],air_pressure=ds["air_pressure"][1,1,:])
-
     close(ds)
 
     rename!( df,Dict("air_temperature" => "ATMP","sea_surface_temperature" => "WTMP",
@@ -244,6 +248,15 @@ function summary_table(z,ny=25)
     DataFrame(T0 = T0[i], T1 = T1[i])
 end
 
+read_monthly(ID=44013,years=[])=begin
+    Y = (isempty(years) ? THREDDS.parse_catalog_NOAA_buoy(ID)[1] : years)
+    isa(Y,UnitRange) ? Y=collect(Y) : nothing
+    isa(Y,Int) ? Y=[Y] : nothing
+    isa(Y[1],UnitRange) ? Y=collect(Y[1]) : nothing
+    mdf=read_historical_monthly(ID,Y)
+    NOAAbuoy_monthly(ID,mdf,NOAA.units,NOAA.descriptions)
+end
+
 end #module NOAA
 
 ##
@@ -251,6 +264,8 @@ end #module NOAA
 module GDP
 
 using DataFrames, FTPClient, NCDatasets
+import OceanRobots: SurfaceDrifter
+import Base: read
 
 """
     list_files()
@@ -265,6 +280,7 @@ function list_files()
     ftp=FTP("ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/")
     tmp=readdir(ftp)
     append!(list_files,DataFrame("folder" => "","filename" => tmp))
+    list_files.ID=[parse(Int,split(f,"_")[2][1:end-3]) for f in list_files.filename]
     list_files
 end
 
@@ -300,20 +316,25 @@ function download(list_files,ii=1)
 end
 
 """
-    read(filename::String)
+    read(x::SurfaceDrifter,ii::Int; list_files=[])
 
-Open file from NOAA ftp server using `NCDatasets.Dataset`.
+Open file `list_files.filename[ii]` from NOAA ftp server using `NCDatasets.Dataset`.
 
 <ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/>
 or the corresponding webpage 
 
 ```
-list_files=GDP.list_files()
-fil=GDP.download(list_files,1)
-ds=GDP.read(fil)
+lst=GDP.list_files()
+sd=read(SurfaceDrifter(),1,list_files=lst)
 ```
 """
-read(filename::String) = Dataset(filename)
+read(x::SurfaceDrifter,ii::Int; list_files=[]) = begin
+    lst=(isempty(list_files) ? GDP.list_files() : list_files)
+	fil=GDP.download(lst,ii)
+	ds=Dataset(fil)
+    wmo=ds[:WMO][1]
+    SurfaceDrifter(lst.ID[ii],ds,wmo,lst)
+end
 
 read_v(ds,v) = Float64.(cfvariable(ds,v,missing_value=-1.e+34))
 
@@ -323,7 +344,51 @@ end #module GDP
 
 module GDP_CloudDrift
 
-using DataFrames, Statistics, NCDatasets
+using DataFrames, Statistics, NCDatasets, Downloads, Dates
+import Base: read
+import OceanRobots: CloudDrift
+#
+
+#https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/drifter_101783.nc
+#https://www.ncei.noaa.gov/access/metadata/landing-page/bin/iso?id=gov.noaa.nodc:AOML-GDP-1hr
+#https://www.aoml.noaa.gov/phod/gdp/hourly_data.php
+#https://clouddrift.org/index.html
+
+read(x::CloudDrift,file) = CloudDrift_demo(file)
+
+function CloudDrift_demo(file="")
+    isempty(file) ? fi=CloudDrift_subset_download() : fi=file
+    #file="Drifter_hourly_v2p0/gdp_v2.00.nc"
+
+    ds=GDP_CloudDrift.Dataset(fi)
+    df=GDP_CloudDrift.to_DataFrame(ds)
+    GDP_CloudDrift.add_ID!(df,ds)
+    GDP_CloudDrift.add_index!(df)
+    df.cv=df.ve+1im*df.vn
+
+	lon = (-98, -78); lat = (18, 31)
+	#lon = (-150, -140); lat = (25, 35)
+	d0=DateTime("2000-01-1T00:00:00")
+	d1=DateTime("2020-12-31T00:00:00")
+	tim=(d0,d1)
+	df_subset=GDP_CloudDrift.region_subset(df,lon,lat,tim)
+
+    gdf2=GDP_CloudDrift.groupby(df,:ID)
+	df_stats=GDP_CloudDrift.trajectory_stats(gdf2)
+
+    gdf=GDP_CloudDrift.groupby(df,:index)
+    grid=(lon=-180.0+0.25:0.5:180.0,lat=-90.0+0.25:0.5:90.0)
+    (ve,vn)=GDP_CloudDrift.to_Grid(gdf,grid)
+    
+    CloudDrift(fi,(main=df,subset=df_subset,grid=grid,ve=ve,vn=vn))
+end
+
+CloudDrift_subset_download() = begin
+    url="https://zenodo.org/records/11325477/files/gdp_subset.nc?download=1"
+    fil=joinpath(tempdir(),"gdp_subset.nc")
+    !isfile(fil) ? Downloads.download(url,fil) : nothing
+    fil
+end
 
 """
     to_DataFrame(ds)
@@ -546,6 +611,24 @@ end
 module OceanSites
 
 using NCDatasets, FTPClient, CSV, DataFrames, Dates
+import OceanRobots: OceanSite
+import Base: read
+
+"""
+    GliderFiles.read(x::Gliders, file::String)
+
+Read a Spray Glider file.    
+"""
+read(x::OceanSite,ID::Symbol) = begin
+    if ID==:WHOTS
+        (arr,units)=read_WHOTS()
+        OceanSite(ID,arr,units)
+    else
+        @warn "site not yet supported"
+        OceanSite()
+    end
+end
+
 
 """
     read_WHOTS(fil)
@@ -621,16 +704,16 @@ function ncread(f::String,v::String)
 end
 
 """
-    read(file,args...)
+    read_variables(file,args...)
 
 Open file from opendap server.
 
 ```
 file="DATA_GRIDDED/WHOTS/OS_WHOTS_200408-201809_D_MLTS-1H.nc"
-OceanSites.read(file,:lon,:lat,:time,:TEMP)
+OceanSites.read_variables(file,:lon,:lat,:time,:TEMP)
 ```
 """
-function read(file,args...)
+function read_variables(file,args...)
     url0="http://tds0.ifremer.fr/thredds/dodsC/CORIOLIS-OCEANSITES-GDAC-OBS/"
     fil0=url0*file*"#fillmismatch"
     store=[]
