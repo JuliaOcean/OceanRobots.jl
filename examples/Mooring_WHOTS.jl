@@ -94,18 +94,13 @@ md"""## Appendix
 In this next cell we also read a selection of variables to make them available for e.g. plotting."""
 
 # ╔═╡ cfd3a864-73de-11ec-3f98-55bc2b29050c
-begin
-	(arr,units)=OceanSites.read_WHOTS()
-end
+WHOTS=read(OceanSite(),:WHOTS)
+
+# ╔═╡ fc87b8e9-6863-4077-8435-80e74f1536c3
+plot(WHOTS,DateTime(y0,m0,d0),DateTime(y1,m1,d1))
 
 # ╔═╡ afbd09fa-c013-4dc8-866e-3315c5631a58
 md"""### Julia Tools"""
-
-# ╔═╡ a8b006e1-90cd-4e51-b87b-fe02d983376f
-OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
-
-# ╔═╡ fc87b8e9-6863-4077-8435-80e74f1536c3
-OceanRobotsMakieExt.plot_WHOTS(arr,units,DateTime(y0,m0,d0),DateTime(y1,m1,d1))
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1891,13 +1886,12 @@ version = "3.5.0+0"
 # ╟─538ddc08-85bd-426b-92bc-f5dd78d38d5d
 # ╟─720e1461-81b9-42b6-88be-0115a17268c0
 # ╟─e7dc453e-3bf2-4289-b55d-66eab3636d7b
-# ╟─54768410-2886-4d72-a691-eea72aee6b67
 # ╟─fc87b8e9-6863-4077-8435-80e74f1536c3
+# ╟─54768410-2886-4d72-a691-eea72aee6b67
 # ╟─7702cf82-f5fa-4b04-8147-043a4b049179
 # ╟─39b3119d-1096-4e26-a171-f24d82000f94
 # ╟─cfd3a864-73de-11ec-3f98-55bc2b29050c
 # ╟─afbd09fa-c013-4dc8-866e-3315c5631a58
 # ╟─5fc8cc85-7bd4-4fea-8c6f-01dabee6eb5f
-# ╟─a8b006e1-90cd-4e51-b87b-fe02d983376f
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

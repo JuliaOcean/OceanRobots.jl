@@ -31,7 +31,7 @@ end
 
 Read a Spray Glider file.    
 """
-read(x::Gliders, file::String) = begin
+read(x::Gliders, file="GulfStream.nc") = begin
     f=check_for_file_Spray(file)
     df=to_DataFrame(Dataset(f))
     Gliders(f,df)
@@ -394,7 +394,7 @@ function CloudDrift_demo(file="")
     grid=(lon=-180.0+0.25:0.5:180.0,lat=-90.0+0.25:0.5:90.0)
     (ve,vn)=GDP_CloudDrift.to_Grid(gdf,grid)
     
-    CloudDrift(fi,(main=df,subset=df_subset,grid=grid,ve=ve,vn=vn))
+    CloudDrift(fi,(main=df,subset=df_subset,grid=grid,ve=ve,vn=vn,df_stats=df_stats))
 end
 
 CloudDrift_subset_download() = begin
@@ -629,11 +629,11 @@ import OceanRobots: OceanSite
 import Base: read
 
 """
-    GliderFiles.read(x::Gliders, file::String)
+    read(x::OceanSite, ID=:WHOTS)
 
-Read a Spray Glider file.    
+Read OceanSite data.    
 """
-read(x::OceanSite,ID::Symbol) = begin
+read(x::OceanSite,ID=:WHOTS) = begin
     if ID==:WHOTS
         (arr,units)=read_WHOTS()
         OceanSite(ID,arr,units)
