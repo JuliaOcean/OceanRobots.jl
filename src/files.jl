@@ -879,3 +879,28 @@ list_platform_types() = begin
 end
 
 end
+
+##
+
+module SLA
+
+using Dataverse, NCDatasets
+import OceanRobots: SeaLevelAnomaly
+import Base: read
+
+#fil=["sla_podaac.nc","sla_cmems.nc"]
+function read(x::SeaLevelAnomaly,ID=:sla_podaac,path=tempdir())
+    DOI="doi:10.7910/DVN/OYBLGK"
+    lst=Dataverse.file_list(DOI)
+    
+    fil=string(ID)*".nc"
+    sla_file=joinpath(path,fil)
+    !isdir(path) ? mkdir(path) : nothing
+    !isfile(sla_file) ? Dataverse.file_download(lst,fil,path) : nothing
+
+    ds=Dataset(sla_file)
+    #data=(lon=ds["lon"],lat=ds["lat"],SLA=ds["SLA"])
+    SeaLevelAnomaly(Symbol(fil[1:end-3]),ds,sla_file)
+end
+
+end

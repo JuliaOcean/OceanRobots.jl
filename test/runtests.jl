@@ -4,7 +4,7 @@ using Test
 @testset "OceanRobots.jl" begin
 
     url="https://dods.ndbc.noaa.gov/thredds/catalog/oceansites/long_timeseries/WHOTS/catalog.xml"
-    files,folders=THREDDS.parse_catalog(url)
+    files,folders=OceanRobots.THREDDS.parse_catalog(url)
 
     @test isa(files[1],String)
     @test isempty(folders)
@@ -86,7 +86,7 @@ using Test
     b=plot(a;option=:demo)
     @test isa(b,Figure)
 
-    files_year,files_url=THREDDS.parse_catalog_NOAA_buoy()
+    files_year,files_url=OceanRobots.THREDDS.parse_catalog_NOAA_buoy()
     @test !isempty(files_url)
 
     ##
@@ -102,4 +102,11 @@ using Test
 
     tmp=OceanOPS.list_platform_types()
     @test isa(tmp.name,Vector)
+
+    ##
+
+    b=read(SeaLevelAnomaly(),:sla_podaac)
+    f3=plot(b)
+    @test isa(f3,Figure)
+
 end
