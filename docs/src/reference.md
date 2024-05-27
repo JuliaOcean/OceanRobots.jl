@@ -1,8 +1,15 @@
 # Reference Manual
 
-```@index
+## API
+
+```@docs
+plot
+read
 ```
 
+## Internals
+
 ```@autodocs
-Modules = [OceanOPS, GDP, NOAA, GliderFiles, ArgoFiles, OceanSites, THREDDS, podaac_sla, cmems_sla]
+Modules = [OceanOPS, GDP, GDP_CloudDrift, NOAA, GliderFiles, ArgoFiles, OceanSites, SLA, podaac_sla, cmems_sla]
 ```
+

@@ -9,7 +9,7 @@ include("types.jl")
 include("thredds_servers.jl")
 include("files.jl")
 
-export GDP, GDP_CloudDrift, NOAA, GliderFiles, ArgoFiles, OceanSites, OceanOPS
+export GDP, GDP_CloudDrift, NOAA, GliderFiles, ArgoFiles, OceanSites, OceanOPS, SLA
 #export THREDDS
 
 include("gridded_data.jl")

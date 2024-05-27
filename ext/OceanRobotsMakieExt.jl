@@ -36,11 +36,30 @@ function plot_drifter(ds)
 	fig1
 end
 
+"""
+    plot(x::SurfaceDrifter)
+	
+```
+using OceanRobots
+lst=GDP.list_files()
+drifter=read(SurfaceDrifter(),1,list_files=lst)
+plot(drifter)
+```
+"""
 plot(x::SurfaceDrifter) = plot_drifter(x.data)
 
 
 ## WHOTS
 
+"""
+    plot(x::OceanSite,args...)
+	
+```
+using OceanRobots, Dates
+whots=read(OceanSite(),:WHOTS)
+plot(whots,DateTime(2005,1,1),DateTime(2005,2,1))
+```
+"""
 plot(x::OceanSite,args...)=plot_WHOTS(x.data,x.units,args...)
 
 function plot_WHOTS(arr,units,d0,d1)
@@ -71,6 +90,15 @@ end
 
 ## NOAA
 
+"""
+    plot(x::NOAAbuoy,var)
+	
+```
+using OceanRobots
+buoy=read(NOAAbuoy(),41046)
+plot(buoy,"PRES")
+```
+"""
 plot(x::NOAAbuoy,var) = begin
 	f=Figure()
 	u=x.units[var]
@@ -81,6 +109,15 @@ plot(x::NOAAbuoy,var) = begin
 	f
 end
 
+"""
+    plot(x::NOAAbuoy_monthly, var=""; option=:demo)
+	
+```
+using OceanRobots
+buoy=read(NOAAbuoy_monthly(),44013)
+plot(buoy;option=:demo)
+```
+"""
 plot(x::NOAAbuoy_monthly, var=""; option=:demo) = begin
 	if option==:demo
 		gmdf=NOAA.groupby(x.data,"MM")
@@ -115,6 +152,15 @@ cmems_all_dates=cmems_date.(1:10632)
 
 sla_dates(fil) = ( fil=="sla_podaac.nc" ? podaac_all_dates : cmems_all_dates)
 
+"""
+    plot(b::SeaLevelAnomaly; dates=[], kwargs...)
+	
+```
+using OceanRobots
+sla=read(SeaLevelAnomaly(),:sla_podaac)
+plot(sla)
+```
+"""
 plot(b::SeaLevelAnomaly; dates=[], kwargs...) = begin
 	ds=(isempty(dates) ? sla_dates(b.file) : dates)
 	fig,_,_=prep_movie(b.data; dates=ds, kwargs...)
@@ -251,11 +297,21 @@ function plot_standard(wmo,arr,spd,T_std,S_std; markersize=2,pol=Any[])
 end
 
 """
-plot(x::ArgoFloat; option=:standard, markersize=2,pol=Any[])
+    plot(x::ArgoFloat; option=:standard, markersize=2,pol=Any[])
 
-T_std,S_std=ArgoFiles.interp_z_all(arr)
-spd=ArgoFiles.speed(arr)
-plot_standard(wmo,arr,spd,T_std,S_std; markersize=3)
+```
+using OceanRobots, ArgoData
+
+wmo=2900668
+files_list=GDAC.files_list()
+fil=ArgoFiles.download(files_list,wmo)
+arr=ArgoFiles.read(fil)
+argo=ArgoFloat(wmo,arr)
+
+f1=plot(b,option=:samples)
+f2=plot(b,option=:TS)
+f3=plot(b,option=:standard)
+```
 """
 plot(x::ArgoFloat; option=:standard, markersize=2,pol=Any[]) = begin
 	if option==:standard
@@ -322,6 +378,16 @@ function plot_glider(df,gdf,ID)
 	f
 end
 
+"""
+    plot(x::Gliders,ID)
+
+```
+using OceanRobots
+lst=GDP.list_files()
+drifter=read(SurfaceDrifter(),1,list_files=lst)
+plot(drifter)
+```
+"""
 plot(x::Gliders,ID) = begin
 	gdf=GliderFiles.groupby(x.data,:ID)
 	plot_glider(x.data,gdf,ID)
