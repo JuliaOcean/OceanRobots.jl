@@ -24,11 +24,14 @@ URIs = "5c2747f8-b7ea-4ff2-ba2e-563bfd36b1d4"
 
 [weakdeps]
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+ArgoData = "9eb831cf-c491-48dc-bed4-6aca718df73c"
 
 [extensions]
 OceanRobotsMakieExt = ["Makie"]
+OceanRobotsArgoDataExt = ["ArgoData"]
 
 [compat]
+ArgoData = "0.1"
 CFTime = "0.1"
 CSV = "0.10"
 DataFrames = "1"

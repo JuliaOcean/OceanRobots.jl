@@ -300,17 +300,13 @@ end
     plot(x::ArgoFloat; option=:standard, markersize=2,pol=Any[])
 
 ```
-using OceanRobots, ArgoData
+using OceanRobots, ArgoData, CairoMakie
 
-wmo=2900668
-files_list=GDAC.files_list()
-fil=ArgoFiles.download(files_list,wmo)
-arr=ArgoFiles.read(fil)
-argo=ArgoFloat(wmo,arr)
+argo=read(ArgoFloat),wmo=2900668)
 
-f1=plot(b,option=:samples)
-f2=plot(b,option=:TS)
-f3=plot(b,option=:standard)
+f1=plot(argo,option=:samples)
+f2=plot(argo,option=:TS)
+f3=plot(argo,option=:standard)
 ```
 """
 plot(x::ArgoFloat; option=:standard, markersize=2,pol=Any[]) = begin
