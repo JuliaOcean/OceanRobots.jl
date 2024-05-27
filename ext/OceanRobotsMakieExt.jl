@@ -115,8 +115,14 @@ cmems_all_dates=cmems_date.(1:10632)
 
 sla_dates(fil) = ( fil=="sla_podaac.nc" ? podaac_all_dates : cmems_all_dates)
 
-function prep_movie(ds, topo; colormap=:PRGn, color=:black, 
-	time=1, dates=[], showTopo=true, resolution = (600, 400))
+plot(b::SeaLevelAnomaly; dates=[], kwargs...) = begin
+	ds=(isempty(dates) ? sla_dates(b.file) : dates)
+	fig,_,_=prep_movie(b.data; dates=ds, kwargs...)
+	fig
+end
+
+function prep_movie(ds; topo=[], colormap=:PRGn, color=:black, 
+	time=1, dates=[], resolution = (600, 400))
 	lon=ds["lon"][:]
 	lat=ds["lat"][:]
 	store=ds["SLA"][:,:,:]
@@ -132,7 +138,7 @@ function prep_movie(ds, topo; colormap=:PRGn, color=:black,
 	ax=Axis(fig[1,1])
     hm=heatmap!(lon,lat,SLA2,colorrange=0.25.*(-1.0,1.0),colormap=colormap)
 
-	if showTopo
+	if !isempty(topo)
 		lon[1]>0.0 ? lon_off=360.0 : lon_off=0.0
 		contour!(lon_off.+topo.lon,topo.lat,topo.z,levels=-300:100:300,color=color,linewidth=1)
 		contour!(lon_off.+topo.lon,topo.lat,topo.z,levels=-2500:500:-500,color=color,linewidth=0.25)
@@ -213,7 +219,7 @@ end
 function plot_standard(wmo,arr,spd,T_std,S_std; markersize=2,pol=Any[])
 
 	xlims=xrng(arr.lon)
-	ylims=xrng(arr.lat)
+	ylims=yrng(arr.lat)
 	
 	fig1=Figure(size=(900,900))
 
