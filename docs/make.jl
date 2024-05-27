@@ -19,8 +19,8 @@ makedocs(;
     warnonly = [:cross_references,:missing_docs],
     )
 
-OceanRobots.check_for_file("Glider_Spray","GulfStream.nc")
-OceanRobots.check_for_file("Glider_Spray","CUGN_along.nc")
+GliderFiles.check_for_file_Spray("GulfStream.nc")
+GliderFiles.check_for_file_Spray("CUGN_along.nc")
 
 lst=("SatelliteAltimetry.jl","Buoy_NWP_NOAA_monthly.jl","Glider_Spray.jl","OceanOPS.jl",
     "Buoy_NWP_NOAA.jl","Mooring_WHOTS.jl","Drifter_GDP.jl","Float_Argo.jl")
