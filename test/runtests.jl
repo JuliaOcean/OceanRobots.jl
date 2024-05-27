@@ -42,12 +42,7 @@ using Test
     ArgoFiles.scan_txt("argo_synthetic-profile_index.txt",do_write=true)
     @test isfile(joinpath(tempdir(),"argo_synthetic-profile_index.csv"))
 
-    wmo=2900668
-    files_list=GDAC.files_list()
-
-    fil=ArgoFiles.download(files_list,wmo)
-    arr=ArgoFiles.readfile(fil)
-    b=ArgoFloat(wmo,arr)
+    b=read(ArgoFloat(),wmo=2900668)
     @test isa(b,ArgoFloat)
 
     f1=plot(b,option=:samples)

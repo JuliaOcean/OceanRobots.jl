@@ -30,7 +30,7 @@ struct ArgoFloat <: AbstractOceanRobotData
     data::NamedTuple
 end
 
-ArgoFloat() = ArgoFloat(0,DataFrame())
+ArgoFloat() = ArgoFloat(0,NamedTuple())
 
 struct SurfaceDrifter <: AbstractOceanRobotData
     ID::Int64
