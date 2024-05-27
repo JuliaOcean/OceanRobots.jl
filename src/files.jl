@@ -27,7 +27,7 @@ function check_for_file_Spray(args...)
 end
 
 """
-    GliderFiles.read(x::Gliders, file::String)
+    read(x::Gliders, file::String)
 
 Read a Spray Glider file.    
 """
@@ -96,17 +96,26 @@ function download(MC)
     return MC
 end
 
-#read(MC,sta) = read(sta,pathof(MC))
+"""
+    read(x::NOAAbuoy,args...)
 
-read(x::NOAAbuoy,args...) = read(args...)
+Read a NOAA buoy file (past month).    
+"""
+read(x::NOAAbuoy,args...) = read_station(args...)
+
+"""
+    read(x::NOAAbuoy_monthly,args...)
+
+Read a NOAA buoy file (historical).    
+"""
 read(x::NOAAbuoy_monthly,args...) = read_monthly(args...)
 
 """
-    NOAA.read(station,path=tempdir())
+    NOAA.read_station(station,path=tempdir())
 
 Read station file from specified path, and add meta-data (`units` and `descriptions`).
 """
-function read(station::Int,path=tempdir())        
+function read_station(station::Int,path=tempdir())        
     fil1=joinpath(path,"$station.txt")
     !isfile(fil1) ? download(station,path)  : nothing
 
@@ -354,6 +363,11 @@ import OceanRobots: CloudDrift
 #https://www.aoml.noaa.gov/phod/gdp/hourly_data.php
 #https://clouddrift.org/index.html
 
+"""
+    read(x::CloudDrift, file)
+
+Read a GDP/CloudDrift file.    
+"""
 read(x::CloudDrift,file) = CloudDrift_demo(file)
 
 function CloudDrift_demo(file="")
@@ -496,11 +510,11 @@ function download(files_list,wmo)
 end
 
 """
-    ArgoFiles.read(fil)
+    ArgoFiles.readfile(fil)
 
 Read an Argo profiler file.    
 """
-function read(fil)
+function readfile(fil)
     ds=Dataset(fil)
 
 	lon=ds["LONGITUDE"][:]

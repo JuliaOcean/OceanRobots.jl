@@ -46,7 +46,7 @@ using Test
     files_list=GDAC.files_list()
 
     fil=ArgoFiles.download(files_list,wmo)
-    arr=ArgoFiles.read(fil)
+    arr=ArgoFiles.readfile(fil)
     b=ArgoFloat(wmo,arr)
     @test isa(b,ArgoFloat)
 

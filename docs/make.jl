@@ -1,11 +1,11 @@
-using Documenter, OceanRobots, PlutoSliderServer
+using Documenter, OceanRobots, PlutoSliderServer, CairoMakie
 
 ENV["DATADEPS_ALWAYS_ACCEPT"]=true
-
+OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
 ##
 
 makedocs(;
-    modules=[OceanRobots],
+    modules=[OceanRobots, OceanRobotsMakieExt],
     format=Documenter.HTML(),
     pages=[
         "Home" => "index.md",
