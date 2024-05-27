@@ -83,27 +83,21 @@ end
 # ╔═╡ 1af8da1e-8906-4042-91b0-bad3632d02bf
 begin
 	kk=findall(list_files.filename.==ii_txt)[1]
-	fil=GDP.download(list_files,kk)
-	ds=GDP.read(fil)
-	#with_terminal() do 
-	#	show(ds)
-	#end
+    ds=read(SurfaceDrifter(),kk,list_files=list_files)
+    keys(ds.data)
 end
 
 # ╔═╡ b39d9b80-4674-424b-ad52-091033b07ce2
 begin
-	wmo=ds[:WMO][1]
-	ii1=findall( ds["ID"][:].!=='\0')
-	ID=parse.(Int,string.(ds["ID"][ii1]))
 	md""" Selected Buoy identifiers:
 	
-	- `GDP ID`=$(ID)
-	- `WMO ID` =$(wmo)
+	- `GDP ID`=$(ds.ID)
+	- `WMO ID` =$(ds.wmo)
 	"""
 end
 
 # ╔═╡ 32810c75-efaf-4bb6-8e54-19077b4e5a00
-OceanRobotsMakieExt.plot_drifter(ds)
+plot(ds)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """

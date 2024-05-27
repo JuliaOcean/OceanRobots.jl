@@ -88,31 +88,17 @@ md"""## Appendix
 
 # ╔═╡ 9523dc0d-1758-4e0f-864c-4ab253bf11a9
 begin
-	#check_for_file("Glider_Spray","GulfStream.nc")
-	GliderFiles.check_for_file_Spray(MID)
-	
-	pth0=joinpath(tempdir(),"tmp_glider_data")
-	fil0=joinpath(pth0,MID)
-
-	df=GliderFiles.read(fil0)
-	gdf=GliderFiles.groupby(df,:ID)
-
-	ID_bind = @bind ID NumberField(1:gdf.ngroups, default=1)
-
+    gliders=read(Gliders(),MID)
+    ng=length(unique(gliders.data.ID))
+	ID_bind = @bind ID NumberField(1:ng, default=1)
 	"Done with Data Ingestion"
 end
 
 # ╔═╡ 428120da-1542-4265-a369-1273ae4718ac
 md"""- Select mission  : $(ID_bind)"""
 
-# ╔═╡ d49320f0-06c3-4d82-93d1-6047edc37d47
-gdf[ID]
-
-# ╔═╡ 3bab501f-badc-4633-83c9-4f2481521f46
-OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
-
 # ╔═╡ 3e5fd65e-e3d9-49e5-a9b0-87a2475cc3a0
-fig1=OceanRobotsMakieExt.plot_glider(df,gdf,ID)
+plot(gliders,ID)
 
 # ╔═╡ 5748bb5f-528f-42fd-8961-fd7c93d12554
 md"""### Typical File Content
@@ -1927,12 +1913,10 @@ version = "3.5.0+0"
 # ╟─428120da-1542-4265-a369-1273ae4718ac
 # ╟─3e5fd65e-e3d9-49e5-a9b0-87a2475cc3a0
 # ╟─1ab9daac-b631-4f3e-a868-14e95f71962b
-# ╟─d49320f0-06c3-4d82-93d1-6047edc37d47
 # ╟─440e4256-d6eb-4dfa-946b-22fac53432e8
 # ╟─68028522-205e-4b41-b3c0-2e3b09c2d8a7
 # ╟─0247a51e-c89b-11ec-071f-bb82fe257adc
 # ╟─9523dc0d-1758-4e0f-864c-4ab253bf11a9
-# ╟─3bab501f-badc-4633-83c9-4f2481521f46
 # ╟─5748bb5f-528f-42fd-8961-fd7c93d12554
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

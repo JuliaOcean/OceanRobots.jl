@@ -19,58 +19,35 @@ TableOfContents()
 # ╔═╡ f3c351c7-3fba-4ee8-8522-80fd0e8921af
 md"""## Read To DataFrame"""
 
-# ╔═╡ 8303dd1b-08da-48ca-a91f-3fc3707a8625
+# ╔═╡ d0362426-0609-4fcf-a888-77892db9b7e7
 begin
-	pth="data/"; file=joinpath(pth,"gdp_subset.nc")
-	#file="Drifter_hourly_v2p0/gdp_v2.00.nc"
-	ds=GDP_CloudDrift.Dataset(file)
-	df=GDP_CloudDrift.to_DataFrame(ds)
-	GDP_CloudDrift.add_ID!(df,ds)
-	GDP_CloudDrift.add_index!(df)
-	df.cv=df.ve+1im*df.vn
-	df
+    GDP_CD=read(CloudDrift(),"")
+    df=GDP_CD.data.main
+    df_subset=GDP_CD.data.subset
+	"Done reading data"
 end
 
-# ╔═╡ e909abc7-cb6a-4749-878f-3f12e73b6cc6
-md"""## Binning To Grid"""
-
-# ╔═╡ ffcf6be9-5f6d-40e1-8445-ad8e33d23ba0
-gdf=GDP_CloudDrift.groupby(df,:index)
-
-# ╔═╡ d74cd331-4b42-4404-96b1-808152fa4dd6
-md"""## Regional Subset"""
-
-# ╔═╡ 9e9b1fc0-ab55-4a2d-8f40-5b6bbae3764f
-begin
-	lon = (-98, -78); lat = (18, 31)
-	#lon = (-150, -140); lat = (25, 35)
-	d0=DateTime("2000-01-1T00:00:00")
-	d1=DateTime("2020-12-31T00:00:00")
-	tim=(d0,d1)
-	df_subset=GDP_CloudDrift.region_subset(df,lon,lat,tim)
-end
-
-# ╔═╡ 130d24de-78a7-4f94-839c-fe83a44f9edd
+# ╔═╡ 60479536-8238-4077-bdcd-776e07330621
 let
 	ii=findall(isfinite.(df_subset.longitude.*df_subset.latitude))	
 	scatter(df_subset.longitude[ii], df_subset.latitude[ii], markersize=2,
 		color=sqrt.(df_subset.ve.^2+df_subset.vn.^2), colorrange=(0,2.5), colormap=:speed)
 end
 
+# ╔═╡ d4af67e7-2308-4135-929e-c7fc6572d6c7
+heatmap(GDP_CD.data.grid.lon,GDP_CD.data.grid.lat,GDP_CD.data.ve)
+
 # ╔═╡ 05b32012-927d-42b4-8a18-fdfcb051a3fd
 md"""## Per Trajectory Statistics"""
 
-# ╔═╡ 324a59d3-e0bb-46a7-860c-d30f9a0c15dd
-begin
-	gdf2=GDP_CloudDrift.groupby(df,:ID)
-	df2=GDP_CloudDrift.trajectory_stats(gdf2)
-	df2[1,:]
-end
 
 # ╔═╡ a25027b5-5b0e-4190-b4b6-987f4e16ccd8
 begin
+	gdf2=GDP_CloudDrift.groupby(df,:ID)
+	df2=GDP_CloudDrift.trajectory_stats(gdf2)
 	trajectory_periodogram(cv) = 1/24 *abs.(fft(cv[:])).^2
-	periodograms=[trajectory_periodogram(tmp.cv[:]) for tmp in gdf2];
+	periodograms=[trajectory_periodogram(tmp.cv[:]) for tmp in gdf2]
+	df2[1,:]
 end
 
 # ╔═╡ efc6b8b3-a55b-4830-953c-2a51ce162604
@@ -109,15 +86,6 @@ md"""## Appendix
 
 Packages, grid, functions used in the notebook are defined here.
 """
-
-# ╔═╡ aeb6bc74-ffea-4465-8807-e5c352cbf632
-grid=(lon=-180.0+0.25:0.5:180.0,lat=-90.0+0.25:0.5:90.0)
-
-# ╔═╡ b88c9152-250c-46be-a3e2-ee3af8d9853e
-(ve,vn)=GDP_CloudDrift.to_Grid(gdf,grid)
-
-# ╔═╡ d4af67e7-2308-4135-929e-c7fc6572d6c7
-heatmap(grid.lon,grid.lat,ve)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1904,20 +1872,13 @@ version = "3.5.0+0"
 # ╟─97537903-fb3b-4837-9e7c-461cb9e4ef5e
 # ╟─c56e7f24-7be8-4209-8fc9-843cb674fd6e
 # ╟─f3c351c7-3fba-4ee8-8522-80fd0e8921af
-# ╟─8303dd1b-08da-48ca-a91f-3fc3707a8625
-# ╟─e909abc7-cb6a-4749-878f-3f12e73b6cc6
-# ╠═ffcf6be9-5f6d-40e1-8445-ad8e33d23ba0
-# ╠═b88c9152-250c-46be-a3e2-ee3af8d9853e
+# ╟─d0362426-0609-4fcf-a888-77892db9b7e7
+# ╟─60479536-8238-4077-bdcd-776e07330621
 # ╟─d4af67e7-2308-4135-929e-c7fc6572d6c7
-# ╟─d74cd331-4b42-4404-96b1-808152fa4dd6
-# ╟─9e9b1fc0-ab55-4a2d-8f40-5b6bbae3764f
-# ╟─130d24de-78a7-4f94-839c-fe83a44f9edd
 # ╟─05b32012-927d-42b4-8a18-fdfcb051a3fd
-# ╟─324a59d3-e0bb-46a7-860c-d30f9a0c15dd
 # ╟─a25027b5-5b0e-4190-b4b6-987f4e16ccd8
 # ╟─efc6b8b3-a55b-4830-953c-2a51ce162604
 # ╟─89c82c13-9221-48b8-9138-79b91603d7e6
 # ╠═bf29d9b6-be57-11ec-2b83-87ce1f770075
-# ╟─aeb6bc74-ffea-4465-8807-e5c352cbf632
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
