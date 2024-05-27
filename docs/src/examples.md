@@ -3,7 +3,7 @@
 !!! note
     The static `html` rendering of the notebooks (this website) lack the interactivity that comes from [Running Examples](@ref) yourself.
 
-## Examples Suite
+## List of Notebooks
 
 The suite of examples includes :
 
@@ -17,11 +17,11 @@ The suite of examples includes :
 - [Glider\_Spray.jl](Glider_Spray.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/Glider_Spray.jl)) : underwater [glider](http://spraydata.ucsd.edu/projects/) data
 - [SatelliteAltimetry.jl](SatelliteAltimetry.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/SatelliteAltimetry.jl)) : gridded satellite data
 	
-## Additional Examples
+## More Notebooks
 
 - For Argo and state estimates, see [ArgoData.jl](https://github.com/JuliaOcean/ArgoData.jl)
 - For drifter data simulations, see [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl)
 
-## Running Examples
+## Using Notebooks
 
 The examples are most easily run using [Pluto.jl](https://github.com/fonsp/Pluto.jl). To do it this way, one just needs to copy a `code link` provided above and paste this URL into the [Pluto.jl interface](https://github.com/fonsp/Pluto.jl/wiki/🔎-Basic-Commands-in-Pluto).
