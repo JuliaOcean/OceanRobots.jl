@@ -17,30 +17,62 @@ end
 # ╔═╡ a8e0b727-a416-4aad-b660-69e5470c7e9e
 begin
 	using OceanRobots, CairoMakie, Dataverse, ArchGDAL, PlutoUI
-    OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
+	OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
+	"Done with Julia packages"
 end
 
 # ╔═╡ 71e87ed3-5a9f-49aa-99af-cf144501c678
 md"""# Regional Sea Level
 
-Visualize dynamic sea level (colors) and topography (contours) in the region of the Azores . 
+Visualize dynamic sea level anomaly (colors) and ocean bathymetry/topography (contours) in the region of the Azores as a function of space and time. 
 
 !!! tip
-   Choose between two data sets (sources: NASA PODAAC, ESA CMEMS), select time, or generate animation.  
-
-- Topography, bathymetry : NOAA [etopo-global-relief-model](https://www.ncei.noaa.gov/products/etopo-global-relief-model)
-- Sea Level Anomaly #1 : NASA PODAAC [page 1](https://sealevel.nasa.gov/data/dataset/?identifier=SLCP_SEA_SURFACE_HEIGHT_ALT_GRIDS_L4_2SATS_5DAY_6THDEG_V_JPL2205_2205), [page 2](https://podaac.jpl.nasa.gov/dataset/SEA_SURFACE_HEIGHT_ALT_GRIDS_L4_2SATS_5DAY_6THDEG_V_JPL2205)
-- Sea Level Anomaly #2 : ESA CMEMS [here](https://data.marine.copernicus.eu/product/SEALEVEL_GLO_PHY_L4_MY_008_047/description)
-
+    Choose between two data sets (sources: NASA PODAAC, ESA CMEMS), select time, or generate animation.
 """
 
 # ╔═╡ a58cc4b4-7023-4dcf-a5f4-6366be8047a3
 TableOfContents()
 
-# ╔═╡ af68228e-710c-4a5a-be48-c716592f8f45
-md"""## Download Data
+# ╔═╡ 62e0b8a9-0025-4ce7-9538-b6114d97b762
+md"""## Visualize Data
 
-The regional data sets used in this notebook are available in [this Dataverse repo](https://doi.org/10.7910/DVN/OYBLGK).
+- Color shading is sea level anomaly from a gridded data product based on satellite measurement (altimetry).
+- Contours show the relief (topography, bathymetry). Light pink contours correspond to the Azores islands.
+"""
+
+# ╔═╡ c93dde18-e639-4edd-9192-f6c9eed0cb89
+@bind fil Select(["sla_podaac.nc","sla_cmems.nc"])
+
+# ╔═╡ 0c9fdfb0-bddc-4def-9954-526978491a84
+dates=OceanRobotsMakieExt.sla_dates(fil)
+
+# ╔═╡ 8ff180a4-dd71-4a70-82ab-70bc80427abb
+@bind d0 Select(dates)
+
+# ╔═╡ ff7dd5eb-5b1b-4314-9553-b8c05c4d7376
+md"""## Data Set"""
+
+# ╔═╡ 9b3c3856-9fe1-43ba-97a2-abcd5b385c1d
+sla=read(SeaLevelAnomaly(),Symbol(fil[1:end-3]))
+
+# ╔═╡ 1cf2cdb9-3c09-4b39-81cf-49318c16f531
+md"""## Apendix
+
+### Julia Codes"""
+
+# ╔═╡ 50b75406-e55f-433d-bd7b-089d975e5001
+t0=findall(dates.==d0)[1]
+
+# ╔═╡ af68228e-710c-4a5a-be48-c716592f8f45
+md"""### Data Sources
+
+- Topography, bathymetry : NOAA [etopo-global-relief-model](https://www.ncei.noaa.gov/products/etopo-global-relief-model)
+- Sea Level Anomaly #1 : NASA PODAAC [page 1](https://sealevel.nasa.gov/data/dataset/?identifier=SLCP_SEA_SURFACE_HEIGHT_ALT_GRIDS_L4_2SATS_5DAY_6THDEG_V_JPL2205_2205), [page 2](https://podaac.jpl.nasa.gov/dataset/SEA_SURFACE_HEIGHT_ALT_GRIDS_L4_2SATS_5DAY_6THDEG_V_JPL2205)
+- Sea Level Anomaly #2 : ESA CMEMS [here](https://data.marine.copernicus.eu/product/SEALEVEL_GLO_PHY_L4_MY_008_047/description)
+
+The SLA data sets used in this notebook are available in [this Dataverse repo](https://doi.org/10.7910/DVN/OYBLGK). 
+
+They were generated using `OceanRobots.podaac_sla.subset()` from the above sources.
 """
 
 # ╔═╡ aa82d9bd-8ba2-4e18-8f65-e71b0361f5cb
@@ -59,58 +91,6 @@ begin
     "Downloaded to "*file0
 end
 
-# ╔═╡ 62e0b8a9-0025-4ce7-9538-b6114d97b762
-md"""## Visualize Data
-
-- Color shading is sea level anomaly from a gridded data product based on satellite measurement (altimetry).
-- Contours show the relief (topography, bathymetry). Light pink contours correspond to the Azores islands.
-"""
-
-# ╔═╡ c93dde18-e639-4edd-9192-f6c9eed0cb89
-@bind fil Select(["sla_podaac.nc","sla_cmems.nc"])
-
-# ╔═╡ 0c9fdfb0-bddc-4def-9954-526978491a84
-dates=OceanRobotsMakieExt.sla_dates(fil)
-
-# ╔═╡ 8ff180a4-dd71-4a70-82ab-70bc80427abb
-@bind d0 Select(dates)
-
-# ╔═╡ 50b75406-e55f-433d-bd7b-089d975e5001
-t0=findall(dates.==d0)[1]
-
-# ╔═╡ 5fec1029-34a1-4d43-9183-7e6095194a3a
-md"""## Animate Data"""
-
-# ╔═╡ 8fbd1b1d-affe-4e30-a3b2-f2584e459003
-#fil_mp4=some_plots.make_movie(ds,1:nt,framerate=framerate,dates=dates)
-
-# ╔═╡ 2d5611a9-b8ea-4d26-8ca3-edff9f2ebfdd
-begin
-	url_mp4="http://www.gaelforget.net/notebooks/sla_podaac.mp4"
-	RemoteResource(url_mp4,:width=>400)
-end
-
-# ╔═╡ ff7dd5eb-5b1b-4314-9553-b8c05c4d7376
-md"""## Netcdf File
-
-This file was generated using `OceanRobots.podaac_sla.subset()`
-
-"""
-
-# ╔═╡ 9b3c3856-9fe1-43ba-97a2-abcd5b385c1d
-begin	
-	file1=joinpath(pth0,fil)
-	!isfile(file1) ? Dataverse.file_download(df,fil,pth0) : nothing
-	
-	ds=podaac_sla.Dataset(joinpath(pth0,fil))
-end
-
-# ╔═╡ 1cf2cdb9-3c09-4b39-81cf-49318c16f531
-md"""## Julia Codes"""
-
-# ╔═╡ ec8cbf44-82d9-11ed-0131-1bdea9285f79
-
-
 # ╔═╡ eeb9d308-ef62-4dcc-ba90-a2a1912ef2bd
 topo = begin
 	dataset = ArchGDAL.read(joinpath(pth0,"exportImage_60arc.tiff"))
@@ -124,10 +104,24 @@ topo = begin
 end	
 
 # ╔═╡ a45bbdbd-3793-4e69-b042-39a4a1ac7ed7
+plot(sla,dates=dates,topo=topo)
+
+# ╔═╡ 5fec1029-34a1-4d43-9183-7e6095194a3a
+md"""### Create Animation"""
+
+# ╔═╡ ec8cbf44-82d9-11ed-0131-1bdea9285f79
 begin
-	fig,n,nt=OceanRobotsMakieExt.prep_movie(ds,topo,colormap=:PRGn,color=:black,time=t0,dates=dates)
+    nt=size(sla.data["SLA"],3)
 	framerate=Int(floor(nt/120))
-	fig
+end
+
+# ╔═╡ 8fbd1b1d-affe-4e30-a3b2-f2584e459003
+#fil_mp4=OceanRobotsMakieExt.make_movie(sla.data,1:nt,framerate=framerate,dates=dates)
+
+# ╔═╡ 2d5611a9-b8ea-4d26-8ca3-edff9f2ebfdd
+begin
+	url_mp4="http://www.gaelforget.net/notebooks/sla_podaac.mp4"
+	RemoteResource(url_mp4,:width=>400)
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -640,9 +634,9 @@ version = "301.800.400+0"
 
 [[deps.GEOS_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "e143352a8a1b1c7236d05bc9e0982420099c46af"
+git-tree-sha1 = "fb12d031719787816cce10c49abb10904142e018"
 uuid = "d604d12d-fa86-5845-992e-78dc15976526"
-version = "3.12.0+0"
+version = "3.12.1+0"
 
 [[deps.GMP_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -1145,9 +1139,9 @@ version = "0.1.11"
 
 [[deps.MPItrampoline_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "MPIPreferences", "TOML"]
-git-tree-sha1 = "ce0ca3dd147c43de175c5aff161315a424f4b8ac"
+git-tree-sha1 = "8c35d5420193841b2f367e658540e8d9e0601ed0"
 uuid = "f1f71cc9-e9ae-5b93-9b94-4fe0e1ad3748"
-version = "5.3.3+1"
+version = "5.4.0+0"
 
 [[deps.MacroTools]]
 deps = ["Markdown", "Random"]
@@ -1258,14 +1252,18 @@ uuid = "510215fc-4207-5dde-b226-833fc4488ee2"
 version = "0.5.5"
 
 [[deps.OceanRobots]]
-deps = ["CFTime", "CSV", "DataFrames", "DataStructures", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "Interpolations", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "URIs"]
-git-tree-sha1 = "e68b20c04fca157a299d7737c651b8ca68741b3e"
+deps = ["CFTime", "CSV", "DataFrames", "DataStructures", "Dataverse", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "Interpolations", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "URIs"]
+git-tree-sha1 = "4cfefafefd12ed94bbf57fbd489120ee06015609"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
-version = "0.1.21"
-weakdeps = ["Makie"]
+version = "0.1.23"
 
     [deps.OceanRobots.extensions]
+    OceanRobotsArgoDataExt = ["ArgoData"]
     OceanRobotsMakieExt = ["Makie"]
+
+    [deps.OceanRobots.weakdeps]
+    ArgoData = "9eb831cf-c491-48dc-bed4-6aca718df73c"
+    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 
 [[deps.OffsetArrays]]
 git-tree-sha1 = "e64b4f5ea6b7389f6f046d13d4896a8f9c1ba71e"
@@ -1311,10 +1309,10 @@ uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
 version = "0.8.1+2"
 
 [[deps.OpenMPI_jll]]
-deps = ["Artifacts", "CompilerSupportLibraries_jll", "Hwloc_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "MPIPreferences", "PMIx_jll", "TOML", "Zlib_jll", "libevent_jll", "prrte_jll"]
-git-tree-sha1 = "f46caf663e069027a06942d00dced37f1eb3d8ad"
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "Hwloc_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "MPIPreferences", "TOML", "Zlib_jll"]
+git-tree-sha1 = "a9de2f1fc98b92f8856c640bf4aec1ac9b2a0d86"
 uuid = "fe0851c0-eecd-5654-98d4-656369965a5c"
-version = "5.0.2+0"
+version = "5.0.3+0"
 
 [[deps.OpenSSL]]
 deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "OpenSSL_jll", "Sockets"]
@@ -1362,12 +1360,6 @@ git-tree-sha1 = "949347156c25054de2db3b166c52ac4728cbad65"
 uuid = "90014a1f-27ba-587c-ab20-58faa44d9150"
 version = "0.11.31"
 
-[[deps.PMIx_jll]]
-deps = ["Artifacts", "Hwloc_jll", "JLLWrappers", "Libdl", "Zlib_jll", "libevent_jll"]
-git-tree-sha1 = "360f48126b5f2c2f0c833be960097f7c62705976"
-uuid = "32165bc3-0280-59bc-8c0b-c33b6203efab"
-version = "4.2.9+0"
-
 [[deps.PNGFiles]]
 deps = ["Base64", "CEnum", "ImageCore", "IndirectArrays", "OffsetArrays", "libpng_jll"]
 git-tree-sha1 = "67186a2bc9a90f9f85ff3cc8277868961fb57cbd"
@@ -1376,9 +1368,9 @@ version = "0.4.3"
 
 [[deps.PROJ_jll]]
 deps = ["Artifacts", "JLLWrappers", "LibCURL_jll", "Libdl", "Libtiff_jll", "SQLite_jll"]
-git-tree-sha1 = "0d04367a7ab67636da8bbdb6338c94d1a577d8e2"
+git-tree-sha1 = "84aa844bd56f62282116b413fbefb45e370e54d6"
 uuid = "58948b4f-47e0-5654-a9ad-f609743f8632"
-version = "901.400.0+0"
+version = "901.300.0+1"
 
 [[deps.Packing]]
 deps = ["GeometryBasics"]
@@ -1458,9 +1450,9 @@ version = "1.4.3"
 
 [[deps.PrettyTables]]
 deps = ["Crayons", "LaTeXStrings", "Markdown", "PrecompileTools", "Printf", "Reexport", "StringManipulation", "Tables"]
-git-tree-sha1 = "88b895d13d53b5577fd53379d913b9ab9ac82660"
+git-tree-sha1 = "66b20dd35966a748321d3b2537c4584cf40387c7"
 uuid = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
-version = "2.3.1"
+version = "2.3.2"
 
 [[deps.Printf]]
 deps = ["Unicode"]
@@ -1974,12 +1966,6 @@ deps = ["Artifacts", "Libdl"]
 uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
 version = "5.8.0+1"
 
-[[deps.libevent_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "OpenSSL_jll"]
-git-tree-sha1 = "f04ec6d9a186115fb38f858f05c0c4e1b7fc9dcb"
-uuid = "1080aeaf-3a6a-583e-a51c-c537b09f60ec"
-version = "2.1.13+1"
-
 [[deps.libfdk_aac_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "daacc84a041563f965be61859a36e17c4e4fcd55"
@@ -2032,12 +2018,6 @@ deps = ["Artifacts", "Libdl"]
 uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
 version = "17.4.0+2"
 
-[[deps.prrte_jll]]
-deps = ["Artifacts", "Hwloc_jll", "JLLWrappers", "Libdl", "PMIx_jll", "libevent_jll"]
-git-tree-sha1 = "5adb2d7a18a30280feb66cad6f1a1dfdca2dc7b0"
-uuid = "eb928a42-fffd-568d-ab9c-3f5d54fc65b9"
-version = "3.0.2+0"
-
 [[deps.snappy_jll]]
 deps = ["Artifacts", "JLLWrappers", "LZO_jll", "Libdl", "Zlib_jll"]
 git-tree-sha1 = "ab27636e7c8222f14b9318a983fcd89cf130d419"
@@ -2060,23 +2040,23 @@ version = "3.5.0+0"
 # ╔═╡ Cell order:
 # ╟─71e87ed3-5a9f-49aa-99af-cf144501c678
 # ╟─a58cc4b4-7023-4dcf-a5f4-6366be8047a3
-# ╟─af68228e-710c-4a5a-be48-c716592f8f45
-# ╟─aa82d9bd-8ba2-4e18-8f65-e71b0361f5cb
-# ╟─24a9fc25-b85b-4582-a36b-0a43e04ee799
+# ╟─a45bbdbd-3793-4e69-b042-39a4a1ac7ed7
 # ╟─62e0b8a9-0025-4ce7-9538-b6114d97b762
 # ╟─c93dde18-e639-4edd-9192-f6c9eed0cb89
 # ╟─0c9fdfb0-bddc-4def-9954-526978491a84
 # ╟─8ff180a4-dd71-4a70-82ab-70bc80427abb
-# ╠═50b75406-e55f-433d-bd7b-089d975e5001
-# ╟─a45bbdbd-3793-4e69-b042-39a4a1ac7ed7
-# ╟─5fec1029-34a1-4d43-9183-7e6095194a3a
-# ╠═8fbd1b1d-affe-4e30-a3b2-f2584e459003
-# ╟─2d5611a9-b8ea-4d26-8ca3-edff9f2ebfdd
 # ╟─ff7dd5eb-5b1b-4314-9553-b8c05c4d7376
 # ╟─9b3c3856-9fe1-43ba-97a2-abcd5b385c1d
 # ╟─1cf2cdb9-3c09-4b39-81cf-49318c16f531
-# ╠═a8e0b727-a416-4aad-b660-69e5470c7e9e
-# ╟─ec8cbf44-82d9-11ed-0131-1bdea9285f79
+# ╟─a8e0b727-a416-4aad-b660-69e5470c7e9e
 # ╟─eeb9d308-ef62-4dcc-ba90-a2a1912ef2bd
+# ╟─50b75406-e55f-433d-bd7b-089d975e5001
+# ╟─af68228e-710c-4a5a-be48-c716592f8f45
+# ╟─aa82d9bd-8ba2-4e18-8f65-e71b0361f5cb
+# ╟─24a9fc25-b85b-4582-a36b-0a43e04ee799
+# ╟─5fec1029-34a1-4d43-9183-7e6095194a3a
+# ╟─ec8cbf44-82d9-11ed-0131-1bdea9285f79
+# ╠═8fbd1b1d-affe-4e30-a3b2-f2584e459003
+# ╟─2d5611a9-b8ea-4d26-8ca3-edff9f2ebfdd
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

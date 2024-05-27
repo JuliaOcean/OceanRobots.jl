@@ -25,6 +25,7 @@ begin
 	using Shapefile, DataDeps
 	pol_file=demo.download_polygons("ne_110m_admin_0_countries.shp")
 	pol=MeshArrays.read_polygons(pol_file)
+	"Done with country boundaries"
 end
 
 # ╔═╡ 89647c4e-e568-4d3a-af57-bcc541744e38
@@ -53,29 +54,25 @@ begin
 	"""
 end
 
+# ╔═╡ 33b85d0a-f845-4a2f-976a-d23fed571d16
+md"""## Visualize Data"""
+
 # ╔═╡ 9d29d0f8-7b1c-11ec-1f16-b313a50cc5e7
 TableOfContents()
-
-# ╔═╡ 4d949835-4cf8-4493-b765-6e956019b777
-md"""## Visualize Data 
-
-Position, estimated speed, temperature and salinity are shown as a function of time and depth for the selected profiling float.
-
-### Interpolated Data
-
-!!! note
-	Methods: 
-	- extract the recorded float positions  (one every 10 days)
-	- estimate an approximate drift speed between consecutive float positions
-	- interpolate profile data to standard depth levels
-
-"""
 
 # ╔═╡ 014d989d-e7d2-4312-9e2f-657abcc615ea
 md"""### Pointwise Data
 
 !!! note
     The depth range of most Argo floats is 0-2000m depth.
+"""
+
+# ╔═╡ 8d042580-a240-4fce-8839-60716868f6af
+md"""## Temperature-Salinity relationship
+
+!!! note
+    This is a classical way to depict ocean water masses, as part of physical oceanography, which often helps characterize the regions that water masses were formed.
+
 """
 
 # ╔═╡ 1a835449-de37-4d08-9c91-c7affe7084cd
@@ -90,8 +87,45 @@ begin
 	"""
 end
 
+# ╔═╡ 3f5419f1-d131-42eb-86c8-44a385e88d51
+begin
+	files_list=GDAC.files_list()
+	nf=size(files_list,1)
+	show(files_list)
+end
+
+# ╔═╡ 8418b9ca-2e7f-4468-a0fb-36f5a05dde2c
+pretty_table(files_list[1:2000:nf,:],
+	header = names(files_list),
+	header_crayon = crayon"yellow bold",
+	highlighters  = ( hl_col(1, crayon"white"),hl_col(2, crayon"white") ),
+)
+
+# ╔═╡ 533ea412-76ae-4060-bbc8-2650ee0d2774
+md"""## Appendix
+
+### Julia
+"""
+
+# ╔═╡ 916e5a50-ee01-4299-9314-2e3cc9c826e6
+md"""### Files"""
+
 # ╔═╡ 904c8a06-0552-40b4-aa9f-404d61b21c08
 wmo=parse(Int,wmo_txt)
+
+# ╔═╡ 4d949835-4cf8-4493-b765-6e956019b777
+md"""
+The above plots show position, estimated speed, temperature and salinity are shown as a function of time and depth for one profiling float (wmo=$(wmo)).
+
+### Interpolated Data
+
+!!! note
+	Methods: 
+	- extract the recorded float positions  (one every 10 days)
+	- estimate an approximate drift speed between consecutive float positions
+	- interpolate profile data to standard depth levels
+
+"""
 
 # ╔═╡ 9037e2ce-a04a-40d0-945e-ec3f19a4f3c4
 md"""### All Floats
@@ -114,87 +148,20 @@ In this notebook, we download the file that contains all profiles collected by f
 	- Methods to download files in bulk & parallel is provided in [ArgoData.jl](https://github.com/JuliaOcean/ArgoData.jl).
 """
 
-# ╔═╡ 3f5419f1-d131-42eb-86c8-44a385e88d51
-begin
-	files_list=GDAC.files_list()
-	nf=size(files_list,1)
-end
-
-# ╔═╡ 8418b9ca-2e7f-4468-a0fb-36f5a05dde2c
-pretty_table(files_list[1:2000:nf,:],
-	header = names(files_list),
-	header_crayon = crayon"yellow bold",
-	highlighters  = ( hl_col(1, crayon"white"),hl_col(2, crayon"white") ),
-)
-
-# ╔═╡ 98dfd9c1-f4bd-42cd-bf0c-67471c347e74
-show(files_list)
-
-# ╔═╡ 533ea412-76ae-4060-bbc8-2650ee0d2774
-md"""## Appendix
-
-### Julia
-"""
-
-# ╔═╡ 916e5a50-ee01-4299-9314-2e3cc9c826e6
-md"""### Files"""
-
 # ╔═╡ 2558c88f-7fee-4a91-bfdd-46f1f61795b0
 begin
-	fil=ArgoFiles.download(files_list,wmo)
-	arr=ArgoFiles.read(fil)
-
+    argo=read(ArgoFloat(),wmo=wmo,files_list=files_list)
 	"Done with data ingestion"
 end
 
-# ╔═╡ a5db2d63-ec3e-4273-9138-4264388a4b7d
-T_std,S_std=ArgoFiles.interp_z_all(arr)
-
-# ╔═╡ 3fd610a8-80c1-4acc-b3ef-20883f77e32d
-begin
-	spd=ArgoFiles.speed(arr)
-	"Done with reading data positions"
-end
-
-# ╔═╡ 49256e11-fbd2-40e7-8f0b-193e17e2b31b
-md"""_Average estimated drift speed :_ $(round(spd.speed_mean; digits=4)) m/s
-
-## Temperature-Salinity relationship
-
-!!! note
-    This is a classical way to depict ocean water masses, as part of physical oceanography, which often helps characterize the regions that water masses were formed.
-
-"""
-
-# ╔═╡ 66e41568-7825-4383-80cb-cc48bdf56397
-md"""### Viz"""
-
-# ╔═╡ b9ea1706-0700-4d9f-adfc-97cde5834d70
-OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
+# ╔═╡ e1d9253a-4ac4-47c8-97d7-edb92cd54397
+fig3=plot(argo,option=:standard,pol=pol)
 
 # ╔═╡ c85a1eea-e2db-4f7f-9b7c-00b29a4cb975
-fig2=OceanRobotsMakieExt.plot_samples(arr,wmo)
+fig1=plot(argo,option=:samples)
 
 # ╔═╡ 2a3509c4-0743-43ba-b539-151c29fb030b
-OceanRobotsMakieExt.plot_TS(arr,wmo)
-
-# ╔═╡ ef320c95-860f-4222-ae0f-e2cd52a3a776
-begin
-	xrng(lon)=begin
-		a=[floor(minimum(lon)) ceil(maximum(lon))]
-		dx=diff(a[:])[1]
-		b=[max(a[1]-dx/2,-180) min(a[2]+dx/2,180)]
-	end
-	yrng(lat)=begin
-		a=[floor(minimum(lat)) ceil(maximum(lat))]
-		dx=diff(a[:])[1]
-		b=[max(a[1]-dx/2,-90) min(a[2]+dx/2,90)]
-	end
-end
-
-# ╔═╡ e1d9253a-4ac4-47c8-97d7-edb92cd54397
-fig1=OceanRobotsMakieExt.plot_standard(wmo,arr,spd,T_std,S_std; 
-	pol=pol,markersize=3,xlims=xrng(arr.lon),ylims=xrng(arr.lat))
+fig2=plot(argo,option=:TS)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2106,28 +2073,23 @@ version = "3.5.0+0"
 # ╔═╡ Cell order:
 # ╟─89647c4e-e568-4d3a-af57-bcc541744e38
 # ╟─09a2aa6e-16bc-4582-9d5f-c50432e3f0ca
+# ╟─33b85d0a-f845-4a2f-976a-d23fed571d16
 # ╟─9d29d0f8-7b1c-11ec-1f16-b313a50cc5e7
-# ╟─4d949835-4cf8-4493-b765-6e956019b777
 # ╟─e1d9253a-4ac4-47c8-97d7-edb92cd54397
-# ╟─a5db2d63-ec3e-4273-9138-4264388a4b7d
-# ╟─904c8a06-0552-40b4-aa9f-404d61b21c08
+# ╟─4d949835-4cf8-4493-b765-6e956019b777
 # ╟─014d989d-e7d2-4312-9e2f-657abcc615ea
 # ╟─c85a1eea-e2db-4f7f-9b7c-00b29a4cb975
-# ╟─49256e11-fbd2-40e7-8f0b-193e17e2b31b
+# ╟─8d042580-a240-4fce-8839-60716868f6af
 # ╟─2a3509c4-0743-43ba-b539-151c29fb030b
 # ╟─1a835449-de37-4d08-9c91-c7affe7084cd
 # ╟─8418b9ca-2e7f-4468-a0fb-36f5a05dde2c
 # ╟─9037e2ce-a04a-40d0-945e-ec3f19a4f3c4
 # ╟─3f5419f1-d131-42eb-86c8-44a385e88d51
-# ╟─98dfd9c1-f4bd-42cd-bf0c-67471c347e74
 # ╟─533ea412-76ae-4060-bbc8-2650ee0d2774
 # ╟─8539e67f-6361-409a-9dbe-e8dcb2c7e10d
 # ╟─916e5a50-ee01-4299-9314-2e3cc9c826e6
 # ╟─2558c88f-7fee-4a91-bfdd-46f1f61795b0
-# ╟─3fd610a8-80c1-4acc-b3ef-20883f77e32d
+# ╟─904c8a06-0552-40b4-aa9f-404d61b21c08
 # ╟─dc017980-cde3-49bc-a5e0-44be9bb08cec
-# ╟─66e41568-7825-4383-80cb-cc48bdf56397
-# ╟─b9ea1706-0700-4d9f-adfc-97cde5834d70
-# ╟─ef320c95-860f-4222-ae0f-e2cd52a3a776
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
