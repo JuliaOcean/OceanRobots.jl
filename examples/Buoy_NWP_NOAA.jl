@@ -51,52 +51,42 @@ md"""## Appendix
 # ╔═╡ db662fb4-7413-11ec-1af6-43b18c0c15a9
 begin
 	#See https://www.ndbc.noaa.gov/
-	parameters=Dict("stations" => [41046, 44065, 44097, 44013])
-		
-	MC=ModelConfig(model=NOAA.download,inputs=parameters)
-	setup(MC)
-	build(MC)
-	launch(MC)
-	
-	"Done with downloading data"
+    stations=[41046, 44065] #, 44097, 44013]		
+	NOAA.download(stations)
+   	"Done with downloading data"
 end
 
 # ╔═╡ 04354f30-e857-4c77-ad57-9e84c4356e4f
 begin
-	sta_b = @bind sta Select(parameters["stations"], default=parameters["stations"][1])
+	sta_b = @bind sta Select(stations, default=stations[1])
 	myurl="https://www.ndbc.noaa.gov/station_page.php?station=$(sta)"
-	md"""Select buoy : $(sta_b)"""
+	md"""Select buoy : $(sta_b)
+    """
 end
 
 # ╔═╡ a1698e0e-db0d-4cd2-91b3-d530f77cd609
 begin
-	units=NOAA.units
-	descriptions=NOAA.descriptions
-
-	x=NOAA.read(MC,sta)
+    buoy=read(NOAAbuoy(),41046)
 	"Done with reading data"
 end
 
 # ╔═╡ c0a3ec23-2e76-40e6-bdf8-b6b774dabae5
 begin
-	var_b = @bind var Select(names(x), default="PRES")
+	var_b = @bind var Select(names(buoy.data), default="PRES")
 	md"""Select variable : $(var_b)"""
 end
 
 # ╔═╡ 711e604d-ddfe-4328-a663-93dd49ff64c4
 md"""
 - `Buoy information page :` $(myurl)
-- `Variable Units.       :` $(units[var])
-- `Variable Description  :` $(descriptions[var])"""
+- `Variable Units.       :` $(buoy.units[var])
+- `Variable Description  :` $(buoy.descriptions[var])"""
 
 # ╔═╡ 15ecca6a-69af-4700-b20f-d08a4b6c9492
 let
-	haskey(units,var) ? u=units[var] : u=""
+	haskey(buoy.units,var) ? u=buoy.units[var] : u=""
 	
-	f=Figure()
-	ax=Axis(f[1,1],title="Station $(sta), Variable $(var), Units $(u)",ylabel=u,xlabel="days")
-	lines!(ax,x.dt,x[!,Symbol(var)])
-	f
+    plot(buoy,var)
 end
 
 # ╔═╡ 06d96eef-f99d-44fe-8c6f-344ab29f3a48
