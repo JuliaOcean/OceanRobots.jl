@@ -6,7 +6,7 @@ using InteractiveUtils
 
 # ╔═╡ 920b7a98-8478-4ad7-8897-8e5d92737199
 begin
-	using PlutoUI, CairoMakie, Statistics, OceanRobots
+	using PlutoUI, CairoMakie, OceanRobots
 	"Done with packages"
 end
 
@@ -17,16 +17,43 @@ PlutoUI.TableOfContents()
 begin
 img_url="https://nosc.noaa.gov/OSC/images/Kukui_and_NOAA_buoy_1.177308.JPG"
 	
-md"""# NOAA Buoys / Monthly Means
+md"""# NOAA Buoys / Monthly Means"""
+end
 
-Here we compute monthly mean time series for a few quantities from NOAA buoy data.
+# ╔═╡ d106d4c1-1d2e-40b3-8958-901ea437a524
+begin
+md"""In this notebook, you will compute climatologies and distributions from NOAA buoy data.
 
 $(Resource(img_url,:width => 250))
 
 !!! note 
 	For more information about NOAA Buoys, visit <https://www.ndbc.noaa.gov/> and links below.
 
-## Data Source
+## Visualize Data	
+"""
+end
+
+# ╔═╡ 502dde03-9ce3-4e15-bfc4-854c87a60026
+md"""## Data Summary
+
+Plot below shows:
+
+- top left: the full distribution of 25 year temperatue changes, using all individual months and years, is shown in the top left corner.
+- top right: averaged month by month, the 25 year change in temperature is positive for each month -- between +2 and +4 degrees, approximately.
+- bottom: the mean seasonal cycle in the ~1990s (blue) and ~2010s (orange). Range is ~ 25 degree in both cases. Shift between the curves is what's shown in top panel.
+"""
+
+# ╔═╡ 34a9a048-da3e-11ec-2017-b7b762895d86
+begin
+	ID=44013
+    buoy=read(NOAAbuoy_monthly(),ID)
+end
+
+# ╔═╡ 051ea6ce-a699-4a08-a4cf-214875bd3ca7
+plot(buoy;option=:demo)
+
+# ╔═╡ c821bb5e-ae74-4c06-8864-4202e7343e18
+md"""## Data Source
 
 - Station page : <https://www.ndbc.noaa.gov/station_page.php?station=44013>
 - Station history : <https://www.ndbc.noaa.gov/station_history.php?station=44013>
@@ -34,11 +61,35 @@ $(Resource(img_url,:width => 250))
 - Units : <https://www.ndbc.noaa.gov/measdes.shtml>
 - Climatic Summary Plots (SST, in degree C) : <https://www.ndbc.noaa.gov/view_climplot.php?station=44013&meas=st>
 
-## Data Tables
+## Appendix
+
+### Julia Packages
+"""
+
+# ╔═╡ e76df21f-e3ad-4c1e-97d6-3b775abd59ea
+md"""### Alternative Data Access Method
+
+!!! note
+    Using text files requires that you download them to a temporary folder as done below.
+"""
+
+# ╔═╡ aaf89c1f-bd6f-45d8-ae86-3c28bd0735ee
+let
+    buoyID=44013
+    years=1985:2021
+    NOAA.download_historical_txt(buoyID,years)
+    df=NOAA.read_historical_txt(buoyID,years[1])
+end
+
+# ╔═╡ 96d2bb64-02c0-404d-9896-d9718f6d8fd3
+md"""### Saving Monthly Data to CSV files
 
 To save the data tables to files : 
 
-```[CSV.write(monthname(m)*"_25y.csv",tbl[m]) for m in 1:12];```
+```
+gmdf=NOAA.groupby(buoy.data,"MM")
+[NOAA.CSV.write(NOAA.monthname(m)*"_25y.csv",tbl[m]) for m in 1:12]
+```
 
 - each table contains two columns:
   - `T0` = initial temperature (e.g., in 1985)
@@ -46,61 +97,6 @@ To save the data tables to files :
 - one file per month, with at least ten data points / lines each.
 - some month have more missing data points than others.
 - units: `Fahrenheit (°F) = (Celsius x 1.8) + 32`
-
-## Data Summary
-
-Plot below shows:
-
-- top left: the full distribution of 25 year temperatue changes, using all individual months and years, is shown in the top left corner.
-- top right: averaged month by month, the 25 year change in temperature is positive for each month -- between +2 and +4 degrees, approximately.
-- bottom: the mean seasonal cycle in the ~1990s (blue) and ~2010s (orange). Range is ~ 25 degree in both cases. Shift between the curves is what's shown in top panel.
-
-"""
-end
-
-# ╔═╡ ca4098b2-a7e6-40ba-b9d3-668f247bf7fa
-md"""## Reading Data"""
-
-# ╔═╡ 34a9a048-da3e-11ec-2017-b7b762895d86
-begin
-	ID=44013
-	years,_=THREDDS.parse_catalog_NOAA_buoy(ID)
-	mdf=NOAA.read_historical_monthly(ID,years)
-	gmdf=NOAA.groupby(mdf,"MM")
-	gmdf[1]
-end
-
-# ╔═╡ c201edba-f8cd-426e-bffa-75ba868c13a3
-begin
-	tbl=[NOAA.summary_table(gmdf[m],25) for m in 1:12]
-	all=[]; [push!(all,(tbl[m].T1-tbl[m].T0)...) for m in 1:12]
-	"Total number of data point pairs = "*string(length(all))
-end
-
-# ╔═╡ fe2ff5d6-bd10-4217-a961-bd59a43ee1a5
-md"""## Packages and Functions"""
-
-# ╔═╡ 19f37008-9a63-4a28-8fe6-d91319f82df8
-OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
-
-# ╔═╡ 051ea6ce-a699-4a08-a4cf-214875bd3ca7
-OceanRobotsMakieExt.plot_summary(tbl,all)
-
-# ╔═╡ e76df21f-e3ad-4c1e-97d6-3b775abd59ea
-
-
-# ╔═╡ aaf89c1f-bd6f-45d8-ae86-3c28bd0735ee
-md"""## Alternative Method
-
-!!! note
-    Using text files requires that you download them to a temporary folder as done below.
-
-```
-buoyID=44013
-years=1985:2021
-NOAA.download_historical_txt(buoyID,years)
-df=NOAA.read_historical_txt(buoyID,years[1])
-```
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -109,7 +105,6 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 OceanRobots = "0b51df41-3294-4961-8d23-db645e32016d"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -118,7 +113,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.3"
 manifest_format = "2.0"
-project_hash = "b41bd1d8bb95638d44f1cbb50c4b3262d1cd65f3"
+project_hash = "3d176982a7e409a871197b287fe1b56c0e1130ee"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -378,6 +373,20 @@ version = "0.18.20"
 git-tree-sha1 = "bfc1187b79289637fa0ef6d4436ebdfe6905cbd6"
 uuid = "e2d170a0-9d28-54be-80f0-106bbe20a464"
 version = "1.0.0"
+
+[[deps.Dataverse]]
+deps = ["CSV", "CodecZlib", "DataFrames", "Downloads", "HTTP", "JSON", "Tar", "ZipFile"]
+git-tree-sha1 = "9c24c5cf1552251d4bb44a76f9437b2d84e86302"
+uuid = "9c0b9be8-e31e-490f-90fe-77697562404d"
+version = "0.2.5"
+
+    [deps.Dataverse.extensions]
+    DataverseCondaExt = ["Conda"]
+    DataversePyCallExt = ["PyCall"]
+
+    [deps.Dataverse.weakdeps]
+    Conda = "8f4d0f93-b110-5947-807f-2305c1781a2d"
+    PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
 
 [[deps.Dates]]
 deps = ["Printf"]
@@ -1020,9 +1029,9 @@ version = "0.1.11"
 
 [[deps.MPItrampoline_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "MPIPreferences", "TOML"]
-git-tree-sha1 = "ce0ca3dd147c43de175c5aff161315a424f4b8ac"
+git-tree-sha1 = "8c35d5420193841b2f367e658540e8d9e0601ed0"
 uuid = "f1f71cc9-e9ae-5b93-9b94-4fe0e1ad3748"
-version = "5.3.3+1"
+version = "5.4.0+0"
 
 [[deps.MacroTools]]
 deps = ["Markdown", "Random"]
@@ -1133,14 +1142,18 @@ uuid = "510215fc-4207-5dde-b226-833fc4488ee2"
 version = "0.5.5"
 
 [[deps.OceanRobots]]
-deps = ["CFTime", "CSV", "DataFrames", "DataStructures", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "Interpolations", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "URIs"]
-git-tree-sha1 = "e68b20c04fca157a299d7737c651b8ca68741b3e"
+deps = ["CFTime", "CSV", "DataFrames", "DataStructures", "Dataverse", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "Interpolations", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "URIs"]
+git-tree-sha1 = "4cfefafefd12ed94bbf57fbd489120ee06015609"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
-version = "0.1.21"
-weakdeps = ["Makie"]
+version = "0.1.23"
 
     [deps.OceanRobots.extensions]
+    OceanRobotsArgoDataExt = ["ArgoData"]
     OceanRobotsMakieExt = ["Makie"]
+
+    [deps.OceanRobots.weakdeps]
+    ArgoData = "9eb831cf-c491-48dc-bed4-6aca718df73c"
+    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 
 [[deps.OffsetArrays]]
 git-tree-sha1 = "e64b4f5ea6b7389f6f046d13d4896a8f9c1ba71e"
@@ -1180,10 +1193,10 @@ uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
 version = "0.8.1+2"
 
 [[deps.OpenMPI_jll]]
-deps = ["Artifacts", "CompilerSupportLibraries_jll", "Hwloc_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "MPIPreferences", "PMIx_jll", "TOML", "Zlib_jll", "libevent_jll", "prrte_jll"]
-git-tree-sha1 = "f46caf663e069027a06942d00dced37f1eb3d8ad"
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "Hwloc_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "MPIPreferences", "TOML", "Zlib_jll"]
+git-tree-sha1 = "a9de2f1fc98b92f8856c640bf4aec1ac9b2a0d86"
 uuid = "fe0851c0-eecd-5654-98d4-656369965a5c"
-version = "5.0.2+0"
+version = "5.0.3+0"
 
 [[deps.OpenSSL]]
 deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "OpenSSL_jll", "Sockets"]
@@ -1230,12 +1243,6 @@ deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse"]
 git-tree-sha1 = "949347156c25054de2db3b166c52ac4728cbad65"
 uuid = "90014a1f-27ba-587c-ab20-58faa44d9150"
 version = "0.11.31"
-
-[[deps.PMIx_jll]]
-deps = ["Artifacts", "Hwloc_jll", "JLLWrappers", "Libdl", "Zlib_jll", "libevent_jll"]
-git-tree-sha1 = "360f48126b5f2c2f0c833be960097f7c62705976"
-uuid = "32165bc3-0280-59bc-8c0b-c33b6203efab"
-version = "4.2.9+0"
 
 [[deps.PNGFiles]]
 deps = ["Base64", "CEnum", "ImageCore", "IndirectArrays", "OffsetArrays", "libpng_jll"]
@@ -1321,9 +1328,9 @@ version = "1.4.3"
 
 [[deps.PrettyTables]]
 deps = ["Crayons", "LaTeXStrings", "Markdown", "PrecompileTools", "Printf", "Reexport", "StringManipulation", "Tables"]
-git-tree-sha1 = "88b895d13d53b5577fd53379d913b9ab9ac82660"
+git-tree-sha1 = "66b20dd35966a748321d3b2537c4584cf40387c7"
 uuid = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
-version = "2.3.1"
+version = "2.3.2"
 
 [[deps.Printf]]
 deps = ["Unicode"]
@@ -1767,6 +1774,12 @@ git-tree-sha1 = "e92a1a012a10506618f10b7047e478403a046c77"
 uuid = "c5fb5394-a638-5e4d-96e5-b29de1b5cf10"
 version = "1.5.0+0"
 
+[[deps.ZipFile]]
+deps = ["Libdl", "Printf", "Zlib_jll"]
+git-tree-sha1 = "f492b7fe1698e623024e873244f10d89c95c340a"
+uuid = "a5390f91-8eb1-5f08-bee0-b1d1ffed6cea"
+version = "0.10.1"
+
 [[deps.Zlib_jll]]
 deps = ["Libdl"]
 uuid = "83775a58-1f1d-513f-b197-d71354ab007a"
@@ -1806,12 +1819,6 @@ version = "0.15.1+0"
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
 version = "5.8.0+1"
-
-[[deps.libevent_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "OpenSSL_jll"]
-git-tree-sha1 = "f04ec6d9a186115fb38f858f05c0c4e1b7fc9dcb"
-uuid = "1080aeaf-3a6a-583e-a51c-c537b09f60ec"
-version = "2.1.13+1"
 
 [[deps.libfdk_aac_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1859,12 +1866,6 @@ deps = ["Artifacts", "Libdl"]
 uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
 version = "17.4.0+2"
 
-[[deps.prrte_jll]]
-deps = ["Artifacts", "Hwloc_jll", "JLLWrappers", "Libdl", "PMIx_jll", "libevent_jll"]
-git-tree-sha1 = "5adb2d7a18a30280feb66cad6f1a1dfdca2dc7b0"
-uuid = "eb928a42-fffd-568d-ab9c-3f5d54fc65b9"
-version = "3.0.2+0"
-
 [[deps.x264_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "4fea590b89e6ec504593146bf8b988b2c00922b2"
@@ -1879,16 +1880,16 @@ version = "3.5.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╟─2f87a4a9-ad5d-46ff-961b-028de3a27a23
 # ╟─91db1379-9f47-4982-9716-f755451f819f
+# ╟─2f87a4a9-ad5d-46ff-961b-028de3a27a23
+# ╟─d106d4c1-1d2e-40b3-8958-901ea437a524
 # ╟─051ea6ce-a699-4a08-a4cf-214875bd3ca7
-# ╟─ca4098b2-a7e6-40ba-b9d3-668f247bf7fa
+# ╟─502dde03-9ce3-4e15-bfc4-854c87a60026
 # ╟─34a9a048-da3e-11ec-2017-b7b762895d86
-# ╟─c201edba-f8cd-426e-bffa-75ba868c13a3
-# ╟─fe2ff5d6-bd10-4217-a961-bd59a43ee1a5
-# ╟─920b7a98-8478-4ad7-8897-8e5d92737199
-# ╟─19f37008-9a63-4a28-8fe6-d91319f82df8
+# ╟─c821bb5e-ae74-4c06-8864-4202e7343e18
+# ╠═920b7a98-8478-4ad7-8897-8e5d92737199
 # ╟─e76df21f-e3ad-4c1e-97d6-3b775abd59ea
 # ╟─aaf89c1f-bd6f-45d8-ae86-3c28bd0735ee
+# ╟─96d2bb64-02c0-404d-9896-d9718f6d8fd3
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
