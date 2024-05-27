@@ -41,6 +41,13 @@ end
 
 SurfaceDrifter() = SurfaceDrifter(0,[],0,DataFrame())
 
+struct CloudDrift <: AbstractOceanRobotData
+    file::String
+    data::NamedTuple
+end
+
+CloudDrift() = CloudDrift("",NamedTuple())
+
 struct Gliders <: AbstractOceanRobotData
     file::String
     data::DataFrame

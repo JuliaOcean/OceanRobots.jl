@@ -18,6 +18,11 @@ using Test
 
     #
 
+    b=read(CloudDrift(),"")
+    @test isa(b,CloudDrift)
+
+    #
+
     oceansites_index=OceanSites.index()
     @test !isempty(oceansites_index)
 

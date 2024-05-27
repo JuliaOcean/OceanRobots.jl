@@ -185,14 +185,18 @@ end
 Read files from https://www.ndbc.noaa.gov to temporary folder for chosen float `ID` and year `y`.
 """
 function read_historical_nc(ID,y)
-    url0="https://dods.ndbc.noaa.gov/thredds/dodsC/data/stdmet/"
-    ds=Dataset(url0*"$(ID)/$(ID)h$(y).nc")
+    #url0="https://dods.ndbc.noaa.gov/thredds/dodsC/data/stdmet/"
+    url0="https://dods.ndbc.noaa.gov/thredds/fileServer/data/stdmet/"
     
+    fil=joinpath(tempdir(),"$(ID)h$(y).nc")
+    url=url0*"$(ID)/$(ID)h$(y).nc"
+    !isfile(fil) ? Downloads.download(url,fil) : nothing
+
+    ds=Dataset(fil)    
     df=DataFrame(YY=year.(ds["time"][:]),MM=month.(ds["time"][:]),
     air_temperature=ds["air_temperature"][1,1,:],
     sea_surface_temperature=ds["sea_surface_temperature"][1,1,:],    
     wind_spd=ds["wind_spd"][1,1,:],air_pressure=ds["air_pressure"][1,1,:])
-
     close(ds)
 
     rename!( df,Dict("air_temperature" => "ATMP","sea_surface_temperature" => "WTMP",
@@ -340,7 +344,51 @@ end #module GDP
 
 module GDP_CloudDrift
 
-using DataFrames, Statistics, NCDatasets
+using DataFrames, Statistics, NCDatasets, Downloads, Dates
+import Base: read
+import OceanRobots: CloudDrift
+#
+
+#https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/drifter_101783.nc
+#https://www.ncei.noaa.gov/access/metadata/landing-page/bin/iso?id=gov.noaa.nodc:AOML-GDP-1hr
+#https://www.aoml.noaa.gov/phod/gdp/hourly_data.php
+#https://clouddrift.org/index.html
+
+read(x::CloudDrift,file) = CloudDrift_demo(file)
+
+function CloudDrift_demo(file="")
+    isempty(file) ? fi=CloudDrift_subset_download() : fi=file
+    #file="Drifter_hourly_v2p0/gdp_v2.00.nc"
+
+    ds=GDP_CloudDrift.Dataset(fi)
+    df=GDP_CloudDrift.to_DataFrame(ds)
+    GDP_CloudDrift.add_ID!(df,ds)
+    GDP_CloudDrift.add_index!(df)
+    df.cv=df.ve+1im*df.vn
+
+	lon = (-98, -78); lat = (18, 31)
+	#lon = (-150, -140); lat = (25, 35)
+	d0=DateTime("2000-01-1T00:00:00")
+	d1=DateTime("2020-12-31T00:00:00")
+	tim=(d0,d1)
+	df_subset=GDP_CloudDrift.region_subset(df,lon,lat,tim)
+
+    gdf2=GDP_CloudDrift.groupby(df,:ID)
+	df_stats=GDP_CloudDrift.trajectory_stats(gdf2)
+
+    gdf=GDP_CloudDrift.groupby(df,:index)
+    grid=(lon=-180.0+0.25:0.5:180.0,lat=-90.0+0.25:0.5:90.0)
+    (ve,vn)=GDP_CloudDrift.to_Grid(gdf,grid)
+    
+    CloudDrift(fi,(main=df,subset=df_subset,grid=grid,ve=ve,vn=vn))
+end
+
+CloudDrift_subset_download() = begin
+    url="https://zenodo.org/records/11325477/files/gdp_subset.nc?download=1"
+    fil=joinpath(tempdir(),"gdp_subset.nc")
+    !isfile(fil) ? Downloads.download(url,fil) : nothing
+    fil
+end
 
 """
     to_DataFrame(ds)
