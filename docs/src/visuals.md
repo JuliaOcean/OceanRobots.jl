@@ -1,4 +1,4 @@
-## Visual Examples
+# Visuals
 
 The images below are from the notebook examples listed earlier in this doc.
 
