@@ -20,13 +20,10 @@ begin
 	"Done with Software Packages"
 end
 
-# ╔═╡ d9ffd0a8-85e3-4e2a-9d6a-81f3dbd3ee31
-TableOfContents()
-
 # ╔═╡ e5b9772e-cbb5-42f0-bacb-5bae6bc8d5b6
 md"""# Spray Gliders
 
-_Spray gliders autonomously collect measurements in the upper kilometer of the ocean during missions typically lasting three to four months and covering 2000-3000 km through the water._  ([spraydata.ucsd.edu](http://spraydata.ucsd.edu)).
+Spray gliders autonomously collect measurements in the upper kilometer of the ocean during missions typically lasting three to four months and covering 2000-3000 km through the water. ([spraydata.ucsd.edu](http://spraydata.ucsd.edu)).
 """
 
 # ╔═╡ 0a016d12-de41-45f5-800d-af8f953720e4
@@ -45,46 +42,26 @@ begin
 	"""
 end
 
+# ╔═╡ d9ffd0a8-85e3-4e2a-9d6a-81f3dbd3ee31
+TableOfContents()
+
 # ╔═╡ b8db58ca-ed7a-4174-a6b0-e53925b5887a
 begin
 	MID_bind = @bind MID Select(["CUGN_along.nc", "GulfStream.nc"], default="GulfStream.nc")
-	md"""## Visualize Data
+	md"""## Interactive Visualization
 	
 	- Select data set : $(MID_bind)"""
 end
 
 
-# ╔═╡ 1ab9daac-b631-4f3e-a868-14e95f71962b
-md"""## Data as a Table"""
-
-# ╔═╡ 440e4256-d6eb-4dfa-946b-22fac53432e8
-md"""
-## Data Sources
-
-_Spray gliders autonomously collect measurements in the upper kilometer of the ocean during missions typically lasting three to four months and covering 2000-3000 km through the water._ ([spraydata.ucsd.edu](http://spraydata.ucsd.edu)).
-
-### Websites
-
-- [spraydata.ucsd.edu](http://spraydata.ucsd.edu)
-  - <http://spraydata.ucsd.edu/projects/>
-  - <http://spraydata.ucsd.edu/GulfStream/>
-  - <http://spraydata.ucsd.edu/climCUGN/>
-- [gliders.whoi.edu](http://gliders.whoi.edu)
-  - [gliders.whoi.edu/data](http://gliders.whoi.edu/data/)
-
-### References 
-
-- Todd, R. and Owens, B. (2016). Gliders in the Gulf Stream [Data set]. Scripps Institution of Oceanography, Instrument Development Group. doi: 10.21238/S8SPRAY2675
-- Rudnick, D. (2016). California Underwater Glider Network [Data set]. Scripps Institution of Oceanography, Instrument Development Group. doi: 10.21238/S8SPRAY1618
-- Rudnick, D. (2016). Seasonal-to-Interannual Modulation of Fine-Scale Thermohaline Structure [Data set]. Scripps Institution of Oceanography, Instrument Development Group. doi: 10.21238/S8SPRAY4863
-
-"""
-
 # ╔═╡ 68028522-205e-4b41-b3c0-2e3b09c2d8a7
 md"""## Appendix
 
-### Julia Packages, etc
+### Julia Packages
 """
+
+# ╔═╡ e729416a-a2b2-46ce-bb1e-ededeb8c75b3
+md"""### Data Ingestion"""
 
 # ╔═╡ 9523dc0d-1758-4e0f-864c-4ab253bf11a9
 begin
@@ -94,11 +71,11 @@ begin
 	"Done with Data Ingestion"
 end
 
-# ╔═╡ 428120da-1542-4265-a369-1273ae4718ac
-md"""- Select mission  : $(ID_bind)"""
-
 # ╔═╡ 3e5fd65e-e3d9-49e5-a9b0-87a2475cc3a0
 plot(gliders,ID)
+
+# ╔═╡ 428120da-1542-4265-a369-1273ae4718ac
+md"""- Select mission  : $(ID_bind)"""
 
 # ╔═╡ 5748bb5f-528f-42fd-8961-fd7c93d12554
 md"""### Typical File Content
@@ -123,6 +100,28 @@ md"""### Typical File Content
 	mission_profile:long_name = "Profile of one mission" ;
 	trajectory_index:long_name = "which mission (trajectory) this profile is part of" ;
 ```
+"""
+
+# ╔═╡ 440e4256-d6eb-4dfa-946b-22fac53432e8
+md"""### Data Sources
+
+Spray gliders autonomously collect measurements in the upper kilometer of the ocean during missions typically lasting three to four months and covering 2000-3000 km through the water. ([spraydata.ucsd.edu](http://spraydata.ucsd.edu)).
+
+#### Websites
+
+- [spraydata.ucsd.edu](http://spraydata.ucsd.edu)
+  - <http://spraydata.ucsd.edu/projects/>
+  - <http://spraydata.ucsd.edu/GulfStream/>
+  - <http://spraydata.ucsd.edu/climCUGN/>
+- [gliders.whoi.edu](http://gliders.whoi.edu)
+  - [gliders.whoi.edu/data](http://gliders.whoi.edu/data/)
+
+#### References 
+
+- Todd, R. and Owens, B. (2016). Gliders in the Gulf Stream [Data set]. Scripps Institution of Oceanography, Instrument Development Group. doi: 10.21238/S8SPRAY2675
+- Rudnick, D. (2016). California Underwater Glider Network [Data set]. Scripps Institution of Oceanography, Instrument Development Group. doi: 10.21238/S8SPRAY1618
+- Rudnick, D. (2016). Seasonal-to-Interannual Modulation of Fine-Scale Thermohaline Structure [Data set]. Scripps Institution of Oceanography, Instrument Development Group. doi: 10.21238/S8SPRAY4863
+
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -1906,17 +1905,17 @@ version = "3.5.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╟─d9ffd0a8-85e3-4e2a-9d6a-81f3dbd3ee31
 # ╟─e5b9772e-cbb5-42f0-bacb-5bae6bc8d5b6
 # ╟─0a016d12-de41-45f5-800d-af8f953720e4
+# ╟─d9ffd0a8-85e3-4e2a-9d6a-81f3dbd3ee31
+# ╟─3e5fd65e-e3d9-49e5-a9b0-87a2475cc3a0
 # ╟─b8db58ca-ed7a-4174-a6b0-e53925b5887a
 # ╟─428120da-1542-4265-a369-1273ae4718ac
-# ╟─3e5fd65e-e3d9-49e5-a9b0-87a2475cc3a0
-# ╟─1ab9daac-b631-4f3e-a868-14e95f71962b
-# ╟─440e4256-d6eb-4dfa-946b-22fac53432e8
 # ╟─68028522-205e-4b41-b3c0-2e3b09c2d8a7
 # ╟─0247a51e-c89b-11ec-071f-bb82fe257adc
+# ╟─e729416a-a2b2-46ce-bb1e-ededeb8c75b3
 # ╟─9523dc0d-1758-4e0f-864c-4ab253bf11a9
 # ╟─5748bb5f-528f-42fd-8961-fd7c93d12554
+# ╟─440e4256-d6eb-4dfa-946b-22fac53432e8
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

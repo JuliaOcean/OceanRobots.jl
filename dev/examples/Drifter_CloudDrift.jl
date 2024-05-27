@@ -17,7 +17,17 @@ See <https://github.com/Cloud-Drift/earthcube-meeting-2022> for context and deta
 TableOfContents()
 
 # ╔═╡ f3c351c7-3fba-4ee8-8522-80fd0e8921af
-md"""## Read To DataFrame"""
+md"""## Visualize Data"""
+
+# ╔═╡ 05b32012-927d-42b4-8a18-fdfcb051a3fd
+md"""## Per Trajectory Statistics"""
+
+
+# ╔═╡ 89c82c13-9221-48b8-9138-79b91603d7e6
+md"""## Appendix
+
+Packages, grid, functions used in the notebook are defined here.
+"""
 
 # ╔═╡ d0362426-0609-4fcf-a888-77892db9b7e7
 begin
@@ -36,10 +46,6 @@ end
 
 # ╔═╡ d4af67e7-2308-4135-929e-c7fc6572d6c7
 heatmap(GDP_CD.data.grid.lon,GDP_CD.data.grid.lat,GDP_CD.data.ve)
-
-# ╔═╡ 05b32012-927d-42b4-8a18-fdfcb051a3fd
-md"""## Per Trajectory Statistics"""
-
 
 # ╔═╡ a25027b5-5b0e-4190-b4b6-987f4e16ccd8
 begin
@@ -80,12 +86,6 @@ begin
 
 	fig1=plot1(f,ss)
 end
-
-# ╔═╡ 89c82c13-9221-48b8-9138-79b91603d7e6
-md"""## Appendix
-
-Packages, grid, functions used in the notebook are defined here.
-"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1872,13 +1872,13 @@ version = "3.5.0+0"
 # ╟─97537903-fb3b-4837-9e7c-461cb9e4ef5e
 # ╟─c56e7f24-7be8-4209-8fc9-843cb674fd6e
 # ╟─f3c351c7-3fba-4ee8-8522-80fd0e8921af
-# ╟─d0362426-0609-4fcf-a888-77892db9b7e7
 # ╟─60479536-8238-4077-bdcd-776e07330621
 # ╟─d4af67e7-2308-4135-929e-c7fc6572d6c7
 # ╟─05b32012-927d-42b4-8a18-fdfcb051a3fd
-# ╟─a25027b5-5b0e-4190-b4b6-987f4e16ccd8
 # ╟─efc6b8b3-a55b-4830-953c-2a51ce162604
+# ╟─a25027b5-5b0e-4190-b4b6-987f4e16ccd8
 # ╟─89c82c13-9221-48b8-9138-79b91603d7e6
 # ╠═bf29d9b6-be57-11ec-2b83-87ce1f770075
+# ╟─d0362426-0609-4fcf-a888-77892db9b7e7
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
