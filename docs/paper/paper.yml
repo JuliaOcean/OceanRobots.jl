@@ -1,0 +1,29 @@
+title: "Digital Twins for Ocean Robots"
+keywords:
+  - Julia
+  - OptimizatOcean
+  - Climate
+  - Robot
+  - Observation
+  - Platform
+  - Sensor
+  - Drifter
+  - Buoy
+  - Profiler
+  - Satellite
+  - Modeling
+  - Artificial Intelligence
+  - Data Assimilation
+  - Parameter Inference
+  - Climatology
+  - Geospatial
+  - Statistics
+authors:
+  - name: Gaël Forget
+    orcid: 0000-0003-1361-440X
+    affiliation: 1
+affiliations:
+  - name: Earth, Atmospheric and Planetary Sciences, Massachusetts Institute of Technology, 77 Massachusetts Avenue, Cambridge, 02139, MA, USA
+    index: 1
+date: 31 May 2024
+bibliography: ref.bib
