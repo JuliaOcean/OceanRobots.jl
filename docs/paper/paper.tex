@@ -143,19 +143,19 @@ Much more could be done to improve the details and skill of the simple models us
     language = Julia,
     numbers=left,
     label={lst:IndDispCode},
-    caption={Simulate surface drifter pathways in the Gulf of Mexico (Fig.~\ref{fig:drifters_speed}) from flow fields $u,v$ and initial positions $x,y$. The repetition of `u` and `v` in `FlowFields` reflects that flow fields are treated as time invariant in this example.}
+    caption={Simulate surface drifter pathways in the Gulf of Mexico (Fig.~\ref{fig:drifters_speed}) from flow fields $u,v$ and initial positions $x,y$.}
 ]
-using IndividualDisplacements, DataFrames
+using IndividualDisplacements
 
 dT=6*3600 #6 hours
 nt=120*86400/dT #120 days
 
 T=(0.,dT)
-F=FlowFields(u,u,v,v,T)
+F=FlowFields(u=u,v=v,period=T)
 I=Individuals(F,x,y)
 
-[solve(I,T.+dT*(n-1)) for n in 1:nt]
-trajectories=groupby(record(I),:ID)
+[solve!(I,T.+dT*(n-1)) for n in 1:nt]
+trajectories=groupby(I,:ID)
 \end{lstlisting}
 
 
