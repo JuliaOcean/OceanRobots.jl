@@ -88,10 +88,10 @@ Argo profiling floats (blue dots in Fig.~\ref{fig:ocean-ops}; Code~\ref{lst:Argo
 ]
 using OceanRobots, ArgoData, CairoMakie
 
-files_list=GDAC.files_list(); wmo=6900900
+lst=GDAC.files_list(); wmo=6900900
 argo=read(ArgoFloat(),wmo=wmo,files_list=lst)
 
-fig=plot(argo,option=:standard,pol=pol)
+fig=plot(argo,option=:standard)
 \end{lstlisting}
 
 \pkg{OceanRobots.jl} brings these key climate data sets to the Julia community. It provides a bridge to climate scientists working on observations and models, who are interested in leveraging the powerful Julia software ecosystem (e.g., for numerical modeling, machine learning, and statistical analysis), and have much expertise to contribute. The development of \pkg{OceanRobots.jl} aims to help advance (1) how we understand and simulate observations of climate change, and (2) climate literacy and education by providing simple apps that anyone should be able to use.
