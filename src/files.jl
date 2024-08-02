@@ -64,9 +64,47 @@ end #module GliderFiles
 
 module NOAA
 
-using Downloads, CSV, DataFrames, Dates, NCDatasets, Statistics
+using Downloads, CSV, DataFrames, Dates, NCDatasets, Statistics, HTTP
 import OceanRobots: NOAAbuoy, NOAAbuoy_monthly, THREDDS
 import Base: read
+
+"""
+    NOAA.list_stations()
+
+Get stations list from https://www.ndbc.noaa.gov/to_station.shtml
+"""
+function list_stations()
+    myurl0="https://www.ndbc.noaa.gov/to_station.shtml"
+    txt0=String(HTTP.get(myurl0).body)
+    txt1=split(txt0,"station_page.php?station=")[2:end]
+    String.([split(t,"\"")[1] for t in txt1])
+end
+
+"""
+    NOAA.list_realtime(;ext=:all)
+
+Get either files list from https://www.ndbc.noaa.gov/data/realtime2/
+or list of buoy codes that provide some file type 
+(e.g. "txt" for "Standard Meteorological Data")
+
+```
+lst0=NOAA.list_realtime()
+lst1=NOAA.list_realtime(ext=:txt)
+```
+"""
+function list_realtime(;ext=:all)
+    myurl0="https://www.ndbc.noaa.gov/data/realtime2/"
+    txt0=String(HTTP.get(myurl0).body)
+    txt1=split(txt0,"<tr><td valign=\"top\"><img src=\"/icons/text.gif\"")[3:end]
+    lst1=[split(split(t,"href=\"")[2],"\">")[1]  for t in txt1]
+    if ext!==:all
+        extxt=String(ext)
+        lst2=lst1[[split(t,".")[2]==string(ext) for t in lst1]]
+        [split(t,".")[1] for t in  lst2]
+    else
+        lst1
+    end
+end
 
 """
     NOAA.download(stations::Union(Array,Int),path=tempdir())
@@ -84,6 +122,20 @@ function download(stations::Union{Array,Int},path=tempdir())
         push!(files,fil1)
     end
     files
+end
+
+"""
+    NOAA.download(sta::String,path=tempdir())
+
+Download files for stations `sta` from `ndbc.noaa.gov` to `path`.
+"""
+function download(sta::Union{String,SubString},path=tempdir())
+    url0="https://www.ndbc.noaa.gov/data/realtime2/"
+    fil="$sta.txt"
+    url1=url0*fil
+    fil1=joinpath(path,fil)
+    Downloads.download(url1,fil1)
+    fil1
 end
 
 """
