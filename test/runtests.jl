@@ -59,7 +59,7 @@ using Test
 
     ##
 
-    allstations=NOAA.station_list()
+    allstations=NOAA.list_stations()
     metstations=NOAA.list_realtime(ext=:txt)
 
     stations=metstations[1:200:end]
