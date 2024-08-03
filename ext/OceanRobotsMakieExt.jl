@@ -18,21 +18,31 @@ function plot_drifter(ds)
 	tst=maximum(lo)-minimum(lo)>maximum(lon360)-minimum(lon360)
 	tst ? lo.=lon360 : nothing
 
-	ve=GDP.read_v(ds,"ve")
-	vn=GDP.read_v(ds,"vn")
+	ve=GDP.read_v(ds,"ve")[:]
+	vn=GDP.read_v(ds,"vn")[:]
 	vel=sqrt.(ve.^2 .+ vn.^2)
 		
-	fig1 = Figure()
+	fig1 = Figure(size=(600,900))
 	ax1 = Axis(fig1[1,1], title="positions", xlabel="longitude",ylabel="latitude")
-	lines!(ax1,lo[:],la[:])
-	ax1 = Axis(fig1[1,2], title="velocities", xlabel="ve",ylabel="vn")
-	scatter!(ax1,ve[:],vn[:],markersize=2.0)
+	lines!(ax1,lo[:],la[:],linewidth=1)
+	ax1 = Axis(fig1[1,2], title="velocity", xlabel="eastward vel.",ylabel="northward vel.")
+	lines!(ax1,ve[:],vn[:],linewidth=0.5)
 
-	ax2 = Axis(fig1[2,1:2], title="speed (red), ve (blue), vn (green)", xlabel="time",ylabel="m/s")
-	lines!(ax2,vel[:],color=:red)
-	lines!(ax2,ve[:],color=:blue)
-	lines!(ax2,vn[:],color=:green)
-	
+	tim=GDP.read_v(ds,"time")[:]
+	sst=GDP.read_v(ds,"sst")[:]
+	sst1=GDP.read_v(ds,"sst1")[:]
+
+	ax2 = Axis(fig1[2,1:2], ylabel="m/s")
+	lines!(ax2,tim,vel,color=:red,label="velocity",linewidth=1)
+	lines!(ax2,tim,ve,color=:blue,label="eastward vel.",linewidth=1)
+	lines!(ax2,tim,vn,color=:green,label="northward vel.",linewidth=1)
+	axislegend(orientation = :horizontal)
+
+	ax3 = Axis(fig1[3,1:2], ylabel="degC")
+	lines!(tim,sst.-273.15,label="temperature")
+	lines!(tim,sst1.-273.15,label="non-diurnal temp.")
+	axislegend(orientation = :horizontal)
+
 	fig1
 end
 
@@ -103,8 +113,9 @@ plot(x::NOAAbuoy,var) = begin
 	f=Figure()
 	u=x.units[var]
 	sta=x.ID
-	ax=Axis(f[1,1],title="Station $(sta), Variable $(var), Units $(u)",ylabel=u,xlabel="days")
-	lines!(ax,x.data.dt,x.data[!,Symbol(var)])
+	ax=Axis(f[1,1],title="Station $(sta), Variable $(var)",ylabel=u,xlabel="date")
+	tim=DateTime.(x.data.YY,x.data.MM,x.data.DD,x.data.hh,x.data.mm)
+	lines!(ax,tim,x.data[!,Symbol(var)])
 	println(x.descriptions[var])
 	f
 end
@@ -118,12 +129,13 @@ buoy=read(NOAAbuoy_monthly(),44013)
 plot(buoy;option=:demo)
 ```
 """
-plot(x::NOAAbuoy_monthly, var=""; option=:demo) = begin
+plot(x::NOAAbuoy_monthly, var="T(°F)"; option=:demo) = begin
 	if option==:demo
 		gmdf=NOAA.groupby(x.data,"MM")
-		tbl=[NOAA.summary_table(gmdf[m],25) for m in 1:12]
+		tbl=[NOAA.summary_table(gmdf[m],25,var=var) for m in 1:12]
 		all=[]; [push!(all,(tbl[m].T1-tbl[m].T0)...) for m in 1:12]
-		plot_summary(tbl,all)
+		uni=( var=="T(°F)" ? "°Fahrenheit" : x.units[var] )
+		plot_summary(tbl,all,var,uni)
 	else
 		@warn "case not implemented"
 	end
@@ -131,11 +143,11 @@ end
 
 mean=NOAA.mean
 
-function plot_summary(tbl,all)
+function plot_summary(tbl,all,var,uni)
 	f=Figure(); 
 	ax=Axis(f[1,1],title="full distribution of T1-T0 "); hist!(ax,all)
 	ax=Axis(f[1,2],title="mean(T1-T0) each month"); barplot!(ax,[mean(tbl[m].T1)-mean(tbl[m].T0) for m in 1:12])
-	ax=Axis(f[2,1:2],title="seasonal cycle");
+	ax=Axis(f[2,1:2],title="seasonal cycle of $(var)",ylabel=uni);
 	lines!(ax,[mean(tbl[m].T0) for m in 1:12],label="mean(T0)")
 	lines!(ax,[mean(tbl[m].T1) for m in 1:12],label="mean(T1)")
 	axislegend(ax)
