@@ -9,8 +9,7 @@ using Test
     @test isa(files[1],String)
     @test isempty(folders)
 
-    lst=GDP.list_files()
-    b=read(SurfaceDrifter(),1,list_files=lst)
+    b=read(SurfaceDrifter(),1)
     @test haskey(b.data,"ve")
 
     f3=plot(b)
