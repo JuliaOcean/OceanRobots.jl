@@ -391,10 +391,9 @@ end
 """
     read(x::SurfaceDrifter,ii::Int)
 
-Open file `ii` from NOAA ftp server using `NCDatasets.Dataset`.
+Open file number `ii` from NOAA ftp server using `NCDatasets.jl`.
 
-<ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/>
-or the corresponding webpage 
+Server : ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/
 
 Note: the first time this method is used, it calls `GDP.list_files()` 
 to get the list of drifters from server, and save it to a temporary file.
