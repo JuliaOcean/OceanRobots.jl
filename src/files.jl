@@ -299,8 +299,12 @@ function read_historical_txt(ID,y)
     df
 end
 
-function summary_table(z,ny=25)
-    T=round.(z.WTMP * 1.8 .+32,digits=1)
+function summary_table(z,ny=25;var="T(°F)")
+    if var=="T(°F)"
+        T=round.(z.WTMP * 1.8 .+32,digits=1)
+    else
+        T=buoy.data[:,var]
+    end
     p=[(T[z.YY.==y],T[z.YY.==y+ny]) for y in 1984:2001]
     i=findall([length(pp[1])*length(pp[2])==1 for pp in p])
     T0=[p[ii][1][1] for ii in i]
@@ -324,7 +328,7 @@ end #module NOAA
 
 module GDP
 
-using DataFrames, FTPClient, NCDatasets
+using DataFrames, FTPClient, NCDatasets, Dates, CSV
 import OceanRobots: SurfaceDrifter
 import Base: read
 
@@ -337,12 +341,19 @@ Get list of drifter files from NOAA ftp server or the corresponding webpage.
 - <https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/>
 """
 function list_files()
-    list_files=DataFrame("folder" => [],"filename" => [])
-    ftp=FTP("ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/")
-    tmp=readdir(ftp)
-    append!(list_files,DataFrame("folder" => "","filename" => tmp))
-    list_files.ID=[parse(Int,split(f,"_")[2][1:end-3]) for f in list_files.filename]
-    list_files
+    td=string(Dates.today())
+    fil=joinpath(tempdir(),"GDP_list_$(td).csv")
+    if isfile(fil)
+        list_files=CSV.read(fil,DataFrame)
+    else
+        list_files=DataFrame("folder" => [],"filename" => [])
+        ftp=FTP("ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/")
+        tmp=readdir(ftp)
+        append!(list_files,DataFrame("folder" => "","filename" => tmp))
+        list_files.ID=[parse(Int,split(f,"_")[2][1:end-3]) for f in list_files.filename]
+        CSV.write(fil,list_files)
+        list_files
+    end
 end
 
 # 6-hourly interpolated data product if available via thredds server
@@ -363,7 +374,8 @@ fil=GDP.download(list_files,1)
 """
 function download(list_files,ii=1)
     url0="ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/"
-    url1=joinpath(url0,list_files[ii,"folder"])
+    pth0=list_files[ii,"folder"]
+    url1=(ismissing(pth0) ? url0 : joinpath(url0,pth0))
     ftp=FTP(url1)
 
     fil=list_files[ii,"filename"]
@@ -397,7 +409,8 @@ read(x::SurfaceDrifter,ii::Int; list_files=[]) = begin
     SurfaceDrifter(lst.ID[ii],ds,wmo,lst)
 end
 
-read_v(ds,v) = Float64.(cfvariable(ds,v,missing_value=-1.e+34))
+missing_to_NaN(x) = [(ismissing(y) ? NaN : y) for y in x]
+read_v(ds,v) = missing_to_NaN(cfvariable(ds,v,missing_value=-1.e+34))
 
 end #module GDP
 
