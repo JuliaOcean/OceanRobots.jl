@@ -11,7 +11,7 @@ import Makie: plot
 
 Plot drifter data.        
 """
-function plot_drifter(ds)	
+function plot_drifter(ds;size=(600,900))	
 	la=GDP.read_v(ds,"latitude")
 	lo=GDP.read_v(ds,"longitude")
 	lon360=GDP.read_v(ds,"lon360")
@@ -22,7 +22,7 @@ function plot_drifter(ds)
 	vn=GDP.read_v(ds,"vn")[:]
 	vel=sqrt.(ve.^2 .+ vn.^2)
 		
-	fig1 = Figure(size=(600,900))
+	fig1 = Figure(size=size)
 	ax1 = Axis(fig1[1,1], title="positions", xlabel="longitude",ylabel="latitude")
 	lines!(ax1,lo[:],la[:],linewidth=1)
 	ax1 = Axis(fig1[1,2], title="velocity", xlabel="eastward vel.",ylabel="northward vel.")
@@ -50,13 +50,12 @@ end
     plot(x::SurfaceDrifter)
 	
 ```
-using OceanRobots
-lst=GDP.list_files()
-drifter=read(SurfaceDrifter(),1,list_files=lst)
+using OceanRobots, CairoMakie
+drifter=read(SurfaceDrifter(),1)
 plot(drifter)
 ```
 """
-plot(x::SurfaceDrifter) = plot_drifter(x.data)
+plot(x::SurfaceDrifter;size=(600,900)) = plot_drifter(x.data,size=size)
 
 
 ## WHOTS
@@ -67,12 +66,12 @@ plot(x::SurfaceDrifter) = plot_drifter(x.data)
 ```
 using OceanRobots, Dates
 whots=read(OceanSite(),:WHOTS)
-plot(whots,DateTime(2005,1,1),DateTime(2005,2,1))
+plot(whots,DateTime(2005,1,1),DateTime(2005,2,1),size=(900,600))
 ```
 """
-plot(x::OceanSite,args...)=plot_WHOTS(x.data,x.units,args...)
+plot(x::OceanSite,args...;kwargs...)=plot_WHOTS(x.data,x.units,args...;kwargs...)
 
-function plot_WHOTS(arr,units,d0,d1)
+function plot_WHOTS(arr,units,d0,d1;size=(900,600))
 	
     tt=findall((arr.TIME.>d0).*(arr.TIME.<=d1))
     t=Dates.value.(arr.TIME.-d0)/1000.0/86400.0
@@ -80,7 +79,7 @@ function plot_WHOTS(arr,units,d0,d1)
     #t=Dates.value.(arr.TIME.-TIME[1])/1000.0/86400.0
     #tt=findall((t.>110).*(t.<140))
 
-    f=Figure()
+    f=Figure(size=size)
 	ax1=Axis(f[1,1],xlabel="days",ylabel=units.wspeed,title="wspeed")
     lines!(ax1,t[tt],arr.wspeed[tt])
 	ax1=Axis(f[2,1],xlabel="days",ylabel=units.AIRT,title="AIRT")
@@ -104,13 +103,13 @@ end
     plot(x::NOAAbuoy,var)
 	
 ```
-using OceanRobots
+using OceanRobots, CairoMakie
 buoy=read(NOAAbuoy(),41046)
-plot(buoy,"PRES")
+plot(buoy,"PRES",size=(900,600))
 ```
 """
-plot(x::NOAAbuoy,var) = begin
-	f=Figure()
+plot(x::NOAAbuoy,var; size=(600,900)) = begin
+	f=Figure(size=size)
 	u=x.units[var]
 	sta=x.ID
 	ax=Axis(f[1,1],title="Station $(sta), Variable $(var)",ylabel=u,xlabel="date")
@@ -129,13 +128,13 @@ buoy=read(NOAAbuoy_monthly(),44013)
 plot(buoy;option=:demo)
 ```
 """
-plot(x::NOAAbuoy_monthly, var="T(°F)"; option=:demo) = begin
+plot(x::NOAAbuoy_monthly, var="T(°F)"; option=:demo, size=(600,900)) = begin
 	if option==:demo
 		gmdf=NOAA.groupby(x.data,"MM")
 		tbl=[NOAA.summary_table(gmdf[m],25,var=var) for m in 1:12]
 		all=[]; [push!(all,(tbl[m].T1-tbl[m].T0)...) for m in 1:12]
 		uni=( var=="T(°F)" ? "°Fahrenheit" : x.units[var] )
-		plot_summary(tbl,all,var,uni)
+		plot_summary(tbl,all,var,uni,size=size)
 	else
 		@warn "case not implemented"
 	end
@@ -143,8 +142,8 @@ end
 
 mean=NOAA.mean
 
-function plot_summary(tbl,all,var,uni)
-	f=Figure(); 
+function plot_summary(tbl,all,var,uni;size=(600,900))
+	f=Figure(size=size); 
 	ax=Axis(f[1,1],title="full distribution of T1-T0 "); hist!(ax,all)
 	ax=Axis(f[1,2],title="mean(T1-T0) each month"); barplot!(ax,[mean(tbl[m].T1)-mean(tbl[m].T0) for m in 1:12])
 	ax=Axis(f[2,1:2],title="seasonal cycle of $(var)",ylabel=uni);
@@ -274,12 +273,12 @@ yrng(lat)=begin
 	b=[max(a[1]-dx/2,-90) min(a[2]+dx/2,90)]
 end
 
-function plot_standard(wmo,arr,spd,T_std,S_std; markersize=2,pol=Any[])
+function plot_standard(wmo,arr,spd,T_std,S_std; markersize=2,pol=Any[],size=(900,600))
 
 	xlims=xrng(arr.lon)
 	ylims=yrng(arr.lat)
 	
-	fig1=Figure(size=(900,900))
+	fig1=Figure(size=size)
 
 	ax=Axis(fig1[1,1])
 	li1=plot_trajectory!(ax,arr.lon,arr.lat,arr.TIME[1,:];
@@ -321,11 +320,11 @@ f2=plot(argo,option=:TS)
 f3=plot(argo,option=:standard)
 ```
 """
-plot(x::ArgoFloat; option=:standard, markersize=2,pol=Any[]) = begin
+plot(x::ArgoFloat; option=:standard, markersize=2,pol=Any[],size=(900,600)) = begin
 	if option==:standard
-	T_std,S_std=ArgoFiles.interp_z_all(x.data)
-	spd=ArgoFiles.speed(x.data)
-	plot_standard(x.ID,x.data,spd,T_std,S_std; markersize=markersize, pol=pol)
+		T_std,S_std=ArgoFiles.interp_z_all(x.data)
+		spd=ArgoFiles.speed(x.data)
+		plot_standard(x.ID,x.data,spd,T_std,S_std; markersize=markersize, pol=pol, size=size)
 	elseif option==:samples
 		plot_samples(x.data,x.ID)
 	elseif option==:TS
@@ -359,8 +358,8 @@ end
 
 ## Gliders
 
-function plot_glider(df,gdf,ID)
-	f=Figure()
+function plot_glider(df,gdf,ID;size=(900,600))
+	f=Figure(size=size)
 	
 	a_traj=Axis(f[1,1],title="Positions")
 	p=scatter!(a_traj,df.lon,df.lat,markersize=1)
@@ -390,15 +389,14 @@ end
     plot(x::Gliders,ID)
 
 ```
-using OceanRobots
-lst=GDP.list_files()
-drifter=read(SurfaceDrifter(),1,list_files=lst)
-plot(drifter)
+using OceanRobots, CairoMakie
+gliders=read(Gliders(),"GulfStream.nc")
+plot(gliders,1,size=(900,600))
 ```
 """
-plot(x::Gliders,ID) = begin
+plot(x::Gliders,ID;size=(900,600)) = begin
 	gdf=GliderFiles.groupby(x.data,:ID)
-	plot_glider(x.data,gdf,ID)
+	plot_glider(x.data,gdf,ID,size=size)
 end
 
 ## OceanOPS

@@ -389,16 +389,18 @@ function download(list_files,ii=1)
 end
 
 """
-    read(x::SurfaceDrifter,ii::Int; list_files=[])
+    read(x::SurfaceDrifter,ii::Int)
 
-Open file `list_files.filename[ii]` from NOAA ftp server using `NCDatasets.Dataset`.
+Open file number `ii` from NOAA ftp server using `NCDatasets.jl`.
 
-<ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/>
-or the corresponding webpage 
+Server : ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/
+
+Note: the first time this method is used, it calls `GDP.list_files()` 
+to get the list of drifters from server, and save it to a temporary file.
 
 ```
-lst=GDP.list_files()
-sd=read(SurfaceDrifter(),1,list_files=lst)
+using OceanRobots
+sd=read(SurfaceDrifter(),1)
 ```
 """
 read(x::SurfaceDrifter,ii::Int; list_files=[]) = begin
@@ -555,7 +557,31 @@ end
 
 module ArgoFiles
 
-using NCDatasets, Downloads, CSV, DataFrames, Interpolations, Statistics
+using NCDatasets, Downloads, CSV, DataFrames, Interpolations, Statistics, Dates
+
+"""
+    ArgoFiles.list_floats(;list=DataFrame())
+
+Get list of Argo profilers from file `ArgoFiles.list_floats()`.
+
+Or write provided `list` to file as a DataFrame.
+
+```
+using OceanRobots, ArgoData
+ArgoFiles.list_floats(list=GDAC.files_list())
+```
+"""
+function list_floats(;list=DataFrame())
+    td=string(Dates.today())
+    fil=joinpath(tempdir(),"Argo_list_$(td).csv")
+    if isempty(list)
+        files_list=CSV.read(fil,DataFrame)
+    else
+        files_list=list
+        CSV.write(fil,files_list)
+        files_list
+    end
+end
 
 """
     ArgoFiles.download(files_list,wmo)
