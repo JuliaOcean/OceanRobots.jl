@@ -1155,9 +1155,9 @@ version = "0.5.5"
 
 [[deps.OceanRobots]]
 deps = ["CFTime", "CSV", "DataFrames", "DataStructures", "Dataverse", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "Interpolations", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "URIs"]
-git-tree-sha1 = "944b55a822eb1169663a782c7a106a2ec3436661"
+git-tree-sha1 = "05107d8eeabbaf7a77fcffbb333594867292d79e"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
-version = "0.2.0"
+version = "0.2.1"
 
     [deps.OceanRobots.extensions]
     OceanRobotsArgoDataExt = ["ArgoData"]

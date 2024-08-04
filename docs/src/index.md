@@ -6,10 +6,14 @@ This package can be used to access, analyze, process, and simulate data generate
 
 ```@contents
 Pages = [
-    "examples.md",
     "reference.md",
+    "examples.md",
     "internals.md",
-    "visuals.md",
 ]
 Depth = 2
 ```
+
+Global Data Coverage | Individual Data Platforms
+:------------------------------:|:---------------------------------:
+![](https://user-images.githubusercontent.com/20276764/208552147-d433f802-9c09-41cc-bece-f0ef424f26ea.png) | ![](https://user-images.githubusercontent.com/20276764/208441408-1ffe7508-19da-4f41-b984-58820799785a.png) 
+

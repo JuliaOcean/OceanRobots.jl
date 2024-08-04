@@ -10,10 +10,9 @@ makedocs(;
     format=Documenter.HTML(),
     pages=[
         "Home" => "index.md",
-        "Notebooks" => "examples.md",
         "User Interface" => "reference.md",
+        "Notebooks" => "examples.md",
         "Internals" => "internals.md",
-        "Visuals" => "visuals.md",
         ],
     repo="https://github.com/JuliaOcean/OceanRobots.jl/blob/{commit}{path}#L{line}",
     sitename="OceanRobots.jl",
