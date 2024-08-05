@@ -11,28 +11,42 @@ import Makie: plot
 
 Plot drifter data.        
 """
-function plot_drifter(ds)	
+function plot_drifter(ds;size=(900,600),pol=Any[])	
 	la=GDP.read_v(ds,"latitude")
 	lo=GDP.read_v(ds,"longitude")
 	lon360=GDP.read_v(ds,"lon360")
 	tst=maximum(lo)-minimum(lo)>maximum(lon360)-minimum(lon360)
 	tst ? lo.=lon360 : nothing
 
-	ve=GDP.read_v(ds,"ve")
-	vn=GDP.read_v(ds,"vn")
+	ve=GDP.read_v(ds,"ve")[:]
+	vn=GDP.read_v(ds,"vn")[:]
 	vel=sqrt.(ve.^2 .+ vn.^2)
-		
-	fig1 = Figure()
-	ax1 = Axis(fig1[1,1], title="positions", xlabel="longitude",ylabel="latitude")
-	lines!(ax1,lo[:],la[:])
-	ax1 = Axis(fig1[1,2], title="velocities", xlabel="ve",ylabel="vn")
-	scatter!(ax1,ve[:],vn[:],markersize=2.0)
 
-	ax2 = Axis(fig1[2,1:2], title="speed (red), ve (blue), vn (green)", xlabel="time",ylabel="m/s")
-	lines!(ax2,vel[:],color=:red)
-	lines!(ax2,ve[:],color=:blue)
-	lines!(ax2,vn[:],color=:green)
-	
+	xlims=xrng(lo[:]); ylims=yrng(la[:])
+
+	fig1 = Figure(size=size)
+	ax1 = Axis(fig1[1,1], xlabel="longitude",ylabel="latitude",limits=(xlims,ylims))
+	scatter!(ax1,lo[:],la[:],markersize=8,color=:red)
+	!isempty(pol) ? [lines!(ax1,l1,color = :black, linewidth = 0.5) for l1 in pol] : nothing
+
+	ax1 = Axis(fig1[1,2], xlabel="eastward vel.",ylabel="northward vel.")
+	scatter!(ax1,ve[:],vn[:])
+
+	tim=GDP.read_v(ds,"time")[:]
+	sst=GDP.read_v(ds,"sst")[:]
+	sst1=GDP.read_v(ds,"sst1")[:]
+
+	ax2 = Axis(fig1[2,1:2], ylabel="m/s")
+	lines!(ax2,tim,vel,color=:red,label="velocity",linewidth=1)
+	lines!(ax2,tim,ve,color=:blue,label="eastward vel.",linewidth=1)
+	lines!(ax2,tim,vn,color=:green,label="northward vel.",linewidth=1)
+	fig1[2, 3] = Legend(fig1, ax2, framevisible = false)
+
+	ax3 = Axis(fig1[3,1:2], ylabel="degC")
+	lines!(tim,sst.-273.15,label="temperature")
+	lines!(tim,sst1.-273.15,label="non-diurnal temp.")
+	fig1[3, 3] = Legend(fig1, ax3, framevisible = false)
+
 	fig1
 end
 
@@ -40,13 +54,12 @@ end
     plot(x::SurfaceDrifter)
 	
 ```
-using OceanRobots
-lst=GDP.list_files()
-drifter=read(SurfaceDrifter(),1,list_files=lst)
+using OceanRobots, CairoMakie
+drifter=read(SurfaceDrifter(),1)
 plot(drifter)
 ```
 """
-plot(x::SurfaceDrifter) = plot_drifter(x.data)
+plot(x::SurfaceDrifter;size=(900,600),pol=Any[]) = plot_drifter(x.data,size=size,pol=pol)
 
 
 ## WHOTS
@@ -57,12 +70,12 @@ plot(x::SurfaceDrifter) = plot_drifter(x.data)
 ```
 using OceanRobots, Dates
 whots=read(OceanSite(),:WHOTS)
-plot(whots,DateTime(2005,1,1),DateTime(2005,2,1))
+plot(whots,DateTime(2005,1,1),DateTime(2005,2,1),size=(900,600))
 ```
 """
-plot(x::OceanSite,args...)=plot_WHOTS(x.data,x.units,args...)
+plot(x::OceanSite,args...;kwargs...)=plot_WHOTS(x.data,x.units,args...;kwargs...)
 
-function plot_WHOTS(arr,units,d0,d1)
+function plot_WHOTS(arr,units,d0,d1;size=(900,600))
 	
     tt=findall((arr.TIME.>d0).*(arr.TIME.<=d1))
     t=Dates.value.(arr.TIME.-d0)/1000.0/86400.0
@@ -70,21 +83,18 @@ function plot_WHOTS(arr,units,d0,d1)
     #t=Dates.value.(arr.TIME.-TIME[1])/1000.0/86400.0
     #tt=findall((t.>110).*(t.<140))
 
-    f=Figure()
-	ax1=Axis(f[1,1],xlabel="days",ylabel=units.wspeed,title="wspeed")
-    lines!(ax1,t[tt],arr.wspeed[tt])
-	ax1=Axis(f[2,1],xlabel="days",ylabel=units.AIRT,title="AIRT")
-    lines!(ax1,t[tt],arr.AIRT[tt])
-	ax1=Axis(f[3,1],xlabel="days",ylabel=units.TEMP,title="TEMP")
-    lines!(ax1,t[tt],arr.TEMP[tt])
-	
-	ax1=Axis(f[1,2],xlabel="days",ylabel=units.RAIN,title="RAIN")
-    lines!(ax1,t[tt],arr.RAIN[tt])
-	ax1=Axis(f[2,2],xlabel="days",ylabel=units.RELH,title="RELH")
-    lines!(ax1,t[tt],arr.RELH[tt])
-	ax1=Axis(f[3,2],xlabel="days",ylabel="x0"*units.PSAL,title="PSAL")
-    lines!(ax1,t[tt],arr.PSAL[tt])
-	
+	tim=arr.TIME
+
+    f=Figure(size=size)
+	ax1=Axis(f[1,1],ylabel=units.wspeed)
+    lines!(ax1,tim[tt],arr.wspeed[tt],label="wspeed"); Legend(f[1,2],ax1)
+	ax2=Axis(f[2,1],ylabel=units.AIRT)
+    lines!(ax2,tim[tt],arr.AIRT[tt],label="AIRT"); Legend(f[2,2],ax2)
+	ax3=Axis(f[3,1],ylabel=units.TEMP)
+    lines!(ax3,tim[tt],arr.TEMP[tt],label="TEMP"); Legend(f[3,2],ax3)
+	ax4=Axis(f[4,1],ylabel=units.RELH)
+    lines!(ax4,tim[tt],arr.RELH[tt],label="RELH"); Legend(f[4,2],ax4)
+
     f
 end
 
@@ -94,20 +104,27 @@ end
     plot(x::NOAAbuoy,var)
 	
 ```
-using OceanRobots
+using OceanRobots, CairoMakie
 buoy=read(NOAAbuoy(),41046)
-plot(buoy,"PRES")
+plot(buoy,"PRES",size=(900,600))
 ```
 """
-plot(x::NOAAbuoy,var) = begin
-	f=Figure()
-	u=x.units[var]
+plot(x::NOAAbuoy,vars; size=(900,600)) = begin
+	f=Figure(size=size)
 	sta=x.ID
-	ax=Axis(f[1,1],title="Station $(sta), Variable $(var), Units $(u)",ylabel=u,xlabel="days")
-	lines!(ax,x.data.dt,x.data[!,Symbol(var)])
-	println(x.descriptions[var])
+	for vv in 1:length(vars)
+		var=vars[vv]
+		u=x.units[var]
+		ax=Axis(f[vv,1],title="Station= $(sta), Variable= $(var)",ylabel=u)
+		tim=DateTime.(x.data.YY,x.data.MM,x.data.DD,x.data.hh,x.data.mm)
+		lines!(ax,tim,x.data[!,Symbol(var)])
+		println(x.descriptions[var])
+	end
 	f
 end
+
+plot(x::NOAAbuoy,var::String; kwargs...) = plot(x,[var]; kwargs...)
+
 
 """
     plot(x::NOAAbuoy_monthly, var=""; option=:demo)
@@ -118,12 +135,13 @@ buoy=read(NOAAbuoy_monthly(),44013)
 plot(buoy;option=:demo)
 ```
 """
-plot(x::NOAAbuoy_monthly, var=""; option=:demo) = begin
+plot(x::NOAAbuoy_monthly, var="T(°F)"; option=:demo, size=(900,600)) = begin
 	if option==:demo
 		gmdf=NOAA.groupby(x.data,"MM")
-		tbl=[NOAA.summary_table(gmdf[m],25) for m in 1:12]
+		tbl=[NOAA.summary_table(gmdf[m],25,var=var) for m in 1:12]
 		all=[]; [push!(all,(tbl[m].T1-tbl[m].T0)...) for m in 1:12]
-		plot_summary(tbl,all)
+		uni=( var=="T(°F)" ? "°Fahrenheit" : x.units[var] )
+		plot_summary(tbl,all,var,uni,size=size)
 	else
 		@warn "case not implemented"
 	end
@@ -131,11 +149,12 @@ end
 
 mean=NOAA.mean
 
-function plot_summary(tbl,all)
-	f=Figure(); 
-	ax=Axis(f[1,1],title="full distribution of T1-T0 "); hist!(ax,all)
+function plot_summary(tbl,all,var,uni;size=(900,600))
+	f=Figure(size=size)
+	xlm=maximum(abs.(all[:])).*(-1,1)
+	ax=Axis(f[1,1],title="full distribution of T1-T0 ",limits = (xlm, nothing)); hist!(ax,all)
 	ax=Axis(f[1,2],title="mean(T1-T0) each month"); barplot!(ax,[mean(tbl[m].T1)-mean(tbl[m].T0) for m in 1:12])
-	ax=Axis(f[2,1:2],title="seasonal cycle");
+	ax=Axis(f[2,1:2],title="seasonal cycle of $(var)",ylabel=uni);
 	lines!(ax,[mean(tbl[m].T0) for m in 1:12],label="mean(T0)")
 	lines!(ax,[mean(tbl[m].T1) for m in 1:12],label="mean(T1)")
 	axislegend(ax)
@@ -220,7 +239,6 @@ function heatmap_profiles!(ax,TIME,TEMP,cmap)
 	co=Float64.(permutedims(TEMP))
 	rng=extrema(TEMP[:])
 	sca=heatmap!(ax, x , y , co, colorrange=rng,colormap=cmap)
-	ax.xlabel="time (day)"
 	ax.ylabel="depth (m)"
 	sca
 end
@@ -252,42 +270,42 @@ function plot_trajectory!(ax,lon,lat,co;
 end
 
 xrng(lon)=begin
-	a=[floor(minimum(lon)) ceil(maximum(lon))]
-	dx=diff(a[:])[1]
-	b=[max(a[1]-dx/2,-180) min(a[2]+dx/2,180)]
+	a=[floor(minimum(skipmissing(lon))) ceil(maximum(skipmissing(lon)))]
+	dx=max(diff(a[:])[1],10)
+	(max(a[1]-dx/2,-180),min(a[2]+dx/2,180))
 end
 yrng(lat)=begin
-	a=[floor(minimum(lat)) ceil(maximum(lat))]
-	dx=diff(a[:])[1]
-	b=[max(a[1]-dx/2,-90) min(a[2]+dx/2,90)]
+	a=[floor(minimum(skipmissing(lat))) ceil(maximum(skipmissing(lat)))]
+	dx=max(diff(a[:])[1],10)
+	b=(max(a[1]-dx/2,-90),min(a[2]+dx/2,90))
 end
 
-function plot_standard(wmo,arr,spd,T_std,S_std; markersize=2,pol=Any[])
+function plot_standard(wmo,arr,spd,T_std,S_std; markersize=2,pol=Any[],size=(900,600))
 
 	xlims=xrng(arr.lon)
 	ylims=yrng(arr.lat)
 	
-	fig1=Figure(size=(900,900))
+	fig1=Figure(size=size)
 
 	ax=Axis(fig1[1,1])
 	li1=plot_trajectory!(ax,arr.lon,arr.lat,arr.TIME[1,:];
-		linewidth=5,pol=pol,xlims=(-180,180),ylims=(-80,90),
+		linewidth=5,pol=pol,xlims=xlims,ylims=ylims,
 		title="time since launch, in days")
 	Colorbar(fig1[1,2], li1, height=Relative(0.65))
 
 	ax=Axis(fig1[1,3])
 	li2=plot_trajectory!(ax,arr.lon,arr.lat,spd.speed;
-		markersize=2,pol=pol,xlims=xlims,ylims=ylims,
+		linewidth=5,pol=pol,xlims=xlims,ylims=ylims,
 		title="estimated speed (m/s)")
 	Colorbar(fig1[1,4], li2, height=Relative(0.65))
 
 	ax=Axis(fig1[2,1:3],title="Temperature, °C")
-	hm1=heatmap_profiles!(ax,arr.TIME,T_std,:thermal)
+	hm1=heatmap_profiles!(ax,arr.DATE,T_std,:thermal)
 	Colorbar(fig1[2,4], hm1, height=Relative(0.65))
 	ylims!(ax, 500, 0)
 
 	ax=Axis(fig1[3,1:3],title="Salinity, [PSS-78]")
-	hm2=heatmap_profiles!(ax,arr.TIME,S_std,:viridis)
+	hm2=heatmap_profiles!(ax,arr.DATE,S_std,:viridis)
 	Colorbar(fig1[3,4], hm2, height=Relative(0.65))
 	ylims!(ax, 500, 0)
 
@@ -309,11 +327,11 @@ f2=plot(argo,option=:TS)
 f3=plot(argo,option=:standard)
 ```
 """
-plot(x::ArgoFloat; option=:standard, markersize=2,pol=Any[]) = begin
+plot(x::ArgoFloat; option=:standard, markersize=2,pol=Any[],size=(900,600)) = begin
 	if option==:standard
-	T_std,S_std=ArgoFiles.interp_z_all(x.data)
-	spd=ArgoFiles.speed(x.data)
-	plot_standard(x.ID,x.data,spd,T_std,S_std; markersize=markersize, pol=pol)
+		T_std,S_std=ArgoFiles.interp_z_all(x.data)
+		spd=ArgoFiles.speed(x.data)
+		plot_standard(x.ID,x.data,spd,T_std,S_std; markersize=markersize, pol=pol, size=size)
 	elseif option==:samples
 		plot_samples(x.data,x.ID)
 	elseif option==:TS
@@ -347,29 +365,44 @@ end
 
 ## Gliders
 
-function plot_glider(df,gdf,ID)
-	f=Figure()
-	
-	a_traj=Axis(f[1,1],title="Positions")
+rng(x;mini=NaN,maxi=NaN,pad=0.1) = begin
+	xlm=collect(extrema(skipmissing(x)))
+	dxlm=diff(xlm)[1]
+	xlm=[xlm[1]-pad*dxlm,xlm[2]+pad*dxlm]
+	isfinite(mini) ? xlm[1]=max(mini,xlm[1]) : nothing
+	isfinite(maxi) ? xlm[2]=min(maxi,xlm[2]) : nothing
+	(xlm[1],xlm[2])
+end
+
+function plot_glider(df,gdf,ID;size=(900,600),pol=Any[])
+	f=Figure(size=size)
+#	xlims=rng(df.lon,mini=-180,maxi=180)
+#	ylims=rng(df.lat,mini=-90,maxi=90)
+	xlims=xrng(df.lon)
+	ylims=yrng(df.lat)
+	a_traj=Axis(f[1,1],title="Positions",limits = (xlims, ylims))
 	p=scatter!(a_traj,df.lon,df.lat,markersize=1)
 	p=scatter!(a_traj,gdf[ID].lon,gdf[ID].lat,color=:red)
+	!isempty(pol) ? [lines!(a_traj,l1,color = :black, linewidth = 0.5) for l1 in pol] : nothing
+
+	tim=DateTime.(gdf[ID].time[:])
 
 	a_uv=Axis(f[1,2],title="Velocity (m/s, depth mean)")
-	p=lines!(a_uv,gdf[ID].u[:])
-	p=lines!(a_uv,gdf[ID].v[:])
-	p=lines!(a_uv,sqrt.(gdf[ID].u[:].^2 + gdf[ID].v[:].^2))
+	p=lines!(a_uv,tim,gdf[ID].u[:])
+	p=lines!(a_uv,tim,gdf[ID].v[:])
+	p=lines!(a_uv,tim,sqrt.(gdf[ID].u[:].^2 + gdf[ID].v[:].^2))
 
 	a2=Axis(f[2,1],title="Temperature (degree C -- 10,100,500m depth)")
 
-	lines!(a2,gdf[ID].T10[:])	
-	lines!(a2,gdf[ID].T100[:])
-	lines!(a2,gdf[ID].T500[:])
+	lines!(a2,tim,gdf[ID].T10[:])	
+	lines!(a2,tim,gdf[ID].T100[:])
+	lines!(a2,tim,gdf[ID].T500[:])
 
 	a3=Axis(f[2,2],title="Salinity (psu -- 10,100,500m depth)")
 
-	lines!(a3,gdf[ID].S10[:],label="10m")	
-	lines!(a3,gdf[ID].S100[:],label="100m")
-	lines!(a3,gdf[ID].S500[:],label="500m")
+	lines!(a3,tim,gdf[ID].S10[:],label="10m")	
+	lines!(a3,tim,gdf[ID].S100[:],label="100m")
+	lines!(a3,tim,gdf[ID].S500[:],label="500m")
 
 	f
 end
@@ -378,15 +411,14 @@ end
     plot(x::Gliders,ID)
 
 ```
-using OceanRobots
-lst=GDP.list_files()
-drifter=read(SurfaceDrifter(),1,list_files=lst)
-plot(drifter)
+using OceanRobots, CairoMakie
+gliders=read(Gliders(),"GulfStream.nc")
+plot(gliders,1,size=(900,600))
 ```
 """
-plot(x::Gliders,ID) = begin
+plot(x::Gliders,ID;size=(900,600),pol=Any[]) = begin
 	gdf=GliderFiles.groupby(x.data,:ID)
-	plot_glider(x.data,gdf,ID)
+	plot_glider(x.data,gdf,ID,size=size,pol=pol)
 end
 
 ## OceanOPS

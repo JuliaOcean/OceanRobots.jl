@@ -9,8 +9,7 @@ using Test
     @test isa(files[1],String)
     @test isempty(folders)
 
-    lst=GDP.list_files()
-    b=read(SurfaceDrifter(),1,list_files=lst)
+    b=read(SurfaceDrifter(),1)
     @test haskey(b.data,"ve")
 
     f3=plot(b)
@@ -59,8 +58,12 @@ using Test
 
     ##
 
-    stations=[41046, 44065]		
-	NOAA.download(stations)
+    allstations=NOAA.list_stations()
+    metstations=NOAA.list_realtime(ext=:txt)
+
+    stations=metstations[1:200:end]
+    ids=NOAA.download(stations)
+
     b=read(NOAAbuoy(),41046)
     plot(b,"PRES")
     @test isa(b,NOAAbuoy)

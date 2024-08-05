@@ -64,9 +64,47 @@ end #module GliderFiles
 
 module NOAA
 
-using Downloads, CSV, DataFrames, Dates, NCDatasets, Statistics
+using Downloads, CSV, DataFrames, Dates, NCDatasets, Statistics, HTTP
 import OceanRobots: NOAAbuoy, NOAAbuoy_monthly, THREDDS
 import Base: read
+
+"""
+    NOAA.list_stations()
+
+Get stations list from https://www.ndbc.noaa.gov/to_station.shtml
+"""
+function list_stations()
+    myurl0="https://www.ndbc.noaa.gov/to_station.shtml"
+    txt0=String(HTTP.get(myurl0).body)
+    txt1=split(txt0,"station_page.php?station=")[2:end]
+    String.([split(t,"\"")[1] for t in txt1])
+end
+
+"""
+    NOAA.list_realtime(;ext=:all)
+
+Get either files list from https://www.ndbc.noaa.gov/data/realtime2/
+or list of buoy codes that provide some file type 
+(e.g. "txt" for "Standard Meteorological Data")
+
+```
+lst0=NOAA.list_realtime()
+lst1=NOAA.list_realtime(ext=:txt)
+```
+"""
+function list_realtime(;ext=:all)
+    myurl0="https://www.ndbc.noaa.gov/data/realtime2/"
+    txt0=String(HTTP.get(myurl0).body)
+    txt1=split(txt0,"<tr><td valign=\"top\"><img src=\"/icons/text.gif\"")[3:end]
+    lst1=[split(split(t,"href=\"")[2],"\">")[1]  for t in txt1]
+    if ext!==:all
+        extxt=String(ext)
+        lst2=lst1[[split(t,".")[2]==string(ext) for t in lst1]]
+        [split(t,".")[1] for t in  lst2]
+    else
+        lst1
+    end
+end
 
 """
     NOAA.download(stations::Union(Array,Int),path=tempdir())
@@ -84,6 +122,20 @@ function download(stations::Union{Array,Int},path=tempdir())
         push!(files,fil1)
     end
     files
+end
+
+"""
+    NOAA.download(sta::String,path=tempdir())
+
+Download files for stations `sta` from `ndbc.noaa.gov` to `path`.
+"""
+function download(sta::Union{String,SubString},path=tempdir())
+    url0="https://www.ndbc.noaa.gov/data/realtime2/"
+    fil="$sta.txt"
+    url1=url0*fil
+    fil1=joinpath(path,fil)
+    Downloads.download(url1,fil1)
+    fil1
 end
 
 """
@@ -247,8 +299,12 @@ function read_historical_txt(ID,y)
     df
 end
 
-function summary_table(z,ny=25)
-    T=round.(z.WTMP * 1.8 .+32,digits=1)
+function summary_table(z,ny=25;var="T(°F)")
+    if var=="T(°F)"
+        T=round.(z.WTMP * 1.8 .+32,digits=1)
+    else
+        T=buoy.data[:,var]
+    end
     p=[(T[z.YY.==y],T[z.YY.==y+ny]) for y in 1984:2001]
     i=findall([length(pp[1])*length(pp[2])==1 for pp in p])
     T0=[p[ii][1][1] for ii in i]
@@ -272,7 +328,7 @@ end #module NOAA
 
 module GDP
 
-using DataFrames, FTPClient, NCDatasets
+using DataFrames, FTPClient, NCDatasets, Dates, CSV
 import OceanRobots: SurfaceDrifter
 import Base: read
 
@@ -285,12 +341,19 @@ Get list of drifter files from NOAA ftp server or the corresponding webpage.
 - <https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/>
 """
 function list_files()
-    list_files=DataFrame("folder" => [],"filename" => [])
-    ftp=FTP("ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/")
-    tmp=readdir(ftp)
-    append!(list_files,DataFrame("folder" => "","filename" => tmp))
-    list_files.ID=[parse(Int,split(f,"_")[2][1:end-3]) for f in list_files.filename]
-    list_files
+    td=string(Dates.today())
+    fil=joinpath(tempdir(),"GDP_list_$(td).csv")
+    if isfile(fil)
+        list_files=CSV.read(fil,DataFrame)
+    else
+        list_files=DataFrame("folder" => [],"filename" => [])
+        ftp=FTP("ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/")
+        tmp=readdir(ftp)
+        append!(list_files,DataFrame("folder" => "","filename" => tmp))
+        list_files.ID=[parse(Int,split(f,"_")[2][1:end-3]) for f in list_files.filename]
+        CSV.write(fil,list_files)
+        list_files
+    end
 end
 
 # 6-hourly interpolated data product if available via thredds server
@@ -311,7 +374,8 @@ fil=GDP.download(list_files,1)
 """
 function download(list_files,ii=1)
     url0="ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/"
-    url1=joinpath(url0,list_files[ii,"folder"])
+    pth0=list_files[ii,"folder"]
+    url1=(ismissing(pth0) ? url0 : joinpath(url0,pth0))
     ftp=FTP(url1)
 
     fil=list_files[ii,"filename"]
@@ -325,16 +389,18 @@ function download(list_files,ii=1)
 end
 
 """
-    read(x::SurfaceDrifter,ii::Int; list_files=[])
+    read(x::SurfaceDrifter,ii::Int)
 
-Open file `list_files.filename[ii]` from NOAA ftp server using `NCDatasets.Dataset`.
+Open file number `ii` from NOAA ftp server using `NCDatasets.jl`.
 
-<ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/>
-or the corresponding webpage 
+Server : ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/
+
+Note: the first time this method is used, it calls `GDP.list_files()` 
+to get the list of drifters from server, and save it to a temporary file.
 
 ```
-lst=GDP.list_files()
-sd=read(SurfaceDrifter(),1,list_files=lst)
+using OceanRobots
+sd=read(SurfaceDrifter(),1)
 ```
 """
 read(x::SurfaceDrifter,ii::Int; list_files=[]) = begin
@@ -345,7 +411,8 @@ read(x::SurfaceDrifter,ii::Int; list_files=[]) = begin
     SurfaceDrifter(lst.ID[ii],ds,wmo,lst)
 end
 
-read_v(ds,v) = Float64.(cfvariable(ds,v,missing_value=-1.e+34))
+missing_to_NaN(x) = [(ismissing(y) ? NaN : y) for y in x]
+read_v(ds,v) = missing_to_NaN(cfvariable(ds,v,missing_value=-1.e+34))
 
 end #module GDP
 
@@ -490,7 +557,31 @@ end
 
 module ArgoFiles
 
-using NCDatasets, Downloads, CSV, DataFrames, Interpolations, Statistics
+using NCDatasets, Downloads, CSV, DataFrames, Interpolations, Statistics, Dates
+
+"""
+    ArgoFiles.list_floats(;list=DataFrame())
+
+Get list of Argo profilers from file `ArgoFiles.list_floats()`.
+
+Or write provided `list` to file as a DataFrame.
+
+```
+using OceanRobots, ArgoData
+ArgoFiles.list_floats(list=GDAC.files_list())
+```
+"""
+function list_floats(;list=DataFrame())
+    td=string(Dates.today())
+    fil=joinpath(tempdir(),"Argo_list_$(td).csv")
+    if isempty(list)
+        files_list=CSV.read(fil,DataFrame)
+    else
+        files_list=list
+        CSV.write(fil,files_list)
+        files_list
+    end
+end
 
 """
     ArgoFiles.download(files_list,wmo)
@@ -527,10 +618,11 @@ function readfile(fil)
 	TEMP=ds["TEMP_ADJUSTED"][:,:]
 	PSAL=ds["PSAL_ADJUSTED"][:,:]
 	TIME=10*ones(size(PRES,1)).* (1:length(lon))' .-10.0
+    DATE=[DateTime(ds["JULD"][i]) for j in 1:size(PRES,1), i in 1:length(lon)]
 
     close(ds)
 
-    return (lon=lon,lat=lat,PRES=PRES,TEMP=TEMP,PSAL=PSAL,TIME=TIME)
+    return (lon=lon,lat=lat,PRES=PRES,TEMP=TEMP,PSAL=PSAL,TIME=TIME,DATE=DATE)
 end
 
 skmi(x) = ( sum((!ismissing).(x))>0 ? minimum(skipmissing(x)) : missing )
