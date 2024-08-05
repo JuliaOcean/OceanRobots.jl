@@ -3,6 +3,11 @@ using Documenter, OceanRobots, PlutoSliderServer, CairoMakie, ArgoData
 ENV["DATADEPS_ALWAYS_ACCEPT"]=true
 OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
 OceanRobotsArgoDataExt=Base.get_extension(OceanRobots, :OceanRobotsArgoDataExt)
+
+using MeshArrays, Shapefile, DataDeps
+pol_file=demo.download_polygons("ne_110m_admin_0_countries.shp")
+pol=MeshArrays.read_polygons(pol_file)
+
 ##
 
 makedocs(;
