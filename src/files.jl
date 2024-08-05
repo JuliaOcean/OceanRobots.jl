@@ -618,10 +618,11 @@ function readfile(fil)
 	TEMP=ds["TEMP_ADJUSTED"][:,:]
 	PSAL=ds["PSAL_ADJUSTED"][:,:]
 	TIME=10*ones(size(PRES,1)).* (1:length(lon))' .-10.0
+    DATE=[DateTime(ds["JULD"][i]) for j in 1:size(PRES,1), i in 1:length(lon)]
 
     close(ds)
 
-    return (lon=lon,lat=lat,PRES=PRES,TEMP=TEMP,PSAL=PSAL,TIME=TIME)
+    return (lon=lon,lat=lat,PRES=PRES,TEMP=TEMP,PSAL=PSAL,TIME=TIME,DATE=DATE)
 end
 
 skmi(x) = ( sum((!ismissing).(x))>0 ? minimum(skipmissing(x)) : missing )

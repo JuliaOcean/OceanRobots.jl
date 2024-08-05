@@ -5,55 +5,68 @@ Each type of ocean data gets :
 - a simple `read` function that downloads data if needed. 
 - a default `plot` function that depicts some of the data.
 
+For mapping purposes, it is useful to download country polygons.
+
+```@example ex1
+using MeshArrays, Shapefile, DataDeps
+pol_file=demo.download_polygons("ne_110m_admin_0_countries.shp")
+pol=MeshArrays.read_polygons(pol_file)
+nothing #hide
+```
+
 ## Surface Drifters
 
-```@example
+```@example ex1
 using OceanRobots, CairoMakie
 drifter=read(SurfaceDrifter(),1)
-plot(drifter,size=(900,600))
+plot(drifter,pol=pol)
 ```
 
 ## Argo Profilers
 
-```@example
+```@example ex1
 using OceanRobots, ArgoData, CairoMakie
 argo=read(ArgoFloat(),wmo=2900668)
-plot(argo,size=(900,600))
+plot(argo,pol=pol)
 ```
 
 ## NOAA Buoys
 
-```@example
+```@example ex1
 using OceanRobots, CairoMakie
 buoy=read(NOAAbuoy(),41046)
-plot(buoy,"PRES",size=(900,600))
+plot(buoy,["PRES","ATMP","WTMP"],size=(900,600))
 ```
 
-```@example
+```@example ex1
 using OceanRobots, CairoMakie
 buoy=read(NOAAbuoy_monthly(),44013)
-plot(buoy;option=:demo,size=(900,600))
+plot(buoy;option=:demo)
 ```
 
 ## WHOTS Mooring
 
-```@example
-using OceanRobots, CairoMakie, Dates
+```@example ex1
+using OceanRobots
 whots=read(OceanSite(),:WHOTS)
-plot(whots,DateTime(2005,1,1),DateTime(2005,2,1),size=(900,600))
+
+using CairoMakie, Dates
+date1=DateTime(2005,1,1)
+date2=DateTime(2005,2,1)
+plot(whots,date1,date2)
 ```
 
 ## Spray Gliders
 
-```@example
+```@example ex1
 using OceanRobots, CairoMakie
 gliders=read(Gliders(),"GulfStream.nc")
-plot(gliders,1,size=(900,600))
+plot(gliders,1,pol=pol)
 ```
 
 ## Sea Level Anomaly
 
-```@example
+```@example ex1
 using OceanRobots, CairoMakie
 sla=read(SeaLevelAnomaly(),:sla_podaac)
 plot(sla)
