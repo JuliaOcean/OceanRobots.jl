@@ -1,4 +1,30 @@
 
+module CCHDO
+
+using Downloads
+
+"""
+    CCHDO.download(cruise::Union(Symbol,Symbol[]),path=tempdir())
+
+Download files listed in `stations` from `cchdo.ucsd.edu/cruise/` to `path`.
+"""
+function download(cruise::Union{Symbol,String,Vector},path=tempdir())
+    url0="https://cchdo.ucsd.edu/cruise/"
+    files=String[]
+    cruises=(isa(cruise,Vector) ? cruise : [cruise])
+    for f in cruises
+        url1=url0*string(f)*"?download=dataset"
+        fil1=joinpath(path,string(f)*".gzip")
+        println(fil1)
+        Downloads.download(url1,fil1)
+        push!(files,fil1)
+    end
+    files
+end
+
+end
+
+
 module GliderFiles
 
 import OceanRobots: Gliders
