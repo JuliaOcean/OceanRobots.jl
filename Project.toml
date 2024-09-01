@@ -1,7 +1,7 @@
 name = "OceanRobots"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
 authors = ["gaelforget <gforget@mit.edu>"]
-version = "0.2.1"
+version = "0.2.2"
 
 [deps]
 CFTime = "179af706-886a-5703-950a-314cd64e0468"
