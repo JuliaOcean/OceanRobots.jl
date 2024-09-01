@@ -1,7 +1,8 @@
 
 module CCHDO
 
-using Downloads
+import Downloads, Dataverse, NCDatasets
+import NCDatasets: Dataset
 
 """
     CCHDO.download(cruise::Union(Symbol,Symbol[]),path=tempdir())
@@ -14,12 +15,59 @@ function download(cruise::Union{Symbol,String,Vector},path=tempdir())
     cruises=(isa(cruise,Vector) ? cruise : [cruise])
     for f in cruises
         url1=url0*string(f)*"?download=dataset"
-        fil1=joinpath(path,string(f)*".gzip")
-        println(fil1)
-        Downloads.download(url1,fil1)
-        push!(files,fil1)
+        fil1=joinpath(path,string(f)*".zip")
+        path1=joinpath(path,string(f))
+        fil2=joinpath(path1,string(f)*".zip")
+        if !isdir(path1)
+            Downloads.download(url1,fil1)
+            mkdir(path1)
+            mv(fil1,fil2)
+            Dataverse.unzip(fil2)
+            push!(files,path1)
+        end
     end
     files
+end
+
+#https://cchdo.ucsd.edu/search?q=chipod
+#https://microstructure.ucsd.edu
+
+#https://cchdo.ucsd.edu/cruise/33RR20160208
+#https://cchdo.ucsd.edu/data/34887/33RR20160208su.txt
+#https://cchdo.ucsd.edu/data/41775/I08S_chipod_raw.zip
+#https://cchdo.ucsd.edu/data/41776/I08S_nc_final.nc
+
+#https://cchdo.ucsd.edu/cruise/320620170703
+#https://cchdo.ucsd.edu/data/14267/320620170703_do.txt
+#https://cchdo.ucsd.edu/data/41749/P06_CTDchipod_final.nc
+
+#https://cchdo.ucsd.edu/cruise/74EQ20151206
+#https://cchdo.ucsd.edu/data/41791/A05_chipod_raw.zip
+#https://cchdo.ucsd.edu/data/41792/A05_nc_final.nc
+
+#https://cchdo.ucsd.edu/cruise/33RO20131223
+#https://cchdo.ucsd.edu/cruise/33RO20131223?download=dataset
+#https://cchdo.ucsd.edu/data/41773/A16S_chipod_raw.zip
+#https://cchdo.ucsd.edu/data/41774/A16S_nc_final.nc
+
+#https://cchdo.ucsd.edu/cruise/33RO20150410
+#https://cchdo.ucsd.edu/cruise/33RO20150410?download=dataset
+#https://cchdo.ucsd.edu/data/41783/P16N1_chipod_raw.zip
+#https://cchdo.ucsd.edu/data/41784/P16N1_CTDchipod_final.nc
+
+#others that dont have the finalize nc file yet:
+
+#https://cchdo.ucsd.edu/cruise/33RR20230722
+#https://cchdo.ucsd.edu/data/41794/I05_chipod_raw.zip
+
+#more 
+
+#https://cchdo.ucsd.edu/products/
+#https://doi.org/10.7942/GOSHIP-EasyOcean
+#https://argovis.colorado.edu/ships
+
+function read(fil)
+    ds=Dataset(fil)
 end
 
 end
