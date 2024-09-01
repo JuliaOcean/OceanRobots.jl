@@ -113,4 +113,8 @@ using Test
     path=CCHDO.download(ID)
     @test ispath(path)
 
+    list1=DataFrames.DataFrame(:filename=>readdir(path))
+    cruise=OceanExpedition(ID,[],list1)
+    @test isa(cruise,OceanExpedition)
+
 end
