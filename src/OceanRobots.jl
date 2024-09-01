@@ -15,6 +15,7 @@ export GDP, GDP_CloudDrift, NOAA, GliderFiles, ArgoFiles, OceanSites, OceanOPS, 
 include("gridded_data.jl")
 export cmems_sla, podaac_sla
 
-export NOAAbuoy, NOAAbuoy_monthly, ArgoFloat, SurfaceDrifter, Gliders, OceanSite, CloudDrift, SeaLevelAnomaly
+export NOAAbuoy, NOAAbuoy_monthly, ArgoFloat, SurfaceDrifter, Gliders
+export CCHDO, OceanSite, CloudDrift, SeaLevelAnomaly
 
 end # module

@@ -24,13 +24,14 @@ function download(cruise::Union{Symbol,String,Vector},path=tempdir())
         fil1=joinpath(path,string(f)*".zip")
         path1=joinpath(path,string(f))
         fil2=joinpath(path1,string(f)*".zip")
+        list=ancillary_files(f)
         if !isdir(path1)
+            println("downloading CCHDO files for cruise $(f)")
             Downloads.download(url1,fil1)
             mkdir(path1)
             mv(fil1,fil2)
             Dataverse.unzip(fil2)
             #download ancillary files:
-            list=ancillary_files(ID,path)
             for i in list
                 isempty(i) ? nothing : Downloads.download(i,joinpath(path1,basename(i)))
             end
@@ -51,20 +52,16 @@ end
 
 
 """
-    ancillary_files(cruise::Union{Symbol,String},path=tempdir())
+    ancillary_files(cruise::Union{Symbol,String})
 
 ```
 using OceanRobots
 ID="33RR20230722"
-path=OceanRobots.CCHDO.download(ID)
-OceanRobots.CCHDO.ancillary_files(ID,path)
+list=OceanRobots.CCHDO.ancillary_files(ID)
 ```
 """
-function ancillary_files(cruise::Union{Symbol,String},path=tempdir())
-    url0="https://cchdo.ucsd.edu/cruise/"
-    f=string(cruise)
-    path1=(occursin(f,path) ? path : joinpath(path,f))
-    
+function ancillary_files(cruise::Union{Symbol,String})
+    f=string(cruise)    
     if f=="33RR20160208"
         list=(  txt="https://cchdo.ucsd.edu/data/12413/33RR20160208_do.txt",
                 sum="https://cchdo.ucsd.edu/data/34887/33RR20160208su.txt",
