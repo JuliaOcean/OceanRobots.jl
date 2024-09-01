@@ -8,6 +8,13 @@ import NCDatasets: Dataset
     CCHDO.download(cruise::Union(Symbol,Symbol[]),path=tempdir())
 
 Download files listed in `stations` from `cchdo.ucsd.edu/cruise/` to `path`.
+
+```
+using OceanRobots
+ID="33RR20160208"
+path=OceanRobots.CCHDO.download(ID)
+OceanRobots.CCHDO.ancillary_files(ID,path)
+```
 """
 function download(cruise::Union{Symbol,String,Vector},path=tempdir())
     url0="https://cchdo.ucsd.edu/cruise/"
@@ -23,48 +30,66 @@ function download(cruise::Union{Symbol,String,Vector},path=tempdir())
             mkdir(path1)
             mv(fil1,fil2)
             Dataverse.unzip(fil2)
-            push!(files,path1)
         end
+        push!(files,path1)
     end
-    files
+    length(files)==1 ? files[1] : files
 end
 
+#other relevant URLs:
+#
 #https://cchdo.ucsd.edu/search?q=chipod
 #https://microstructure.ucsd.edu
-
-#https://cchdo.ucsd.edu/cruise/33RR20160208
-#https://cchdo.ucsd.edu/data/34887/33RR20160208su.txt
-#https://cchdo.ucsd.edu/data/41775/I08S_chipod_raw.zip
-#https://cchdo.ucsd.edu/data/41776/I08S_nc_final.nc
-
-#https://cchdo.ucsd.edu/cruise/320620170703
-#https://cchdo.ucsd.edu/data/14267/320620170703_do.txt
-#https://cchdo.ucsd.edu/data/41749/P06_CTDchipod_final.nc
-
-#https://cchdo.ucsd.edu/cruise/74EQ20151206
-#https://cchdo.ucsd.edu/data/41791/A05_chipod_raw.zip
-#https://cchdo.ucsd.edu/data/41792/A05_nc_final.nc
-
-#https://cchdo.ucsd.edu/cruise/33RO20131223
-#https://cchdo.ucsd.edu/cruise/33RO20131223?download=dataset
-#https://cchdo.ucsd.edu/data/41773/A16S_chipod_raw.zip
-#https://cchdo.ucsd.edu/data/41774/A16S_nc_final.nc
-
-#https://cchdo.ucsd.edu/cruise/33RO20150410
-#https://cchdo.ucsd.edu/cruise/33RO20150410?download=dataset
-#https://cchdo.ucsd.edu/data/41783/P16N1_chipod_raw.zip
-#https://cchdo.ucsd.edu/data/41784/P16N1_CTDchipod_final.nc
-
-#others that dont have the finalize nc file yet:
-
-#https://cchdo.ucsd.edu/cruise/33RR20230722
-#https://cchdo.ucsd.edu/data/41794/I05_chipod_raw.zip
-
-#more 
-
+#
 #https://cchdo.ucsd.edu/products/
 #https://doi.org/10.7942/GOSHIP-EasyOcean
 #https://argovis.colorado.edu/ships
+
+
+"""
+    ancillary_files(cruise::Union{Symbol,String},path=tempdir())
+
+```
+using OceanRobots
+ID="33RR20230722"
+path=OceanRobots.CCHDO.download(ID)
+OceanRobots.CCHDO.ancillary_files(ID,path)
+```
+"""
+function ancillary_files(cruise::Union{Symbol,String},path=tempdir())
+    url0="https://cchdo.ucsd.edu/cruise/"
+    f=string(cruise)
+    path1=(occursin(f,path) ? path : joinpath(path,f))
+    
+    if f=="33RR20160208"
+        list=(  txt="https://cchdo.ucsd.edu/data/34887/33RR20160208su.txt",
+                chipod="https://cchdo.ucsd.edu/data/41776/I08S_nc_final.nc",
+                chipod_raw="https://cchdo.ucsd.edu/data/41775/I08S_chipod_raw.zip")
+    elseif f=="320620170703"
+        list=(  txt="https://cchdo.ucsd.edu/data/14267/320620170703_do.txt",
+                chipod="https://cchdo.ucsd.edu/data/41749/P06_CTDchipod_final.nc",
+                chipod_raw="")
+    elseif f=="74EQ20151206"
+        list=(  txt="",
+                chipod="https://cchdo.ucsd.edu/data/41792/A05_nc_final.nc",
+                chipod_raw="https://cchdo.ucsd.edu/data/41791/A05_chipod_raw.zip")
+    elseif f=="33RO20131223"
+        list=(  txt="",
+                chipod="https://cchdo.ucsd.edu/data/41774/A16S_nc_final.nc",
+                chipod_raw="https://cchdo.ucsd.edu/data/41773/A16S_chipod_raw.zip")
+    elseif f=="33RO20150410"
+        list=(  txt="",
+                chipod="https://cchdo.ucsd.edu/data/41784/P16N1_CTDchipod_final.nc",
+                chipod_raw="https://cchdo.ucsd.edu/data/41783/P16N1_chipod_raw.zip")
+    #others that dont have the finalize nc file yet:
+    elseif f=="33RR20230722"
+        list=(  txt="",
+                chipod="",
+                chipod_raw="https://cchdo.ucsd.edu/data/41794/I05_chipod_raw.zip")
+    else
+        list=(txt="",chipod="",chipod_raw="")
+    end
+end
 
 function read(fil)
     ds=Dataset(fil)
