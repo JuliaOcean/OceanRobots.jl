@@ -13,7 +13,6 @@ Download files listed in `stations` from `cchdo.ucsd.edu/cruise/` to `path`.
 using OceanRobots
 ID="33RR20160208"
 path=OceanRobots.CCHDO.download(ID)
-OceanRobots.CCHDO.ancillary_files(ID,path)
 ```
 """
 function download(cruise::Union{Symbol,String,Vector},path=tempdir())
@@ -30,6 +29,11 @@ function download(cruise::Union{Symbol,String,Vector},path=tempdir())
             mkdir(path1)
             mv(fil1,fil2)
             Dataverse.unzip(fil2)
+            #download ancillary files:
+            list=ancillary_files(ID,path)
+            for i in list
+                isempty(i) ? nothing : Downloads.download(i,joinpath(path1,basename(i)))
+            end
         end
         push!(files,path1)
     end
@@ -62,32 +66,38 @@ function ancillary_files(cruise::Union{Symbol,String},path=tempdir())
     path1=(occursin(f,path) ? path : joinpath(path,f))
     
     if f=="33RR20160208"
-        list=(  txt="https://cchdo.ucsd.edu/data/34887/33RR20160208su.txt",
+        list=(  txt="https://cchdo.ucsd.edu/data/12413/33RR20160208_do.txt",
+                sum="https://cchdo.ucsd.edu/data/34887/33RR20160208su.txt",
                 chipod="https://cchdo.ucsd.edu/data/41776/I08S_nc_final.nc",
-                chipod_raw="https://cchdo.ucsd.edu/data/41775/I08S_chipod_raw.zip")
+                chipod_raw="" )#https://cchdo.ucsd.edu/data/41775/I08S_chipod_raw.zip")
     elseif f=="320620170703"
-        list=(  txt="https://cchdo.ucsd.edu/data/14267/320620170703_do.txt",
+        list=(  txt="https://cchdo.ucsd.edu/data/34919/320620170703su.txt",
+                sum="https://cchdo.ucsd.edu/data/14267/320620170703_do.txt",
                 chipod="https://cchdo.ucsd.edu/data/41749/P06_CTDchipod_final.nc",
-                chipod_raw="")
+                chipod_raw="")#https://cchdo.ucsd.edu/data/41748/P06_chipod_raw.zip")
     elseif f=="74EQ20151206"
         list=(  txt="",
+                sum="https://cchdo.ucsd.edu/data/23056/74EQ20151206su.txt",
                 chipod="https://cchdo.ucsd.edu/data/41792/A05_nc_final.nc",
-                chipod_raw="https://cchdo.ucsd.edu/data/41791/A05_chipod_raw.zip")
+                chipod_raw="") #https://cchdo.ucsd.edu/data/41791/A05_chipod_raw.zip")
     elseif f=="33RO20131223"
-        list=(  txt="",
+        list=(  txt="https://cchdo.ucsd.edu/data/14685/33RO20131223_do.txt",
+                sum="https://cchdo.ucsd.edu/data/1844/33RO20131223su.txt",
                 chipod="https://cchdo.ucsd.edu/data/41774/A16S_nc_final.nc",
-                chipod_raw="https://cchdo.ucsd.edu/data/41773/A16S_chipod_raw.zip")
+                chipod_raw="") #https://cchdo.ucsd.edu/data/41773/A16S_chipod_raw.zip")
     elseif f=="33RO20150410"
-        list=(  txt="",
+        list=(  txt="https://cchdo.ucsd.edu/data/11984/33RO20150410_do.txt",
+                sum="https://cchdo.ucsd.edu/data/34881/33RO20150410su.txt",
                 chipod="https://cchdo.ucsd.edu/data/41784/P16N1_CTDchipod_final.nc",
-                chipod_raw="https://cchdo.ucsd.edu/data/41783/P16N1_chipod_raw.zip")
+                chipod_raw="") #https://cchdo.ucsd.edu/data/41783/P16N1_chipod_raw.zip")
     #others that dont have the finalize nc file yet:
     elseif f=="33RR20230722"
         list=(  txt="",
+                sum="https://cchdo.ucsd.edu/data/41041/33RR20230722su.txt",
                 chipod="",
                 chipod_raw="https://cchdo.ucsd.edu/data/41794/I05_chipod_raw.zip")
     else
-        list=(txt="",chipod="",chipod_raw="")
+        list=(txt="",sum="",chipod="",chipod_raw="")
     end
 end
 
