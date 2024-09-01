@@ -107,4 +107,10 @@ using Test
     f3=plot(b)
     @test isa(f3,Figure)
 
+    ##
+
+    ID="33RR20160208"
+    path=CCHDO.download(ID)
+    @test ispath(path)
+
 end
