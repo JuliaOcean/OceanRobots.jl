@@ -70,3 +70,11 @@ struct SeaLevelAnomaly <: AbstractOceanRobotData
 end
 
 SeaLevelAnomaly() = SeaLevelAnomaly(:unknown,[],"")
+
+struct OceanExpedition <: AbstractOceanRobotData
+    ID::String
+    data::Union{Array,Dataset}
+    list_files::DataFrame
+end
+
+OceanExpedition() = OceanExpedition("",[],0,DataFrame())
