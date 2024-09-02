@@ -14,6 +14,7 @@ The suite of examples includes :
 - [Drifter\_GDP.jl](Drifter_GDP.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/Drifter_GDP.jl)) : [drifter](https://www.aoml.noaa.gov/phod/gdp/hourly_data.php) time series
 - [Drifter\_CloudDrift.jl](Drifter_CloudDrift.html) (➭ [code link](https://github.com/JuliaOcean/OceanRobots.jl/blob/master/examples/Drifter_CloudDrift.jl)) : drifter statistics
 - [Float\_Argo.jl](Float_Argo.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/Float_Argo.jl)) : Argo profiling [float](https://argo.ucsd.edu) data
+- [OceanExpedition\_CCHDO.jl](OceanExpedition_CCHDO.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/OceanExpedition_CCHDO.jl)) : [ship](https://cchdo.ucsd.edu) CTD and other data
 - [Glider\_Spray.jl](Glider_Spray.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/Glider_Spray.jl)) : underwater [glider](http://spraydata.ucsd.edu/projects/) data
 - [SatelliteAltimetry.jl](SatelliteAltimetry.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/SatelliteAltimetry.jl)) : gridded satellite data
 	
