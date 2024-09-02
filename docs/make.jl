@@ -28,7 +28,7 @@ makedocs(;
 GliderFiles.check_for_file_Spray("GulfStream.nc")
 GliderFiles.check_for_file_Spray("CUGN_along.nc")
 
-lst=("Drifter_CloudDrift.jl","SatelliteAltimetry.jl",
+lst=("OceanExpedition_CCHDO.jl","Drifter_CloudDrift.jl","SatelliteAltimetry.jl",
   "Buoy_NWP_NOAA_monthly.jl","Glider_Spray.jl","OceanOPS.jl",
   "Buoy_NWP_NOAA.jl","Mooring_WHOTS.jl","Drifter_GDP.jl","Float_Argo.jl")
 for i in lst
