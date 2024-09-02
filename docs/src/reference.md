@@ -30,6 +30,14 @@ argo=read(ArgoFloat(),wmo=2900668)
 plot(argo,pol=pol)
 ```
 
+## CTD profiles
+
+```@example ex1
+using OceanRobots, CairoMakie
+cruise=OceanExpedition("33RR20160208")
+plot(cruise)
+```
+
 ## NOAA Buoys
 
 ```@example ex1

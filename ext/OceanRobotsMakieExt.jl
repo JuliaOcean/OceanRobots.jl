@@ -1,7 +1,7 @@
 module OceanRobotsMakieExt
 
 using OceanRobots, Makie
-import OceanRobots: Dates
+import OceanRobots: Dates, CCHDO
 import Makie: plot
 
 ## DRIFTERS
@@ -312,6 +312,33 @@ function plot_standard(wmo,arr,spd,T_std,S_std; markersize=2,pol=Any[],size=(900
 	rowsize!(fig1.layout, 1, Relative(1/2))
 
 	fig1
+end
+
+"""
+    plot(x::OceanExpedition; 
+	markersize=6,pol=Any[],colorrange=(2,20),
+	size=(900,600),variable="temperature")
+
+```
+using OceanRobots, CairoMakie
+x=OceanExpedition("33RR20160208")
+plot(x)
+```
+"""
+function plot(x::OceanExpedition; 
+	markersize=6,pol=Any[],colorrange=(2,20),
+	size=(900,600),variable="temperature")
+
+	fig=Figure(size=size); ax=Axis(fig[1,1],title="$(variable) from cruise $(x.ID)")
+	list1=findall(occursin.(Ref("_ctd.nc"),x.list_files[:,"filename"]))
+	for f in x.list_files[list1,"filename"]
+		ds=CCHDO.read(f)
+		tim=fill(ds["time"][1],ds.dim["pressure"])
+		depth=-ds["pressure"][:]
+		scatter!(tim,depth,color=ds[variable][:],markersize=markersize,colorrange=colorrange)
+	end
+	Colorbar(fig[1,2], colorrange=colorrange, height=Relative(0.65))
+	fig
 end
 
 """
