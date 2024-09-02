@@ -330,15 +330,37 @@ function plot(x::OceanExpedition;
 	size=(900,600),variable="temperature")
 
 	fig=Figure(size=size); ax=Axis(fig[1,1],title="$(variable) from cruise $(x.ID)")
-	list1=findall(occursin.(Ref("_ctd.nc"),x.list_files[:,"filename"]))
-	for f in x.list_files[list1,"filename"]
-		ds=CCHDO.read(f)
-		tim=fill(ds["time"][1],ds.dim["pressure"])
-		depth=-ds["pressure"][:]
-		scatter!(tim,depth,color=ds[variable][:],markersize=markersize,colorrange=colorrange)
+	if variable=="temperature"||variable=="salinity"
+		list1=findall(occursin.(Ref("_ctd.nc"),x.list_files[:,"filename"]))
+		for f in x.list_files[list1,"filename"]
+			ds=CCHDO.read(f)
+			tim=fill(ds["time"][1],ds.dim["pressure"])
+			depth=-ds["pressure"][:]
+			scatter!(tim,depth,color=ds[variable][:],markersize=markersize,colorrange=colorrange)
+		end
+	elseif variable=="chi_up"||variable=="chi_dn"
+		plot_chi!(x;variable=variable,colorrange=colorrange,markersize=markersize)
 	end
 	Colorbar(fig[1,2], colorrange=colorrange, height=Relative(0.65))
 	fig
+end
+
+function plot_chi!(x;variable="chi_up",colorrange=(-12.0,-10.0),markersize=3)
+	fil0=basename(CCHDO.ancillary_files(x.ID).chipod)
+	ii=findall(occursin.(Ref(fil0),x.list_files[:,"filename"]))[1]
+	fil1=x.list_files[ii,"filename"]
+	ds=CCHDO.read(fil1)
+
+	time=permutedims(repeat(ds["time"][:],1,ds.dim["pressure"]))
+	pressure=permutedims(repeat(ds["pressure"][:]',ds.dim["station"],1))
+	y=ds[variable][:,:]
+
+	ii=findall((!ismissing).(y))
+	a=DateTime.(time[ii])
+	b=Float64.(-pressure[ii])
+	c=log10.(Float64.(y[ii]))
+
+	scatter!(a,b,color=c,markersize=3,colorrange=colorrange)
 end
 
 """
