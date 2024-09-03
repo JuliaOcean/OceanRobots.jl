@@ -18,12 +18,15 @@ end
 using OceanRobots, CairoMakie, PlutoUI
 
 # ╔═╡ c90d4b04-9810-4736-8f73-bb6ee2c42577
-md"""# CTD profiles from ocean ship expeditions
+md"""# CTD profiles from oceanographic expeditions
 
-CCHDO provides access to high quality, global, vessel-based CTD and hydrographic data from GO-SHIP, WOCE, CLIVAR and other repeat hydrography programs. 
+CCHDO provides access to high quality, global, ship-based CTD (Conductivity-Temperature-Depth) and hydrographic data from GO-SHIP, WOCE, CLIVAR and other repeat hydrography programs. 
 
 !!! note
     For more information see <https://cchdo.ucsd.edu>
+
+### Select Cruise
+
 """
 
 # ╔═╡ 4a1784d6-7850-4c05-b302-013db8966c3a
@@ -32,8 +35,29 @@ CCHDO provides access to high quality, global, vessel-based CTD and hydrographic
 # ╔═╡ f5415f1d-0e98-41e3-a6fb-459580141611
 cruise=ShipCruise(ID)
 
+# ╔═╡ fa2c9be1-1198-4852-b7b1-623e42f5c871
+begin
+	vari_bind = @bind vari Select(["temperature","salinity"],default="salinity")
+	cmin_bind = @bind cmin TextField(default="33.5")
+	cmax_bind = @bind cmax TextField(default="35.0")
+	md"""
+!!! note
+	Selecting a new data set will start by downloading it, if needed, which may take a little while.
+
+### Plot One Variable
+
+- variable : $(vari_bind)
+- color range minimum	: $(cmin_bind)
+- color range maximum	: $(cmax_bind)
+	"""
+end
+	
+
 # ╔═╡ 19a5cf7c-fa71-435b-bdff-d369658d3260
-plot(cruise,variable="salinity",colorrange=(33.5,35.0))
+begin
+	crng=(parse(Float64,cmin),parse(Float64,cmax))
+	plot(cruise,variable=vari,colorrange=crng)
+end
 
 # ╔═╡ a7186ef8-f1de-437f-99eb-fe6553da49b5
 md"""### Chipod data
@@ -101,7 +125,6 @@ PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
 CairoMakie = "~0.12.9"
-OceanRobots = "~0.2.1"
 PlutoUI = "~0.7.60"
 """
 
@@ -111,7 +134,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "8e1da76a5f003c9f989dfb30f8415f5f369f48d5"
+project_hash = "43a93e7fb194aa665ccd472bb18457ac82ed7c8a"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -642,10 +665,10 @@ uuid = "42e2da0e-8278-4e71-bc24-59509adca0fe"
 version = "1.0.2"
 
 [[deps.HDF5_jll]]
-deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LazyArtifacts", "LibCURL_jll", "Libdl", "MPICH_jll", "MPIPreferences", "MPItrampoline_jll", "MicrosoftMPI_jll", "OpenMPI_jll", "OpenSSL_jll", "TOML", "Zlib_jll", "libaec_jll"]
-git-tree-sha1 = "82a471768b513dc39e471540fdadc84ff80ff997"
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LLVMOpenMP_jll", "LazyArtifacts", "LibCURL_jll", "Libdl", "MPICH_jll", "MPIPreferences", "MPItrampoline_jll", "MicrosoftMPI_jll", "OpenMPI_jll", "OpenSSL_jll", "TOML", "Zlib_jll", "libaec_jll"]
+git-tree-sha1 = "38c8874692d48d5440d5752d6c74b0c6b0b60739"
 uuid = "0234f1f7-429e-5d53-9886-15a909be8d59"
-version = "1.14.3+3"
+version = "1.14.2+1"
 
 [[deps.HTTP]]
 deps = ["Base64", "CodecZlib", "ConcurrentUtilities", "Dates", "ExceptionUnwrapping", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
@@ -770,18 +793,20 @@ weakdeps = ["Unitful"]
 
 [[deps.IntervalArithmetic]]
 deps = ["CRlibm_jll", "MacroTools", "RoundingEmulator"]
-git-tree-sha1 = "433b0bb201cd76cb087b017e49244f10394ebe9c"
+git-tree-sha1 = "01fa84a20be8c7c867edf3b9ef33ac15f4089c1a"
 uuid = "d1acc4aa-44c8-5952-acd4-ba5d80a2a253"
-version = "0.22.14"
+version = "0.22.15"
 
     [deps.IntervalArithmetic.extensions]
     IntervalArithmeticDiffRulesExt = "DiffRules"
     IntervalArithmeticForwardDiffExt = "ForwardDiff"
     IntervalArithmeticRecipesBaseExt = "RecipesBase"
+    IntervalArithmeticsIntervalSetsExt = "IntervalSets"
 
     [deps.IntervalArithmetic.weakdeps]
     DiffRules = "b552c78f-8df3-52c6-915a-8e097449b14b"
     ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+    IntervalSets = "8197267c-284f-5f27-9208-e0e47529a953"
     RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 
 [[deps.IntervalSets]]
@@ -1123,10 +1148,10 @@ uuid = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
 version = "1.0.2"
 
 [[deps.NetCDF_jll]]
-deps = ["Artifacts", "Blosc_jll", "Bzip2_jll", "HDF5_jll", "JLLWrappers", "LazyArtifacts", "LibCURL_jll", "Libdl", "MPICH_jll", "MPIPreferences", "MPItrampoline_jll", "MicrosoftMPI_jll", "OpenMPI_jll", "TOML", "XML2_jll", "Zlib_jll", "Zstd_jll", "libzip_jll"]
-git-tree-sha1 = "4686378c4ae1d1948cfbe46c002a11a4265dcb07"
+deps = ["Artifacts", "Blosc_jll", "Bzip2_jll", "HDF5_jll", "JLLWrappers", "LibCURL_jll", "Libdl", "OpenMPI_jll", "XML2_jll", "Zlib_jll", "Zstd_jll", "libzip_jll"]
+git-tree-sha1 = "a8af1798e4eb9ff768ce7fdefc0e957097793f15"
 uuid = "7243133f-43d8-5620-bbf4-c2c921802cf3"
-version = "400.902.211+1"
+version = "400.902.209+0"
 
 [[deps.Netpbm]]
 deps = ["FileIO", "ImageCore", "ImageMetadata"]
@@ -1151,7 +1176,7 @@ version = "0.5.5"
 
 [[deps.OceanRobots]]
 deps = ["CFTime", "CSV", "DataFrames", "DataStructures", "Dataverse", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "Interpolations", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "URIs"]
-path = "/Users/gaelforget/work/code/julia_pkg/OceanRobots.jl/"
+git-tree-sha1 = "f930066d231abce9f3dcdf55eccaab1e7499b39e"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
 version = "0.2.4"
 
@@ -1201,10 +1226,10 @@ uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
 version = "0.8.1+2"
 
 [[deps.OpenMPI_jll]]
-deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "MPIPreferences", "TOML"]
-git-tree-sha1 = "e25c1778a98e34219a00455d6e4384e017ea9762"
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "Hwloc_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "MPIPreferences", "TOML", "Zlib_jll"]
+git-tree-sha1 = "bfce6d523861a6c562721b262c0d1aaeead2647f"
 uuid = "fe0851c0-eecd-5654-98d4-656369965a5c"
-version = "4.1.6+0"
+version = "5.0.5+0"
 
 [[deps.OpenSSL]]
 deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "OpenSSL_jll", "Sockets"]
@@ -1893,7 +1918,8 @@ version = "3.6.0+0"
 # ╟─c90d4b04-9810-4736-8f73-bb6ee2c42577
 # ╟─4a1784d6-7850-4c05-b302-013db8966c3a
 # ╟─f5415f1d-0e98-41e3-a6fb-459580141611
-# ╠═19a5cf7c-fa71-435b-bdff-d369658d3260
+# ╟─fa2c9be1-1198-4852-b7b1-623e42f5c871
+# ╟─19a5cf7c-fa71-435b-bdff-d369658d3260
 # ╟─a7186ef8-f1de-437f-99eb-fe6553da49b5
 # ╟─457d85eb-08a8-4304-82a7-0372514b1bec
 # ╠═eab5b722-be6b-4341-b870-5a98cf6a32c3
