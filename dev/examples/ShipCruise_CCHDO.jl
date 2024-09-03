@@ -4,37 +4,128 @@
 using Markdown
 using InteractiveUtils
 
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
+        el
+    end
+end
+
 # ╔═╡ e741dbc2-695b-11ef-1962-5769d79825c0
-using OceanRobots, CairoMakie
+using OceanRobots, CairoMakie, PlutoUI
 
 # ╔═╡ c90d4b04-9810-4736-8f73-bb6ee2c42577
-md"""# CTD profiles from ocean ship expeditions
+md"""# CTD profiles from oceanographic expeditions
+
+CCHDO provides access to high quality, global, ship-based CTD (Conductivity-Temperature-Depth) and hydrographic data from GO-SHIP, WOCE, CLIVAR and other repeat hydrography programs. 
 
 !!! note
-    Data displayed here were collected by research vessells. For more information see <https://cchdo.ucsd.edu>
+    For more information see <https://cchdo.ucsd.edu>
+
+### Select Cruise
+
 """
 
-# ╔═╡ eab5b722-be6b-4341-b870-5a98cf6a32c3
-#plot(cruise,variable="chi_up",colorrange=(-12,-10))
-
-# ╔═╡ 17b1bef9-719a-4668-a067-c8dabdab9dc2
-md"""## Data and Software"""
+# ╔═╡ 4a1784d6-7850-4c05-b302-013db8966c3a
+@bind ID Select(["33RR20160208","74EQ20151206","33RO20131223"])
 
 # ╔═╡ f5415f1d-0e98-41e3-a6fb-459580141611
-cruise=OceanExpedition("33RR20160208")
+cruise=ShipCruise(ID)
+
+# ╔═╡ fa2c9be1-1198-4852-b7b1-623e42f5c871
+begin
+	vari_bind = @bind vari Select(["temperature","salinity"],default="salinity")
+	cmin_bind = @bind cmin TextField(default="33.5")
+	cmax_bind = @bind cmax TextField(default="35.0")
+	md"""
+!!! note
+	Selecting a new data set will start by downloading it, if needed, which may take a little while.
+
+### Plot One Variable
+
+- variable : $(vari_bind)
+- color range minimum	: $(cmin_bind)
+- color range maximum	: $(cmax_bind)
+	"""
+end
+	
 
 # ╔═╡ 19a5cf7c-fa71-435b-bdff-d369658d3260
-plot(cruise,variable="salinity",colorrange=(33.5,35.0))
+begin
+	crng=(parse(Float64,cmin),parse(Float64,cmax))
+	plot(cruise,variable=vari,colorrange=crng)
+end
+
+# ╔═╡ a7186ef8-f1de-437f-99eb-fe6553da49b5
+md"""### Chipod data
+
+Some of these ocean expeditions measure ocean mixing using `chipod` sensors. 
+
+!!! note
+    For more information see <http://microstructure.ucsd.edu/>
+"""
+
+# ╔═╡ 457d85eb-08a8-4304-82a7-0372514b1bec
+@bind va Select(["chi_up","chi_dn","KT_up","KT_dn"])
+
+# ╔═╡ eab5b722-be6b-4341-b870-5a98cf6a32c3
+begin
+	if occursin("chi",va)
+		cr=(-12,-10)
+		lo=true
+	elseif occursin("KT",va)
+		cr=(-6,-3)
+		lo=true
+	else
+		error("unknown variable range")
+	end
+		
+	#chipod_plot(cruise,variable=va,colorrange=cr,apply_log10=lo)
+	plot(cruise,variable=va,colorrange=cr,apply_log10=lo)
+end
+
+# ╔═╡ beed86ef-5e86-45a4-8842-f21f2dcef504
+ds=CCHDO.open_chipod_file(cruise)
+
+# ╔═╡ 17b1bef9-719a-4668-a067-c8dabdab9dc2
+md"""## Julia Code"""
+
+# ╔═╡ bc007619-ff00-49c8-a8e4-e2e8a96a0326
+function chipod_plot(x;variable="chi_up",colorrange=(-12.0,-10.0),apply_log10=true,markersize=3)
+	
+	ds=CCHDO.open_chipod_file(x)
+	time=permutedims(repeat(ds["time"][:],1,ds.dim["pressure"]))
+	pressure=permutedims(repeat(ds["pressure"][:]',ds.dim["station"],1))
+	y=ds[variable][:,:]
+	u=ds[variable].attrib["units"]
+
+	ii=findall((!ismissing).(y))
+	a=DateTime.(time[ii])
+	b=Float64.(-pressure[ii])
+	c=(apply_log10 ? log10.(Float64.(y[ii])) : Float64.(y[ii]))
+	l=(apply_log10 ? ", log10" : nothing)
+
+	fig=Figure()
+	ax=Axis(fig[1,1],title="variable = $(variable) (in $u$l) ; cruise = $(x.ID)")
+	sc=scatter!(a,b,color=c,markersize=3,colorrange=colorrange)
+	Colorbar(fig[1,2], sc, height=Relative(0.65))
+
+	fig
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 OceanRobots = "0b51df41-3294-4961-8d23-db645e32016d"
+PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
 CairoMakie = "~0.12.9"
-OceanRobots = "~0.2.1"
+PlutoUI = "~0.7.60"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -43,7 +134,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "0bb01b4475c900c10989d79fa18fb64c96d81b58"
+project_hash = "43a93e7fb194aa665ccd472bb18457ac82ed7c8a"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -55,6 +146,12 @@ weakdeps = ["ChainRulesCore", "Test"]
     [deps.AbstractFFTs.extensions]
     AbstractFFTsChainRulesCoreExt = "ChainRulesCore"
     AbstractFFTsTestExt = "Test"
+
+[[deps.AbstractPlutoDingetjes]]
+deps = ["Pkg"]
+git-tree-sha1 = "6e1d2a35f2f90a4bc7c2ed98079b2ba09c35b83a"
+uuid = "6e696c72-6542-2067-7265-42206c756150"
+version = "1.3.2"
 
 [[deps.AbstractTrees]]
 git-tree-sha1 = "2d9c9a55f9c93e8887ad391fbae72f8ef55e1177"
@@ -255,14 +352,14 @@ uuid = "f0e56b4a-5159-44fe-b623-3e5288b988bb"
 version = "2.4.2"
 
 [[deps.ConstructionBase]]
-deps = ["LinearAlgebra"]
-git-tree-sha1 = "a33b7ced222c6165f624a3f2b55945fac5a598d9"
+git-tree-sha1 = "76219f1ed5771adbb096743bff43fb5fdd4c1157"
 uuid = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
-version = "1.5.7"
-weakdeps = ["IntervalSets", "StaticArrays"]
+version = "1.5.8"
+weakdeps = ["IntervalSets", "LinearAlgebra", "StaticArrays"]
 
     [deps.ConstructionBase.extensions]
     ConstructionBaseIntervalSetsExt = "IntervalSets"
+    ConstructionBaseLinearAlgebraExt = "LinearAlgebra"
     ConstructionBaseStaticArraysExt = "StaticArrays"
 
 [[deps.Contour]]
@@ -317,9 +414,9 @@ uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
 
 [[deps.DelaunayTriangulation]]
 deps = ["AdaptivePredicates", "EnumX", "ExactPredicates", "Random"]
-git-tree-sha1 = "88a2c530da3dd3bf4282267925d2c16c8efcd3fc"
+git-tree-sha1 = "46f12daa85e5acc0ea5d5f9f8c3f1fc679e0f7e5"
 uuid = "927a84f5-c5f4-47a5-9785-b46e178433df"
-version = "1.1.4"
+version = "1.2.0"
 
 [[deps.DiskArrays]]
 deps = ["LRUCache", "OffsetArrays"]
@@ -568,10 +665,10 @@ uuid = "42e2da0e-8278-4e71-bc24-59509adca0fe"
 version = "1.0.2"
 
 [[deps.HDF5_jll]]
-deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LazyArtifacts", "LibCURL_jll", "Libdl", "MPICH_jll", "MPIPreferences", "MPItrampoline_jll", "MicrosoftMPI_jll", "OpenMPI_jll", "OpenSSL_jll", "TOML", "Zlib_jll", "libaec_jll"]
-git-tree-sha1 = "82a471768b513dc39e471540fdadc84ff80ff997"
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LLVMOpenMP_jll", "LazyArtifacts", "LibCURL_jll", "Libdl", "MPICH_jll", "MPIPreferences", "MPItrampoline_jll", "MicrosoftMPI_jll", "OpenMPI_jll", "OpenSSL_jll", "TOML", "Zlib_jll", "libaec_jll"]
+git-tree-sha1 = "38c8874692d48d5440d5752d6c74b0c6b0b60739"
 uuid = "0234f1f7-429e-5d53-9886-15a909be8d59"
-version = "1.14.3+3"
+version = "1.14.2+1"
 
 [[deps.HTTP]]
 deps = ["Base64", "CodecZlib", "ConcurrentUtilities", "Dates", "ExceptionUnwrapping", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
@@ -596,6 +693,24 @@ deps = ["LinearAlgebra", "OpenLibm_jll", "SpecialFunctions"]
 git-tree-sha1 = "7c4195be1649ae622304031ed46a2f4df989f1eb"
 uuid = "34004b35-14d8-5ef3-9330-4cdb6864b03a"
 version = "0.3.24"
+
+[[deps.Hyperscript]]
+deps = ["Test"]
+git-tree-sha1 = "179267cfa5e712760cd43dcae385d7ea90cc25a4"
+uuid = "47d2ed2b-36de-50cf-bf87-49c2cf4b8b91"
+version = "0.0.5"
+
+[[deps.HypertextLiteral]]
+deps = ["Tricks"]
+git-tree-sha1 = "7134810b1afce04bbc1045ca1985fbe81ce17653"
+uuid = "ac1192a8-f4b3-4bfe-ba22-af5b92cd3ab2"
+version = "0.9.5"
+
+[[deps.IOCapture]]
+deps = ["Logging", "Random"]
+git-tree-sha1 = "b6d6bfdd7ce25b0f9b2f6b3dd56b2673a66c8770"
+uuid = "b5f81e59-6552-4d32-b1f0-c071b021bf89"
+version = "0.2.5"
 
 [[deps.ImageAxes]]
 deps = ["AxisArrays", "ImageBase", "ImageCore", "Reexport", "SimpleTraits"]
@@ -678,18 +793,20 @@ weakdeps = ["Unitful"]
 
 [[deps.IntervalArithmetic]]
 deps = ["CRlibm_jll", "MacroTools", "RoundingEmulator"]
-git-tree-sha1 = "433b0bb201cd76cb087b017e49244f10394ebe9c"
+git-tree-sha1 = "01fa84a20be8c7c867edf3b9ef33ac15f4089c1a"
 uuid = "d1acc4aa-44c8-5952-acd4-ba5d80a2a253"
-version = "0.22.14"
+version = "0.22.15"
 
     [deps.IntervalArithmetic.extensions]
     IntervalArithmeticDiffRulesExt = "DiffRules"
     IntervalArithmeticForwardDiffExt = "ForwardDiff"
     IntervalArithmeticRecipesBaseExt = "RecipesBase"
+    IntervalArithmeticsIntervalSetsExt = "IntervalSets"
 
     [deps.IntervalArithmetic.weakdeps]
     DiffRules = "b552c78f-8df3-52c6-915a-8e097449b14b"
     ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+    IntervalSets = "8197267c-284f-5f27-9208-e0e47529a953"
     RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 
 [[deps.IntervalSets]]
@@ -920,6 +1037,11 @@ git-tree-sha1 = "7f26c8fc5229e68484e0b3447312c98e16207d11"
 uuid = "5ced341a-0733-55b8-9ab6-a4889d929147"
 version = "1.10.0+0"
 
+[[deps.MIMEs]]
+git-tree-sha1 = "65f28ad4b594aebe22157d6fac869786a255b7eb"
+uuid = "6c6e2e6c-3030-632d-7369-2d6c69616d65"
+version = "0.1.4"
+
 [[deps.MKL_jll]]
 deps = ["Artifacts", "IntelOpenMP_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "oneTBB_jll"]
 git-tree-sha1 = "f046ccd0c6db2832a9f639e2c669c6fe867e5f4f"
@@ -1026,10 +1148,10 @@ uuid = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
 version = "1.0.2"
 
 [[deps.NetCDF_jll]]
-deps = ["Artifacts", "Blosc_jll", "Bzip2_jll", "HDF5_jll", "JLLWrappers", "LazyArtifacts", "LibCURL_jll", "Libdl", "MPICH_jll", "MPIPreferences", "MPItrampoline_jll", "MicrosoftMPI_jll", "OpenMPI_jll", "TOML", "XML2_jll", "Zlib_jll", "Zstd_jll", "libzip_jll"]
-git-tree-sha1 = "4686378c4ae1d1948cfbe46c002a11a4265dcb07"
+deps = ["Artifacts", "Blosc_jll", "Bzip2_jll", "HDF5_jll", "JLLWrappers", "LibCURL_jll", "Libdl", "OpenMPI_jll", "XML2_jll", "Zlib_jll", "Zstd_jll", "libzip_jll"]
+git-tree-sha1 = "a8af1798e4eb9ff768ce7fdefc0e957097793f15"
 uuid = "7243133f-43d8-5620-bbf4-c2c921802cf3"
-version = "400.902.211+1"
+version = "400.902.209+0"
 
 [[deps.Netpbm]]
 deps = ["FileIO", "ImageCore", "ImageMetadata"]
@@ -1054,9 +1176,9 @@ version = "0.5.5"
 
 [[deps.OceanRobots]]
 deps = ["CFTime", "CSV", "DataFrames", "DataStructures", "Dataverse", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "Interpolations", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "URIs"]
-git-tree-sha1 = "cc465516ec877501c515bf04429cec576e0102f2"
+git-tree-sha1 = "f930066d231abce9f3dcdf55eccaab1e7499b39e"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
-version = "0.2.2"
+version = "0.2.4"
 
     [deps.OceanRobots.extensions]
     OceanRobotsArgoDataExt = ["ArgoData"]
@@ -1104,10 +1226,10 @@ uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
 version = "0.8.1+2"
 
 [[deps.OpenMPI_jll]]
-deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "MPIPreferences", "TOML"]
-git-tree-sha1 = "e25c1778a98e34219a00455d6e4384e017ea9762"
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "Hwloc_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "MPIPreferences", "TOML", "Zlib_jll"]
+git-tree-sha1 = "bfce6d523861a6c562721b262c0d1aaeead2647f"
 uuid = "fe0851c0-eecd-5654-98d4-656369965a5c"
-version = "4.1.6+0"
+version = "5.0.5+0"
 
 [[deps.OpenSSL]]
 deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "OpenSSL_jll", "Sockets"]
@@ -1207,6 +1329,12 @@ deps = ["ColorSchemes", "Colors", "Dates", "PrecompileTools", "Printf", "Random"
 git-tree-sha1 = "7b1a9df27f072ac4c9c7cbe5efb198489258d1f5"
 uuid = "995b91a9-d308-5afd-9ec6-746e21dbc043"
 version = "1.4.1"
+
+[[deps.PlutoUI]]
+deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
+git-tree-sha1 = "eba4810d5e6a01f612b948c9fa94f905b49087b0"
+uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+version = "0.7.60"
 
 [[deps.PolygonOps]]
 git-tree-sha1 = "77b3d3605fc1cd0b42d95eba87dfcd2bf67d5ff6"
@@ -1550,6 +1678,11 @@ git-tree-sha1 = "e84b3a11b9bece70d14cce63406bbc79ed3464d2"
 uuid = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
 version = "0.11.2"
 
+[[deps.Tricks]]
+git-tree-sha1 = "7822b97e99a1672bfb1b49b668a6d46d58d8cbcb"
+uuid = "410a4b4d-49e4-4fbc-ab6d-cb71b17b3775"
+version = "0.1.9"
+
 [[deps.TriplotBase]]
 git-tree-sha1 = "4d4ed7f294cda19382ff7de4c137d24d16adc89b"
 uuid = "981d1d27-644d-49a2-9326-4793e63143c3"
@@ -1783,10 +1916,16 @@ version = "3.6.0+0"
 
 # ╔═╡ Cell order:
 # ╟─c90d4b04-9810-4736-8f73-bb6ee2c42577
-# ╠═19a5cf7c-fa71-435b-bdff-d369658d3260
+# ╟─4a1784d6-7850-4c05-b302-013db8966c3a
+# ╟─f5415f1d-0e98-41e3-a6fb-459580141611
+# ╟─fa2c9be1-1198-4852-b7b1-623e42f5c871
+# ╟─19a5cf7c-fa71-435b-bdff-d369658d3260
+# ╟─a7186ef8-f1de-437f-99eb-fe6553da49b5
+# ╟─457d85eb-08a8-4304-82a7-0372514b1bec
 # ╠═eab5b722-be6b-4341-b870-5a98cf6a32c3
+# ╟─beed86ef-5e86-45a4-8842-f21f2dcef504
 # ╟─17b1bef9-719a-4668-a067-c8dabdab9dc2
 # ╠═e741dbc2-695b-11ef-1962-5769d79825c0
-# ╠═f5415f1d-0e98-41e3-a6fb-459580141611
+# ╟─bc007619-ff00-49c8-a8e4-e2e8a96a0326
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
