@@ -331,9 +331,9 @@ function plot(x::OceanExpedition;
 
 	fig=Figure(size=size); ax=Axis(fig[1,1],title="$(variable) from cruise $(x.ID)")
 	if variable=="temperature"||variable=="salinity"
-		list1=findall(occursin.(Ref("_ctd.nc"),x.list_files[:,"filename"]))
-		for f in x.list_files[list1,"filename"]
-			ds=CCHDO.read(f)
+		list1=CCHDO.list_CTD_files(x)		
+		for f in list1
+			ds=CCHDO.NCDatasets.Dataset(f)
 			tim=fill(ds["time"][1],ds.dim["pressure"])
 			depth=-ds["pressure"][:]
 			scatter!(tim,depth,color=ds[variable][:],markersize=markersize,colorrange=colorrange)
@@ -346,10 +346,7 @@ function plot(x::OceanExpedition;
 end
 
 function plot_chi!(x;variable="chi_up",colorrange=(-12.0,-10.0),markersize=3)
-	fil0=basename(CCHDO.ancillary_files(x.ID).chipod)
-	ii=findall(occursin.(Ref(fil0),x.list_files[:,"filename"]))[1]
-	fil1=x.list_files[ii,"filename"]
-	ds=CCHDO.read(fil1)
+	ds=CCHDO.open_chipod_file(x)
 
 	time=permutedims(repeat(ds["time"][:],1,ds.dim["pressure"]))
 	pressure=permutedims(repeat(ds["pressure"][:]',ds.dim["station"],1))
