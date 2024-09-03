@@ -34,7 +34,7 @@ plot(argo,pol=pol)
 
 ```@example ex1
 using OceanRobots, CairoMakie
-cruise=OceanExpedition("33RR20160208")
+cruise=ShipCruise("33RR20160208")
 plot(cruise,variable="salinity",colorrange=(33.5,35.0))
 ```
 

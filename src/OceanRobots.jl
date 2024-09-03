@@ -16,6 +16,6 @@ include("gridded_data.jl")
 export cmems_sla, podaac_sla
 
 export NOAAbuoy, NOAAbuoy_monthly, ArgoFloat, SurfaceDrifter, Gliders
-export OceanSite, CloudDrift, SeaLevelAnomaly, OceanExpedition
+export OceanSite, CloudDrift, SeaLevelAnomaly, ShipCruise
 
 end # module

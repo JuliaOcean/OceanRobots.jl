@@ -315,17 +315,17 @@ function plot_standard(wmo,arr,spd,T_std,S_std; markersize=2,pol=Any[],size=(900
 end
 
 """
-    plot(x::OceanExpedition; 
+    plot(x::ShipCruise; 
 	markersize=6,pol=Any[],colorrange=(2,20),
 	size=(900,600),variable="temperature")
 
 ```
 using OceanRobots, CairoMakie
-x=OceanExpedition("33RR20160208")
+x=ShipCruise("33RR20160208")
 plot(x)
 ```
 """
-function plot(x::OceanExpedition; 
+function plot(x::ShipCruise; 
 	markersize=6,pol=Any[],colorrange=(2,20),
 	size=(900,600),variable="temperature")
 

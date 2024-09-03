@@ -71,13 +71,13 @@ end
 
 SeaLevelAnomaly() = SeaLevelAnomaly(:unknown,[],"")
 
-Base.@kwdef struct OceanExpedition <: AbstractOceanRobotData
+Base.@kwdef struct ShipCruise <: AbstractOceanRobotData
     ID::String
     data::Union{Array,Dataset}
     path::String
 end
 
-OceanExpedition(ID::String)=begin
+ShipCruise(ID::String)=begin
     path=CCHDO.download(ID)
-    OceanExpedition(ID,[],path)
+    ShipCruise(ID,[],path)
 end
