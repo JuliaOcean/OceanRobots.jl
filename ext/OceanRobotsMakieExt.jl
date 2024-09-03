@@ -15,7 +15,7 @@ function plot_drifter(ds;size=(900,600),pol=Any[])
 	la=GDP.read_v(ds,"latitude")
 	lo=GDP.read_v(ds,"longitude")
 	lon360=GDP.read_v(ds,"lon360")
-	tst=maximum(lo)-minimum(lo)>maximum(lon360)-minimum(lon360)
+	tst=maximum(lo)-minimum(lo)>maximum(lon360)-minimum(lon360)+0.0001
 	tst ? lo.=lon360 : nothing
 
 	ve=GDP.read_v(ds,"ve")[:]
@@ -272,7 +272,8 @@ end
 xrng(lon)=begin
 	a=[floor(minimum(skipmissing(lon))) ceil(maximum(skipmissing(lon)))]
 	dx=max(diff(a[:])[1],10)
-	(max(a[1]-dx/2,-180),min(a[2]+dx/2,180))
+	b=(a[2]>180 ? +180 : 0)
+	(max(a[1]-dx/2,-180+b),min(a[2]+dx/2,180+b))
 end
 yrng(lat)=begin
 	a=[floor(minimum(skipmissing(lat))) ceil(maximum(skipmissing(lat)))]
