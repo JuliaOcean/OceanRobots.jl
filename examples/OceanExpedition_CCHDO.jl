@@ -14,11 +14,11 @@ md"""# CTD profiles from ocean ship expeditions
     Data displayed here were collected by research vessells. For more information see <https://cchdo.ucsd.edu>
 """
 
-# ╔═╡ 17b1bef9-719a-4668-a067-c8dabdab9dc2
-md"""## Data and Software"""
-
 # ╔═╡ eab5b722-be6b-4341-b870-5a98cf6a32c3
 #plot(cruise,variable="chi_up",colorrange=(-12,-10))
+
+# ╔═╡ 17b1bef9-719a-4668-a067-c8dabdab9dc2
+md"""## Data and Software"""
 
 # ╔═╡ f5415f1d-0e98-41e3-a6fb-459580141611
 cruise=OceanExpedition("33RR20160208")
