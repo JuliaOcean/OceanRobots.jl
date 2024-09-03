@@ -371,7 +371,7 @@ function plot_chi!(x;variable="chi_up",colorrange=(-12.0,-10.0),apply_log10=true
 	ax=current_axis()
 	ax.title="variable = $(variable) (in $u$l) ; cruise = $(x.ID)"
 
-	scatter!(a,b,color=c,markersize=3,colorrange=colorrange)
+	scatter!(a,b,color=c,markersize=markersize,colorrange=colorrange)
 end
 
 """
