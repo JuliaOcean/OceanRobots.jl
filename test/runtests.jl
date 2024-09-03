@@ -113,8 +113,8 @@ using Test
     path=CCHDO.download(ID)
     @test ispath(path)
 
-    cruise=OceanExpedition(ID)
-    @test isa(cruise,OceanExpedition)
+    cruise=ShipCruise(ID)
+    @test isa(cruise,ShipCruise)
 
     fig=plot(cruise)
     @test isa(fig,Figure)

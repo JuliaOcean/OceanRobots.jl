@@ -71,15 +71,13 @@ end
 
 SeaLevelAnomaly() = SeaLevelAnomaly(:unknown,[],"")
 
-Base.@kwdef struct OceanExpedition <: AbstractOceanRobotData
+Base.@kwdef struct ShipCruise <: AbstractOceanRobotData
     ID::String
     data::Union{Array,Dataset}
-    list_files::DataFrame
+    path::String
 end
 
-OceanExpedition(ID::String)=begin
+ShipCruise(ID::String)=begin
     path=CCHDO.download(ID)
-    filenames=joinpath.(Ref(path),readdir(path))
-    list1=DataFrames.DataFrame(:filename=>filenames)
-    OceanExpedition(ID,[],list1)
+    ShipCruise(ID,[],path)
 end

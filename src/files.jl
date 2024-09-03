@@ -1,7 +1,7 @@
 
 module CCHDO
 
-import Downloads, Dataverse, NCDatasets
+import Downloads, Dataverse, NCDatasets, Glob
 import NCDatasets: Dataset
 
 """
@@ -103,9 +103,13 @@ function ancillary_files(cruise::Union{Symbol,String})
     end
 end
 
-function read(fil)
-    ds=Dataset(fil)
+open_chipod_file(x) = begin
+	fil0=basename(CCHDO.ancillary_files(x.ID).chipod)
+	fil1=joinpath(x.path,fil0)
+	Dataset(fil1)
 end
+
+list_CTD_files(x) = Glob.glob(x.ID*"*_ctd.nc",x.path)
 
 end
 
