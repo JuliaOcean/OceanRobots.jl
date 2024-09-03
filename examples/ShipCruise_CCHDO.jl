@@ -47,6 +47,22 @@ Some of these ocean expeditions measure ocean mixing using `chipod` sensors.
 # ╔═╡ 457d85eb-08a8-4304-82a7-0372514b1bec
 @bind va Select(["chi_up","chi_dn","KT_up","KT_dn"])
 
+# ╔═╡ eab5b722-be6b-4341-b870-5a98cf6a32c3
+begin
+	if occursin("chi",va)
+		cr=(-12,-10)
+		lo=true
+	elseif occursin("KT",va)
+		cr=(-6,-3)
+		lo=true
+	else
+		error("unknown variable range")
+	end
+		
+	#chipod_plot(cruise,variable=va,colorrange=cr,apply_log10=lo)
+	plot(cruise,variable=va,colorrange=cr,apply_log10=lo)
+end
+
 # ╔═╡ beed86ef-5e86-45a4-8842-f21f2dcef504
 ds=CCHDO.open_chipod_file(cruise)
 
@@ -74,21 +90,6 @@ function chipod_plot(x;variable="chi_up",colorrange=(-12.0,-10.0),apply_log10=tr
 	Colorbar(fig[1,2], sc, height=Relative(0.65))
 
 	fig
-end
-
-# ╔═╡ eab5b722-be6b-4341-b870-5a98cf6a32c3
-begin
-	if occursin("chi",va)
-		cr=(-12,-10)
-		lo=true
-	elseif occursin("KT",va)
-		cr=(-6,-3)
-		lo=true
-	else
-		error("unknown variable range")
-	end
-		
-	chipod_plot(cruise,variable=va,colorrange=cr,apply_log10=lo)
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -1899,6 +1900,6 @@ version = "3.6.0+0"
 # ╟─beed86ef-5e86-45a4-8842-f21f2dcef504
 # ╟─17b1bef9-719a-4668-a067-c8dabdab9dc2
 # ╠═e741dbc2-695b-11ef-1962-5769d79825c0
-# ╠═bc007619-ff00-49c8-a8e4-e2e8a96a0326
+# ╟─bc007619-ff00-49c8-a8e4-e2e8a96a0326
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
