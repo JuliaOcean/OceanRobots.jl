@@ -15,7 +15,7 @@ function plot_drifter(ds;size=(900,600),pol=Any[])
 	la=GDP.read_v(ds,"latitude")
 	lo=GDP.read_v(ds,"longitude")
 	lon360=GDP.read_v(ds,"lon360")
-	tst=maximum(lo)-minimum(lo)>maximum(lon360)-minimum(lon360)
+	tst=maximum(lo)-minimum(lo)>maximum(lon360)-minimum(lon360)+0.0001
 	tst ? lo.=lon360 : nothing
 
 	ve=GDP.read_v(ds,"ve")[:]
@@ -272,7 +272,8 @@ end
 xrng(lon)=begin
 	a=[floor(minimum(skipmissing(lon))) ceil(maximum(skipmissing(lon)))]
 	dx=max(diff(a[:])[1],10)
-	(max(a[1]-dx/2,-180),min(a[2]+dx/2,180))
+	b=(a[2]>180 ? +180 : 0)
+	(max(a[1]-dx/2,-180+b),min(a[2]+dx/2,180+b))
 end
 yrng(lat)=begin
 	a=[floor(minimum(skipmissing(lat))) ceil(maximum(skipmissing(lat)))]
@@ -316,20 +317,27 @@ end
 
 """
     plot(x::ShipCruise; 
-	markersize=6,pol=Any[],colorrange=(2,20),
-	size=(900,600),variable="temperature")
+		markersize=6,pol=Any[],colorrange=(2,20),
+		size=(900,600),variable="temperature",apply_log10=false)
 
 ```
 using OceanRobots, CairoMakie
-x=ShipCruise("33RR20160208")
-plot(x)
+cruise=ShipCruise("33RR20160208")
+plot(cruise)
+```
+
+or 
+```
+plot(cruise,variable="chi_up",apply_log10=true,colorrange=(-12,-10))
 ```
 """
 function plot(x::ShipCruise; 
 	markersize=6,pol=Any[],colorrange=(2,20),
-	size=(900,600),variable="temperature")
+	size=(900,600),variable="temperature",apply_log10=false)
 
 	fig=Figure(size=size); ax=Axis(fig[1,1],title="$(variable) from cruise $(x.ID)")
+
+	known_chipod_variables=["chi_up","chi_dn","KT_up","KT_dn"]
 	if variable=="temperature"||variable=="salinity"
 		list1=CCHDO.list_CTD_files(x)		
 		for f in list1
@@ -338,24 +346,30 @@ function plot(x::ShipCruise;
 			depth=-ds["pressure"][:]
 			scatter!(tim,depth,color=ds[variable][:],markersize=markersize,colorrange=colorrange)
 		end
-	elseif variable=="chi_up"||variable=="chi_dn"
-		plot_chi!(x;variable=variable,colorrange=colorrange,markersize=markersize)
+	elseif variable in known_chipod_variables
+		plot_chi!(x;variable=variable,apply_log10=apply_log10,
+			colorrange=colorrange,markersize=markersize)
 	end
 	Colorbar(fig[1,2], colorrange=colorrange, height=Relative(0.65))
 	fig
 end
 
-function plot_chi!(x;variable="chi_up",colorrange=(-12.0,-10.0),markersize=3)
+function plot_chi!(x;variable="chi_up",colorrange=(-12.0,-10.0),apply_log10=true,markersize=3)
 	ds=CCHDO.open_chipod_file(x)
 
 	time=permutedims(repeat(ds["time"][:],1,ds.dim["pressure"]))
 	pressure=permutedims(repeat(ds["pressure"][:]',ds.dim["station"],1))
 	y=ds[variable][:,:]
+	u=ds[variable].attrib["units"]
 
 	ii=findall((!ismissing).(y))
 	a=DateTime.(time[ii])
 	b=Float64.(-pressure[ii])
-	c=log10.(Float64.(y[ii]))
+	c=(apply_log10 ? log10.(Float64.(y[ii])) : Float64.(y[ii]))
+	l=(apply_log10 ? ", log10" : nothing)
+
+	ax=current_axis()
+	ax.title="variable = $(variable) (in $u$l) ; cruise = $(x.ID)"
 
 	scatter!(a,b,color=c,markersize=3,colorrange=colorrange)
 end
