@@ -29,7 +29,7 @@ Global Data Coverage | Individual Data Platforms
 </details>
 
 <details>
- <summary> Research Vessels & Ships </summary>
+ <summary> Research Ships </summary>
 <p>
 
 👉 [CTD Profiles notebook](https://juliaocean.github.io/OceanRobots.jl/dev/examples/ShipCruise_CCHDO.html) 👈
