@@ -5,7 +5,10 @@ Each type of ocean data gets :
 - a simple `read` function that downloads data if needed. 
 - a default `plot` function that depicts some of the data.
 
-For mapping purposes, it is useful to download country polygons.
+# Supported Datasets
+
+!!! note
+    For mapping purposes, it is useful to download country polygons.
 
 ```@example ex1
 using MeshArrays, Shapefile, DataDeps
@@ -79,6 +82,8 @@ using OceanRobots, CairoMakie
 sla=read(SeaLevelAnomaly(),:sla_podaac)
 plot(sla)
 ```
+
+# Functionalities
 
 ## read
 

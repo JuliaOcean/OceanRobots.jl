@@ -1,7 +1,9 @@
-# Notebooks
+# Tutorial Notebooks
 
 !!! note
-    The static `html` rendering of the notebooks (this website) lack the interactivity that comes from [Running Examples](@ref) yourself.
+    - The version of the notebooks found in the online docs is static `html` rendering (this website).
+    - The version found in the `src` folder is the underlying code of the notebooks (`.jl` files).
+    - To run the notebooks interactively see [How-To](@ref) section.
 
 ## Included Notebooks
 
@@ -14,13 +16,38 @@
 - [Buoy\_NWP\_NOAA.jl](Buoy_NWP_NOAA.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/Buoy_NWP_NOAA.jl)) : NOAA [station](https://www.ndbc.noaa.gov/) data (a few days)
 - [Buoy\_NWP\_NOAA\_monthly.jl](Buoy_NWP_NOAA_monthly.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/Buoy_NWP_NOAA_monthly.jl)) : NOAA [station](https://www.ndbc.noaa.gov/) data (monthly means) 
 - [Mooring\_WHOTS.jl](Mooring_WHOTS.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/Mooring_WHOTS.jl)) : WHOTS [mooring](http://www.soest.hawaii.edu/whots/wh_data.html) data
-- [SatelliteAltimetry.jl](SatelliteAltimetry.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/SatelliteAltimetry.jl)) : gridded satellite data
 	
 ## More Notebooks
 
 - For Argo and state estimates, see [ArgoData.jl](https://github.com/JuliaOcean/ArgoData.jl)
-- For drifter data simulations, see [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl)
+- For simulations of drifter data, see [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl)
+- [SatelliteAltimetry.jl](SatelliteAltimetry.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/SatelliteAltimetry.jl)) : gridded satellite data
 
-## Using Notebooks
+## How-To
 
-The examples are most easily run using [Pluto.jl](https://github.com/fonsp/Pluto.jl). To do it this way, one just needs to copy a `code link` provided above and paste this URL into the [Pluto.jl interface](https://github.com/fonsp/Pluto.jl/wiki/🔎-Basic-Commands-in-Pluto).
+To run a notebook interactively (`.jl` files) you want to use [Pluto.jl](https://github.com/fonsp/Pluto.jl). For example, copy and paste one of the above `code link`s in the [Pluto.jl interface](https://github.com/fonsp/Pluto.jl/wiki/🔎-Basic-Commands-in-Pluto). This will let you spin up the notebook in a web browser from the copied URL.
+
+All you need to do beforehand is to install [julia](https://julialang.org) and `Pluto.jl`. The installation of OceanRobots.jl and other Julia packages will then happen automatically when you run the notebook. 
+
+You can also download the notebooks and run them as normal Julia programs. We recommend runing each notebook in its own environment as shown below. 
+
+```@example 1
+using Pkg; Pkg.add("Pluto"); using Pluto
+
+notebook="MITgcm.jl/examples/Float_Argo.jl"
+import OceanRobots; path=dirname(dirname(pathof(OceanRobots))) #hide
+notebook=joinpath(path,"examples","Float_Argo.jl") #hide
+Pluto.activate_notebook_environment(notebook)
+Pkg.instantiate()
+include(notebook)
+Pkg.activate("..") #hide
+```
+
+!!! note
+    To download OceanRobots.jl folder, which includes the notebook, you can use `Git.jl`.
+
+```
+using Pkg; Pkg.add("Git"); using Git
+url="https://github.com/JuliaOcean/OceanRobots.jl"
+run(`$(git()) clone $(url)`)
+```
