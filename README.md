@@ -11,7 +11,31 @@ This package can be used to access, analyze, process, and simulate data generate
 
 `OceanRobots.jl` includes profiling floats, drifters, gliders, and moorings as illustrated in the examples listed below. It provides a unified and simple user interface to each of these data sets.
 
-### Main Data Sets
+### Data Sets
+
+<details>
+ <summary> Global Fleet Now </summary>
+<p>
+
+Explore data coverage and data platforms.
+
+👉 [OceanOPS notebook](https://juliaocean.github.io/OceanRobots.jl/dev/examples/OceanOPS.html) 👈
+
+Global Data Coverage | Individual Data Platforms
+:------------------------------:|:---------------------------------:
+![](https://user-images.githubusercontent.com/20276764/208552147-d433f802-9c09-41cc-bece-f0ef424f26ea.png) | ![](https://user-images.githubusercontent.com/20276764/208441408-1ffe7508-19da-4f41-b984-58820799785a.png) 
+
+</p>
+</details>
+
+<details>
+ <summary> Research Ships </summary>
+<p>
+
+👉 [CTD Profiles notebook](https://juliaocean.github.io/OceanRobots.jl/dev/examples/ShipCruise_CCHDO.html) 👈
+
+</p>
+</details>
 
 <details>
  <summary> Profiling Floats </summary>
@@ -73,38 +97,6 @@ Argo Float Track            |  Argo Float Profiles
 <p>
 
 ![](https://user-images.githubusercontent.com/20276764/149675305-82364bde-e3a9-4975-8fb2-fb67e17dacc5.png)
-
-</p>
-</details>
-
-
-### Global Context
-
-<details>
- <summary> Global Observing Systems </summary>
-<p>
-
-Explore data coverage and data platforms.
-
-👉 [OceanOPS notebook](https://juliaocean.github.io/OceanRobots.jl/dev/examples/OceanOPS.html) 👈
-
-Global Data Coverage | Individual Data Platforms
-:------------------------------:|:---------------------------------:
-![](https://user-images.githubusercontent.com/20276764/208552147-d433f802-9c09-41cc-bece-f0ef424f26ea.png) | ![](https://user-images.githubusercontent.com/20276764/208441408-1ffe7508-19da-4f41-b984-58820799785a.png) 
-
-</p>
-</details>
-
-
-<details>
- <summary> Gridded Satellite Data </summary>
-<p>
-
-Visualize gridded data from satellites over a chosen region.
-
-👉 [Satellite Altimetry notebook](https://juliaocean.github.io/OceanRobots.jl/dev/examples/SatelliteAltimetry.html) 👈
-
-![](https://user-images.githubusercontent.com/20276764/209571354-d55e03ae-2063-4f9a-b5c5-131d6f4fb778.png)
 
 </p>
 </details>

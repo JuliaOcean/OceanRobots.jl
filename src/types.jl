@@ -70,3 +70,14 @@ struct SeaLevelAnomaly <: AbstractOceanRobotData
 end
 
 SeaLevelAnomaly() = SeaLevelAnomaly(:unknown,[],"")
+
+Base.@kwdef struct ShipCruise <: AbstractOceanRobotData
+    ID::String
+    data::Union{Array,Dataset}
+    path::String
+end
+
+ShipCruise(ID::String)=begin
+    path=CCHDO.download(ID)
+    ShipCruise(ID,[],path)
+end

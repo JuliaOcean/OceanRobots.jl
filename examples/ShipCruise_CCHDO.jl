@@ -14,115 +14,107 @@ macro bind(def, element)
     end
 end
 
-# ╔═╡ 0247a51e-c89b-11ec-071f-bb82fe257adc
-begin
-	using OceanRobots, PlutoUI, CairoMakie
-	"Done with Software Packages"
-end
+# ╔═╡ e741dbc2-695b-11ef-1962-5769d79825c0
+using OceanRobots, CairoMakie, PlutoUI
 
-# ╔═╡ e5b9772e-cbb5-42f0-bacb-5bae6bc8d5b6
-md"""# Spray Gliders
+# ╔═╡ c90d4b04-9810-4736-8f73-bb6ee2c42577
+md"""# CTD profiles from oceanographic expeditions
 
-Spray gliders autonomously collect measurements in the upper kilometer of the ocean during missions typically lasting three to four months and covering 2000-3000 km through the water. ([spraydata.ucsd.edu](http://spraydata.ucsd.edu)).
+CCHDO provides access to high quality, global, ship-based CTD (Conductivity-Temperature-Depth) and hydrographic data from GO-SHIP, WOCE, CLIVAR and other repeat hydrography programs. 
+
+!!! note
+    For more information see <https://cchdo.ucsd.edu>
+
+### Select Cruise
+
 """
 
-# ╔═╡ 0a016d12-de41-45f5-800d-af8f953720e4
-begin
-	url1="https://timesofsandiego.com/wp-content/uploads/2014/06/Spray-Glider.jpg"
-	url2="https://www.whoi.edu/wp-content/uploads/2019/01/GP020002-1-14_506075_510753-1.jpg"
-	url3="https://spraydata.ucsd.edu/assets/img/GS_KE_for_web.png"
-	url4="https://spraydata.ucsd.edu/products/cugn-climatology/plots/66/meanmap/66_meanmap_xz_geov.png"
-	md"""
-	$(Resource(url2,:height => 100))
-	$(Resource(url1,:height => 100))
-	$(Resource(url4,:height => 100))
-	$(Resource(url3,:height => 100))
+# ╔═╡ 4a1784d6-7850-4c05-b302-013db8966c3a
+@bind ID Select(["33RR20160208","74EQ20151206","33RO20131223"])
 
-	_Image Credits : WHOI, UCSD._
+# ╔═╡ f5415f1d-0e98-41e3-a6fb-459580141611
+cruise=ShipCruise(ID)
+
+# ╔═╡ fa2c9be1-1198-4852-b7b1-623e42f5c871
+begin
+	vari_bind = @bind vari Select(["temperature","salinity"],default="salinity")
+	cmin_bind = @bind cmin TextField(default="33.5")
+	cmax_bind = @bind cmax TextField(default="35.0")
+	md"""
+!!! note
+	Selecting a new data set will start by downloading it, if needed, which may take a little while.
+
+### Plot One Variable
+
+- variable : $(vari_bind)
+- color range minimum	: $(cmin_bind)
+- color range maximum	: $(cmax_bind)
 	"""
 end
-
-# ╔═╡ d9ffd0a8-85e3-4e2a-9d6a-81f3dbd3ee31
-TableOfContents()
-
-# ╔═╡ b8db58ca-ed7a-4174-a6b0-e53925b5887a
-begin
-	MID_bind = @bind MID Select(["CUGN_along.nc", "GulfStream.nc"], default="GulfStream.nc")
-	md"""## Interactive Visualization
 	
-	- Select data set : $(MID_bind)"""
-end
 
-
-# ╔═╡ 68028522-205e-4b41-b3c0-2e3b09c2d8a7
-md"""## Appendix
-
-### Julia Packages
-"""
-
-# ╔═╡ e729416a-a2b2-46ce-bb1e-ededeb8c75b3
-md"""### Data Ingestion"""
-
-# ╔═╡ 9523dc0d-1758-4e0f-864c-4ab253bf11a9
+# ╔═╡ 19a5cf7c-fa71-435b-bdff-d369658d3260
 begin
-    gliders=read(Gliders(),MID)
-    ng=length(unique(gliders.data.ID))
-	ID_bind = @bind ID NumberField(1:ng, default=1)
-	"Done with Data Ingestion"
+	crng=(parse(Float64,cmin),parse(Float64,cmax))
+	plot(cruise,variable=vari,colorrange=crng)
 end
 
-# ╔═╡ 3e5fd65e-e3d9-49e5-a9b0-87a2475cc3a0
-plot(gliders,ID)
+# ╔═╡ a7186ef8-f1de-437f-99eb-fe6553da49b5
+md"""### Chipod data
 
-# ╔═╡ 428120da-1542-4265-a369-1273ae4718ac
-md"""- Select mission  : $(ID_bind)"""
+Some of these ocean expeditions measure ocean mixing using `chipod` sensors. 
 
-# ╔═╡ 5748bb5f-528f-42fd-8961-fd7c93d12554
-md"""### Typical File Content
-
-```
-	mission_name:long_name = "Mission name of each trajectory." ;
-	depth:long_name = "Depth" ;
-	lat:long_name = "Latitude" ;
-	lon:long_name = "Longitude" ;
-	lat_uv:long_name = "Latitude" ;
-	lon_uv:long_name = "Longitude" ;
-	u_depth_mean:long_name = "Depth-Averaged Eastward Sea Water Velocity" ;
-	v_depth_mean:long_name = "Depth-Averaged Northward Sea Water Velocity" ;
-	temperature:long_name = "Sea Water Temperature" ;
-	salinity:long_name = "Sea Water Salinity" ;
-	time:long_name = "Time" ;
-	time_uv:long_name = "Time" ;
-	u:long_name = "Eastward Sea Water Velocity" ;
-	v:long_name = "Northward Sea Water Velocity" ;
-	acoustic_backscatter_at_1MHz:long_name = "Acoustic Backscatter at 1MHz" ;
-	mission:long_name = "Mission name of each trajectory" ;
-	mission_profile:long_name = "Profile of one mission" ;
-	trajectory_index:long_name = "which mission (trajectory) this profile is part of" ;
-```
+!!! note
+    For more information see <http://microstructure.ucsd.edu/>
 """
 
-# ╔═╡ 440e4256-d6eb-4dfa-946b-22fac53432e8
-md"""### Data Sources
+# ╔═╡ 457d85eb-08a8-4304-82a7-0372514b1bec
+@bind va Select(["chi_up","chi_dn","KT_up","KT_dn"])
 
-Spray gliders autonomously collect measurements in the upper kilometer of the ocean during missions typically lasting three to four months and covering 2000-3000 km through the water. ([spraydata.ucsd.edu](http://spraydata.ucsd.edu)).
+# ╔═╡ eab5b722-be6b-4341-b870-5a98cf6a32c3
+begin
+	if occursin("chi",va)
+		cr=(-12,-10)
+		lo=true
+	elseif occursin("KT",va)
+		cr=(-6,-3)
+		lo=true
+	else
+		error("unknown variable range")
+	end
+		
+	#chipod_plot(cruise,variable=va,colorrange=cr,apply_log10=lo)
+	plot(cruise,variable=va,colorrange=cr,apply_log10=lo)
+end
 
-#### Websites
+# ╔═╡ beed86ef-5e86-45a4-8842-f21f2dcef504
+ds=CCHDO.open_chipod_file(cruise)
 
-- [spraydata.ucsd.edu](http://spraydata.ucsd.edu)
-  - <http://spraydata.ucsd.edu/projects/>
-  - <http://spraydata.ucsd.edu/GulfStream/>
-  - <http://spraydata.ucsd.edu/climCUGN/>
-- [gliders.whoi.edu](http://gliders.whoi.edu)
-  - [gliders.whoi.edu/data](http://gliders.whoi.edu/data/)
+# ╔═╡ 17b1bef9-719a-4668-a067-c8dabdab9dc2
+md"""## Julia Code"""
 
-#### References 
+# ╔═╡ bc007619-ff00-49c8-a8e4-e2e8a96a0326
+function chipod_plot(x;variable="chi_up",colorrange=(-12.0,-10.0),apply_log10=true,markersize=3)
+	
+	ds=CCHDO.open_chipod_file(x)
+	time=permutedims(repeat(ds["time"][:],1,ds.dim["pressure"]))
+	pressure=permutedims(repeat(ds["pressure"][:]',ds.dim["station"],1))
+	y=ds[variable][:,:]
+	u=ds[variable].attrib["units"]
 
-- Todd, R. and Owens, B. (2016). Gliders in the Gulf Stream [Data set]. Scripps Institution of Oceanography, Instrument Development Group. doi: 10.21238/S8SPRAY2675
-- Rudnick, D. (2016). California Underwater Glider Network [Data set]. Scripps Institution of Oceanography, Instrument Development Group. doi: 10.21238/S8SPRAY1618
-- Rudnick, D. (2016). Seasonal-to-Interannual Modulation of Fine-Scale Thermohaline Structure [Data set]. Scripps Institution of Oceanography, Instrument Development Group. doi: 10.21238/S8SPRAY4863
+	ii=findall((!ismissing).(y))
+	a=DateTime.(time[ii])
+	b=Float64.(-pressure[ii])
+	c=(apply_log10 ? log10.(Float64.(y[ii])) : Float64.(y[ii]))
+	l=(apply_log10 ? ", log10" : nothing)
 
-"""
+	fig=Figure()
+	ax=Axis(fig[1,1],title="variable = $(variable) (in $u$l) ; cruise = $(x.ID)")
+	sc=scatter!(a,b,color=c,markersize=3,colorrange=colorrange)
+	Colorbar(fig[1,2], sc, height=Relative(0.65))
+
+	fig
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -130,15 +122,19 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 OceanRobots = "0b51df41-3294-4961-8d23-db645e32016d"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+
+[compat]
+CairoMakie = "~0.12.9"
+PlutoUI = "~0.7.60"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.10.3"
+julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "3d176982a7e409a871197b287fe1b56c0e1130ee"
+project_hash = "43a93e7fb194aa665ccd472bb18457ac82ed7c8a"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -262,27 +258,21 @@ version = "0.10.14"
 
 [[deps.Cairo]]
 deps = ["Cairo_jll", "Colors", "Glib_jll", "Graphics", "Libdl", "Pango_jll"]
-git-tree-sha1 = "d0b3f8b4ad16cb0a2988c6788646a5e6a17b6b1b"
+git-tree-sha1 = "7b6ad8c35f4bc3bca8eb78127c8b99719506a5fb"
 uuid = "159f3aea-2a34-519c-b102-8c37f9878175"
-version = "1.0.5"
+version = "1.1.0"
 
 [[deps.CairoMakie]]
 deps = ["CRC32c", "Cairo", "Cairo_jll", "Colors", "FileIO", "FreeType", "GeometryBasics", "LinearAlgebra", "Makie", "PrecompileTools"]
-git-tree-sha1 = "e4da5095557f24713bae4c9f50e34ff4d3b959c0"
+git-tree-sha1 = "361dec06290d76b6d70d0c7dc888038eec9df63a"
 uuid = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
-version = "0.12.5"
+version = "0.12.9"
 
 [[deps.Cairo_jll]]
 deps = ["Artifacts", "Bzip2_jll", "CompilerSupportLibraries_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "JLLWrappers", "LZO_jll", "Libdl", "Pixman_jll", "Xorg_libXext_jll", "Xorg_libXrender_jll", "Zlib_jll", "libpng_jll"]
 git-tree-sha1 = "a2f1c8c668c8e3cb4cca4e57a8efdb09067bb3fd"
 uuid = "83423d85-b0ee-5818-9007-b63ccbeb887a"
 version = "1.18.0+2"
-
-[[deps.Calculus]]
-deps = ["LinearAlgebra"]
-git-tree-sha1 = "f641eb0a4f00c343bbc32346e1217b86f3ce9dad"
-uuid = "49dc2e85-a5d0-5ad3-a950-438e2897f1b9"
-version = "0.5.1"
 
 [[deps.ChainRulesCore]]
 deps = ["Compat", "LinearAlgebra"]
@@ -296,9 +286,9 @@ weakdeps = ["SparseArrays"]
 
 [[deps.CodecZlib]]
 deps = ["TranscodingStreams", "Zlib_jll"]
-git-tree-sha1 = "b8fe8546d52ca154ac556809e10c75e6e7430ac8"
+git-tree-sha1 = "bce6804e5e6044c6daab27bb533d1295e4a2e759"
 uuid = "944b1d66-785c-5afd-91f1-9de20f533193"
-version = "0.7.5"
+version = "0.7.6"
 
 [[deps.ColorBrewer]]
 deps = ["Colors", "JSON", "Test"]
@@ -342,9 +332,9 @@ version = "0.3.6"
 
 [[deps.Compat]]
 deps = ["TOML", "UUIDs"]
-git-tree-sha1 = "b1c55339b7c6c350ee89f2c1604299660525b248"
+git-tree-sha1 = "8ae8d32e09f0dcf42a36b90d4e17f5dd2e4c4215"
 uuid = "34da2185-b29b-5c13-b0c7-acf172513d20"
-version = "4.15.0"
+version = "4.16.0"
 weakdeps = ["Dates", "LinearAlgebra"]
 
     [deps.Compat.extensions]
@@ -362,14 +352,14 @@ uuid = "f0e56b4a-5159-44fe-b623-3e5288b988bb"
 version = "2.4.2"
 
 [[deps.ConstructionBase]]
-deps = ["LinearAlgebra"]
-git-tree-sha1 = "d8a9c0b6ac2d9081bf76324b39c78ca3ce4f0c98"
+git-tree-sha1 = "76219f1ed5771adbb096743bff43fb5fdd4c1157"
 uuid = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
-version = "1.5.6"
-weakdeps = ["IntervalSets", "StaticArrays"]
+version = "1.5.8"
+weakdeps = ["IntervalSets", "LinearAlgebra", "StaticArrays"]
 
     [deps.ConstructionBase.extensions]
     ConstructionBaseIntervalSetsExt = "IntervalSets"
+    ConstructionBaseLinearAlgebraExt = "LinearAlgebra"
     ConstructionBaseStaticArraysExt = "StaticArrays"
 
 [[deps.Contour]]
@@ -424,9 +414,9 @@ uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
 
 [[deps.DelaunayTriangulation]]
 deps = ["AdaptivePredicates", "EnumX", "ExactPredicates", "Random"]
-git-tree-sha1 = "8630ce72d9d2028cfdf6b55ffec1fc7515ef5ce2"
+git-tree-sha1 = "46f12daa85e5acc0ea5d5f9f8c3f1fc679e0f7e5"
 uuid = "927a84f5-c5f4-47a5-9785-b46e178433df"
-version = "1.1.2"
+version = "1.2.0"
 
 [[deps.DiskArrays]]
 deps = ["LRUCache", "OffsetArrays"]
@@ -440,9 +430,9 @@ uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[deps.Distributions]]
 deps = ["AliasTables", "FillArrays", "LinearAlgebra", "PDMats", "Printf", "QuadGK", "Random", "SpecialFunctions", "Statistics", "StatsAPI", "StatsBase", "StatsFuns"]
-git-tree-sha1 = "9c405847cc7ecda2dc921ccf18b47ca150d7317e"
+git-tree-sha1 = "e6c693a0e4394f8fda0e51a5bdf5aef26f8235e9"
 uuid = "31c24e10-a181-5473-b8eb-7969acd0382f"
-version = "0.25.109"
+version = "0.25.111"
 
     [deps.Distributions.extensions]
     DistributionsChainRulesCoreExt = "ChainRulesCore"
@@ -464,12 +454,6 @@ version = "0.9.3"
 deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 version = "1.6.0"
-
-[[deps.DualNumbers]]
-deps = ["Calculus", "NaNMath", "SpecialFunctions"]
-git-tree-sha1 = "5837a837389fccf076445fce071c8ddaea35a566"
-uuid = "fa6b7ba4-c1ee-5f82-b5fc-ecf0adba8f74"
-version = "0.6.8"
 
 [[deps.EarCut_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -501,15 +485,15 @@ uuid = "2e619515-83b5-522b-bb60-26c02a35a201"
 version = "2.6.2+0"
 
 [[deps.Extents]]
-git-tree-sha1 = "94997910aca72897524d2237c41eb852153b0f65"
+git-tree-sha1 = "81023caa0021a41712685887db1fc03db26f41f5"
 uuid = "411431e0-e8b7-467b-b5e0-f676ba4f2910"
-version = "0.1.3"
+version = "0.1.4"
 
 [[deps.FFMPEG_jll]]
 deps = ["Artifacts", "Bzip2_jll", "FreeType2_jll", "FriBidi_jll", "JLLWrappers", "LAME_jll", "Libdl", "Ogg_jll", "OpenSSL_jll", "Opus_jll", "PCRE2_jll", "Zlib_jll", "libaom_jll", "libass_jll", "libfdk_aac_jll", "libvorbis_jll", "x264_jll", "x265_jll"]
-git-tree-sha1 = "ab3f7e1819dba9434a3a5126510c8fda3a4e7000"
+git-tree-sha1 = "8cc47f299902e13f90405ddb5bf87e5d474c0d38"
 uuid = "b22a6f82-2f65-5046-a5b2-351ab43fb4e5"
-version = "6.1.1+0"
+version = "6.1.2+0"
 
 [[deps.FFTW]]
 deps = ["AbstractFFTs", "FFTW_jll", "LinearAlgebra", "MKL_jll", "Preferences", "Reexport"]
@@ -542,19 +526,24 @@ uuid = "8fc22ac5-c921-52a6-82fd-178b2807b824"
 version = "0.8.3"
 
 [[deps.FilePathsBase]]
-deps = ["Compat", "Dates", "Mmap", "Printf", "Test", "UUIDs"]
-git-tree-sha1 = "9f00e42f8d99fdde64d40c8ea5d14269a2e2c1aa"
+deps = ["Compat", "Dates"]
+git-tree-sha1 = "7878ff7172a8e6beedd1dea14bd27c3c6340d361"
 uuid = "48062228-2e41-5def-b9a4-89aafe57970f"
-version = "0.9.21"
+version = "0.9.22"
+weakdeps = ["Mmap", "Test"]
+
+    [deps.FilePathsBase.extensions]
+    FilePathsBaseMmapExt = "Mmap"
+    FilePathsBaseTestExt = "Test"
 
 [[deps.FileWatching]]
 uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 
 [[deps.FillArrays]]
 deps = ["LinearAlgebra"]
-git-tree-sha1 = "0653c0a2396a6da5bc4766c43041ef5fd3efbe57"
+git-tree-sha1 = "6a70198746448456524cb442b8af316927ff3e1a"
 uuid = "1a297f60-69ca-5386-bcde-b61e274b549b"
-version = "1.11.0"
+version = "1.13.0"
 weakdeps = ["PDMats", "SparseArrays", "Statistics"]
 
     [deps.FillArrays.extensions]
@@ -612,11 +601,16 @@ deps = ["Artifacts", "Libdl"]
 uuid = "781609d7-10c4-51f6-84f2-b8444358ff6d"
 version = "6.2.1+6"
 
+[[deps.GeoFormatTypes]]
+git-tree-sha1 = "59107c179a586f0fe667024c5eb7033e81333271"
+uuid = "68eda718-8dee-11e9-39e7-89f7f65f511f"
+version = "0.4.2"
+
 [[deps.GeoInterface]]
-deps = ["Extents"]
-git-tree-sha1 = "9fff8990361d5127b770e3454488360443019bb3"
+deps = ["Extents", "GeoFormatTypes"]
+git-tree-sha1 = "5921fc0704e40c024571eca551800c699f86ceb4"
 uuid = "cf35fbd7-0cd7-5166-be24-54bfbe79505f"
-version = "1.3.5"
+version = "1.3.6"
 
 [[deps.GeometryBasics]]
 deps = ["EarCut_jll", "Extents", "GeoInterface", "IterTools", "LinearAlgebra", "StaticArrays", "StructArrays", "Tables"]
@@ -683,10 +677,10 @@ uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 version = "1.10.8"
 
 [[deps.HarfBuzz_jll]]
-deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "Graphite2_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Pkg"]
-git-tree-sha1 = "129acf094d168394e80ee1dc4bc06ec835e510a3"
+deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "Graphite2_jll", "JLLWrappers", "Libdl", "Libffi_jll"]
+git-tree-sha1 = "401e4f3f30f43af2c8478fc008da50096ea5240f"
 uuid = "2e76f6c2-a576-52d4-95c1-20adfe4de566"
-version = "2.8.1+1"
+version = "8.3.1+0"
 
 [[deps.Hwloc_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -695,10 +689,10 @@ uuid = "e33a78d0-f292-5ffc-b300-72abe9b543c8"
 version = "2.11.1+0"
 
 [[deps.HypergeometricFunctions]]
-deps = ["DualNumbers", "LinearAlgebra", "OpenLibm_jll", "SpecialFunctions"]
-git-tree-sha1 = "f218fe3736ddf977e0e772bc9a586b2383da2685"
+deps = ["LinearAlgebra", "OpenLibm_jll", "SpecialFunctions"]
+git-tree-sha1 = "7c4195be1649ae622304031ed46a2f4df989f1eb"
 uuid = "34004b35-14d8-5ef3-9330-4cdb6864b03a"
-version = "0.3.23"
+version = "0.3.24"
 
 [[deps.Hyperscript]]
 deps = ["Test"]
@@ -778,10 +772,10 @@ version = "1.4.2"
     Parsers = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
 
 [[deps.IntelOpenMP_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "14eb2b542e748570b56446f4c50fbfb2306ebc45"
+deps = ["Artifacts", "JLLWrappers", "LazyArtifacts", "Libdl"]
+git-tree-sha1 = "10bd689145d2c3b2a9844005d01087cc1194e79e"
 uuid = "1d5cc7b8-4909-519e-a0f8-d0f5ad9712d0"
-version = "2024.2.0+0"
+version = "2024.2.1+0"
 
 [[deps.InteractiveUtils]]
 deps = ["Markdown"]
@@ -799,18 +793,20 @@ weakdeps = ["Unitful"]
 
 [[deps.IntervalArithmetic]]
 deps = ["CRlibm_jll", "MacroTools", "RoundingEmulator"]
-git-tree-sha1 = "433b0bb201cd76cb087b017e49244f10394ebe9c"
+git-tree-sha1 = "01fa84a20be8c7c867edf3b9ef33ac15f4089c1a"
 uuid = "d1acc4aa-44c8-5952-acd4-ba5d80a2a253"
-version = "0.22.14"
+version = "0.22.15"
 
     [deps.IntervalArithmetic.extensions]
     IntervalArithmeticDiffRulesExt = "DiffRules"
     IntervalArithmeticForwardDiffExt = "ForwardDiff"
     IntervalArithmeticRecipesBaseExt = "RecipesBase"
+    IntervalArithmeticsIntervalSetsExt = "IntervalSets"
 
     [deps.IntervalArithmetic.weakdeps]
     DiffRules = "b552c78f-8df3-52c6-915a-8e097449b14b"
     ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+    IntervalSets = "8197267c-284f-5f27-9208-e0e47529a953"
     RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 
 [[deps.IntervalSets]]
@@ -856,9 +852,9 @@ version = "1.0.0"
 
 [[deps.JLLWrappers]]
 deps = ["Artifacts", "Preferences"]
-git-tree-sha1 = "7e5d6779a1e09a36db2a7b6cff50942a0a7d0fca"
+git-tree-sha1 = "f389674c99bfcde17dc57454011aa44d5a260a40"
 uuid = "692b3bcd-3c85-4b1f-b108-f13ce0eb3210"
-version = "1.5.0"
+version = "1.6.0"
 
 [[deps.JSON]]
 deps = ["Dates", "Mmap", "Parsers", "Unicode"]
@@ -904,9 +900,9 @@ version = "3.100.2+0"
 
 [[deps.LLVMOpenMP_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "d986ce2d884d49126836ea94ed5bfb0f12679713"
+git-tree-sha1 = "e16271d212accd09d52ee0ae98956b8a05c4b626"
 uuid = "1d63c593-3942-5779-bab2-d838dc0a180e"
-version = "15.0.7+0"
+version = "17.0.6+0"
 
 [[deps.LRUCache]]
 git-tree-sha1 = "b3cc6698599b10e652832c2f23db3cab99d51b59"
@@ -1078,15 +1074,15 @@ version = "0.5.13"
 
 [[deps.Makie]]
 deps = ["Animations", "Base64", "CRC32c", "ColorBrewer", "ColorSchemes", "ColorTypes", "Colors", "Contour", "Dates", "DelaunayTriangulation", "Distributions", "DocStringExtensions", "Downloads", "FFMPEG_jll", "FileIO", "FilePaths", "FixedPointNumbers", "Format", "FreeType", "FreeTypeAbstraction", "GeometryBasics", "GridLayoutBase", "ImageIO", "InteractiveUtils", "IntervalSets", "Isoband", "KernelDensity", "LaTeXStrings", "LinearAlgebra", "MacroTools", "MakieCore", "Markdown", "MathTeXEngine", "Observables", "OffsetArrays", "Packing", "PlotUtils", "PolygonOps", "PrecompileTools", "Printf", "REPL", "Random", "RelocatableFolders", "Scratch", "ShaderAbstractions", "Showoff", "SignedDistanceFields", "SparseArrays", "Statistics", "StatsBase", "StatsFuns", "StructArrays", "TriplotBase", "UnicodeFun", "Unitful"]
-git-tree-sha1 = "863b9e666b5a099c8835e85476a5834f9d77c4c1"
+git-tree-sha1 = "204f06860af9008fa08b3a4842f48116e1209a2c"
 uuid = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-version = "0.21.5"
+version = "0.21.9"
 
 [[deps.MakieCore]]
 deps = ["ColorTypes", "GeometryBasics", "IntervalSets", "Observables"]
-git-tree-sha1 = "c1c950560397ee68ad7302ee0e3efa1b07466a2f"
+git-tree-sha1 = "b0e2e3473af351011e598f9219afb521121edd2b"
 uuid = "20f20a25-4f0e-4fdf-b5d1-57303727442b"
-version = "0.8.4"
+version = "0.8.6"
 
 [[deps.MappedArrays]]
 git-tree-sha1 = "2dab0221fe2b0f2cb6754eaa743cc266339f527e"
@@ -1141,9 +1137,9 @@ version = "2023.1.10"
 
 [[deps.NCDatasets]]
 deps = ["CFTime", "CommonDataModel", "DataStructures", "Dates", "DiskArrays", "NetCDF_jll", "NetworkOptions", "Printf"]
-git-tree-sha1 = "a640912695952b074672edb5f9aaee2f7f9fd59a"
+git-tree-sha1 = "77df6d3708ec0eb3441551e1f20f7503b37c2393"
 uuid = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
-version = "0.14.4"
+version = "0.14.5"
 
 [[deps.NaNMath]]
 deps = ["OpenLibm_jll"]
@@ -1180,9 +1176,9 @@ version = "0.5.5"
 
 [[deps.OceanRobots]]
 deps = ["CFTime", "CSV", "DataFrames", "DataStructures", "Dataverse", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "Interpolations", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "URIs"]
-git-tree-sha1 = "05107d8eeabbaf7a77fcffbb333594867292d79e"
+git-tree-sha1 = "f930066d231abce9f3dcdf55eccaab1e7499b39e"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
-version = "0.2.1"
+version = "0.2.4"
 
     [deps.OceanRobots.extensions]
     OceanRobotsArgoDataExt = ["ArgoData"]
@@ -1231,9 +1227,9 @@ version = "0.8.1+2"
 
 [[deps.OpenMPI_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Hwloc_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "MPIPreferences", "TOML", "Zlib_jll"]
-git-tree-sha1 = "2f0a1d8c79bc385ec3fcda12830c9d0e72b30e71"
+git-tree-sha1 = "bfce6d523861a6c562721b262c0d1aaeead2647f"
 uuid = "fe0851c0-eecd-5654-98d4-656369965a5c"
-version = "5.0.4+0"
+version = "5.0.5+0"
 
 [[deps.OpenSSL]]
 deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "OpenSSL_jll", "Sockets"]
@@ -1254,10 +1250,10 @@ uuid = "efe28fd5-8261-553b-a9e1-b2916fc3738e"
 version = "0.5.5+0"
 
 [[deps.Opus_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "51a08fb14ec28da2ec7a927c4337e4332c2a4720"
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "6703a85cb3781bd5909d48730a67205f3f31a575"
 uuid = "91d4177d-7536-5919-b921-800302f37372"
-version = "1.3.2+0"
+version = "1.3.3+0"
 
 [[deps.OrderedCollections]]
 git-tree-sha1 = "dfdf5519f235516220579f949664f1bf44e741c5"
@@ -1301,9 +1297,9 @@ version = "0.5.12"
 
 [[deps.Pango_jll]]
 deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "FriBidi_jll", "Glib_jll", "HarfBuzz_jll", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "cb5a2ab6763464ae0f19c86c56c63d4a2b0f5bda"
+git-tree-sha1 = "e127b609fb9ecba6f201ba7ab753d5a605d53801"
 uuid = "36c8627f-9965-5494-a995-c6b170f724f3"
-version = "1.52.2+0"
+version = "1.54.1+0"
 
 [[deps.Parsers]]
 deps = ["Dates", "PrecompileTools", "UUIDs"]
@@ -1336,9 +1332,9 @@ version = "1.4.1"
 
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
-git-tree-sha1 = "ab55ee1510ad2af0ff674dbcced5e94921f867a9"
+git-tree-sha1 = "eba4810d5e6a01f612b948c9fa94f905b49087b0"
 uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-version = "0.7.59"
+version = "0.7.60"
 
 [[deps.PolygonOps]]
 git-tree-sha1 = "77b3d3605fc1cd0b42d95eba87dfcd2bf67d5ff6"
@@ -1380,9 +1376,9 @@ uuid = "92933f4c-e287-5a05-a399-4b506db050ca"
 version = "1.10.2"
 
 [[deps.PtrArrays]]
-git-tree-sha1 = "f011fbb92c4d401059b2212c05c0601b70f8b759"
+git-tree-sha1 = "77a42d78b6a92df47ab37e177b2deac405e1c88f"
 uuid = "43287f4e-b6f4-7ad1-bb20-aadabca52c3d"
-version = "1.2.0"
+version = "1.2.1"
 
 [[deps.QOI]]
 deps = ["ColorTypes", "FileIO", "FixedPointNumbers"]
@@ -1392,9 +1388,15 @@ version = "1.0.0"
 
 [[deps.QuadGK]]
 deps = ["DataStructures", "LinearAlgebra"]
-git-tree-sha1 = "e237232771fdafbae3db5c31275303e056afaa9f"
+git-tree-sha1 = "1d587203cf851a51bf1ea31ad7ff89eff8d625ea"
 uuid = "1fd47b50-473d-5c70-9696-f719f8f3bcdc"
-version = "2.10.1"
+version = "2.11.0"
+
+    [deps.QuadGK.extensions]
+    QuadGKEnzymeExt = "Enzyme"
+
+    [deps.QuadGK.weakdeps]
+    Enzyme = "7da242da-08ed-463a-9acd-ee780be4f1d9"
 
 [[deps.REPL]]
 deps = ["InteractiveUtils", "Markdown", "Sockets", "Unicode"]
@@ -1444,9 +1446,9 @@ version = "0.7.1"
 
 [[deps.Rmath_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "d483cd324ce5cf5d61b77930f0bbd6cb61927d21"
+git-tree-sha1 = "e60724fd3beea548353984dc61c943ecddb0e29a"
 uuid = "f50d1b31-88e8-58de-be2c-1cc44531875f"
-version = "0.4.2+0"
+version = "0.4.3+0"
 
 [[deps.RoundingEmulator]]
 git-tree-sha1 = "40b9edad2e5287e05bd413a38f61a8ff55b9557b"
@@ -1620,9 +1622,9 @@ version = "0.6.18"
 
 [[deps.StructTypes]]
 deps = ["Dates", "UUIDs"]
-git-tree-sha1 = "ca4bccb03acf9faaf4137a9abc1881ed1841aa70"
+git-tree-sha1 = "159331b30e94d7b11379037feeb9b690950cace8"
 uuid = "856f2bd8-1eba-4b0a-8007-ebc267875bd4"
-version = "1.10.0"
+version = "1.11.0"
 
 [[deps.SuiteSparse]]
 deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
@@ -1672,13 +1674,9 @@ uuid = "731e570b-9d59-4bfa-96dc-6df516fadf69"
 version = "0.10.0"
 
 [[deps.TranscodingStreams]]
-git-tree-sha1 = "96612ac5365777520c3c5396314c8cf7408f436a"
+git-tree-sha1 = "e84b3a11b9bece70d14cce63406bbc79ed3464d2"
 uuid = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
-version = "0.11.1"
-weakdeps = ["Random", "Test"]
-
-    [deps.TranscodingStreams.extensions]
-    TestExt = ["Test", "Random"]
+version = "0.11.2"
 
 [[deps.Tricks]]
 git-tree-sha1 = "7822b97e99a1672bfb1b49b668a6d46d58d8cbcb"
@@ -1747,9 +1745,9 @@ version = "1.6.1"
 
 [[deps.XML2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libiconv_jll", "Zlib_jll"]
-git-tree-sha1 = "d9717ce3518dc68a99e6b96300813760d887a01d"
+git-tree-sha1 = "1165b0443d0eca63ac1e32b8c0eb69ed2f4f8127"
 uuid = "02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"
-version = "2.13.1+0"
+version = "2.13.3+0"
 
 [[deps.XSLT_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libgcrypt_jll", "Libgpg_error_jll", "Libiconv_jll", "XML2_jll", "Zlib_jll"]
@@ -1847,10 +1845,10 @@ uuid = "a4ae2306-e953-59d6-aa16-d00cac43593b"
 version = "3.9.0+0"
 
 [[deps.libass_jll]]
-deps = ["Artifacts", "Bzip2_jll", "FreeType2_jll", "FriBidi_jll", "HarfBuzz_jll", "JLLWrappers", "Libdl", "Pkg", "Zlib_jll"]
-git-tree-sha1 = "5982a94fcba20f02f42ace44b9894ee2b140fe47"
+deps = ["Artifacts", "Bzip2_jll", "FreeType2_jll", "FriBidi_jll", "HarfBuzz_jll", "JLLWrappers", "Libdl", "Zlib_jll"]
+git-tree-sha1 = "e17c115d55c5fbb7e52ebedb427a0dca79d4484e"
 uuid = "0ac62f75-1d6f-5e53-bd7c-93b484bb37c0"
-version = "0.15.1+0"
+version = "0.15.2+0"
 
 [[deps.libblastrampoline_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -1858,10 +1856,10 @@ uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
 version = "5.8.0+1"
 
 [[deps.libfdk_aac_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "daacc84a041563f965be61859a36e17c4e4fcd55"
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "8a22cf860a7d27e4f3498a0fe0811a7957badb38"
 uuid = "f638f0a6-7fb0-5443-88ba-1cc74229b280"
-version = "2.0.2+0"
+version = "2.0.3+0"
 
 [[deps.libpng_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Zlib_jll"]
@@ -1904,30 +1902,30 @@ uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
 version = "17.4.0+2"
 
 [[deps.x264_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "4fea590b89e6ec504593146bf8b988b2c00922b2"
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "35976a1216d6c066ea32cba2150c4fa682b276fc"
 uuid = "1270edf5-f2f9-52d2-97e9-ab00b5d0237a"
-version = "2021.5.5+0"
+version = "10164.0.0+0"
 
 [[deps.x265_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "ee567a171cce03570d77ad3a43e90218e38937a9"
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "dcc541bb19ed5b0ede95581fb2e41ecf179527d2"
 uuid = "dfaa095f-4041-5dcd-9319-2fabd8486b76"
-version = "3.5.0+0"
+version = "3.6.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╟─e5b9772e-cbb5-42f0-bacb-5bae6bc8d5b6
-# ╟─0a016d12-de41-45f5-800d-af8f953720e4
-# ╟─d9ffd0a8-85e3-4e2a-9d6a-81f3dbd3ee31
-# ╟─3e5fd65e-e3d9-49e5-a9b0-87a2475cc3a0
-# ╟─b8db58ca-ed7a-4174-a6b0-e53925b5887a
-# ╟─428120da-1542-4265-a369-1273ae4718ac
-# ╟─68028522-205e-4b41-b3c0-2e3b09c2d8a7
-# ╟─0247a51e-c89b-11ec-071f-bb82fe257adc
-# ╟─e729416a-a2b2-46ce-bb1e-ededeb8c75b3
-# ╟─9523dc0d-1758-4e0f-864c-4ab253bf11a9
-# ╟─5748bb5f-528f-42fd-8961-fd7c93d12554
-# ╟─440e4256-d6eb-4dfa-946b-22fac53432e8
+# ╟─c90d4b04-9810-4736-8f73-bb6ee2c42577
+# ╟─4a1784d6-7850-4c05-b302-013db8966c3a
+# ╟─f5415f1d-0e98-41e3-a6fb-459580141611
+# ╟─fa2c9be1-1198-4852-b7b1-623e42f5c871
+# ╟─19a5cf7c-fa71-435b-bdff-d369658d3260
+# ╟─a7186ef8-f1de-437f-99eb-fe6553da49b5
+# ╟─457d85eb-08a8-4304-82a7-0372514b1bec
+# ╠═eab5b722-be6b-4341-b870-5a98cf6a32c3
+# ╟─beed86ef-5e86-45a4-8842-f21f2dcef504
+# ╟─17b1bef9-719a-4668-a067-c8dabdab9dc2
+# ╠═e741dbc2-695b-11ef-1962-5769d79825c0
+# ╟─bc007619-ff00-49c8-a8e4-e2e8a96a0326
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

@@ -1,4 +1,119 @@
 
+module CCHDO
+
+import Downloads, Dataverse, NCDatasets, Glob
+import NCDatasets: Dataset
+
+"""
+    CCHDO.download(cruise::Union(Symbol,Symbol[]),path=tempdir())
+
+Download files listed in `stations` from `cchdo.ucsd.edu/cruise/` to `path`.
+
+```
+using OceanRobots
+ID="33RR20160208"
+path=OceanRobots.CCHDO.download(ID)
+```
+"""
+function download(cruise::Union{Symbol,String,Vector},path=tempdir())
+    url0="https://cchdo.ucsd.edu/cruise/"
+    files=String[]
+    cruises=(isa(cruise,Vector) ? cruise : [cruise])
+    for f in cruises
+        url1=url0*string(f)*"?download=dataset"
+        fil1=joinpath(path,string(f)*".zip")
+        path1=joinpath(path,string(f))
+        fil2=joinpath(path1,string(f)*".zip")
+        list=ancillary_files(f)
+        if !isdir(path1)
+            println("downloading CCHDO files for cruise $(f)")
+            Downloads.download(url1,fil1)
+            mkdir(path1)
+            mv(fil1,fil2)
+            Dataverse.unzip(fil2)
+            #unzip ctd files
+            tmp1=readdir(path1)
+            tmp2=findall(occursin.(Ref("_nc_ctd.zip"),tmp1))[1]
+            fil3=joinpath(path1,tmp1[tmp2])
+            Dataverse.unzip(fil3)
+            #download ancillary files
+            for i in list
+                isempty(i) ? nothing : Downloads.download(i,joinpath(path1,basename(i)))
+            end
+        end
+        push!(files,path1)
+    end
+    length(files)==1 ? files[1] : files
+end
+
+#other relevant URLs:
+#
+#https://cchdo.ucsd.edu/search?q=chipod
+#https://microstructure.ucsd.edu
+#
+#https://cchdo.ucsd.edu/products/
+#https://doi.org/10.7942/GOSHIP-EasyOcean
+#https://argovis.colorado.edu/ships
+
+
+"""
+    ancillary_files(cruise::Union{Symbol,String})
+
+```
+using OceanRobots
+ID="33RR20230722"
+list=OceanRobots.CCHDO.ancillary_files(ID)
+```
+"""
+function ancillary_files(cruise::Union{Symbol,String})
+    f=string(cruise)    
+    if f=="33RR20160208"
+        list=(  txt="https://cchdo.ucsd.edu/data/12413/33RR20160208_do.txt",
+                sum="https://cchdo.ucsd.edu/data/34887/33RR20160208su.txt",
+                chipod="https://cchdo.ucsd.edu/data/41776/I08S_nc_final.nc",
+                chipod_raw="" )#https://cchdo.ucsd.edu/data/41775/I08S_chipod_raw.zip")
+    elseif f=="320620170703"
+        list=(  txt="https://cchdo.ucsd.edu/data/34919/320620170703su.txt",
+                sum="https://cchdo.ucsd.edu/data/14267/320620170703_do.txt",
+                chipod="https://cchdo.ucsd.edu/data/41749/P06_CTDchipod_final.nc",
+                chipod_raw="")#https://cchdo.ucsd.edu/data/41748/P06_chipod_raw.zip")
+    elseif f=="74EQ20151206"
+        list=(  txt="",
+                sum="https://cchdo.ucsd.edu/data/23056/74EQ20151206su.txt",
+                chipod="https://cchdo.ucsd.edu/data/41792/A05_nc_final.nc",
+                chipod_raw="") #https://cchdo.ucsd.edu/data/41791/A05_chipod_raw.zip")
+    elseif f=="33RO20131223"
+        list=(  txt="https://cchdo.ucsd.edu/data/14685/33RO20131223_do.txt",
+                sum="https://cchdo.ucsd.edu/data/1844/33RO20131223su.txt",
+                chipod="https://cchdo.ucsd.edu/data/41774/A16S_nc_final.nc",
+                chipod_raw="") #https://cchdo.ucsd.edu/data/41773/A16S_chipod_raw.zip")
+    elseif f=="33RO20150410"
+        list=(  txt="https://cchdo.ucsd.edu/data/11984/33RO20150410_do.txt",
+                sum="https://cchdo.ucsd.edu/data/34881/33RO20150410su.txt",
+                chipod="https://cchdo.ucsd.edu/data/41784/P16N1_CTDchipod_final.nc",
+                chipod_raw="") #https://cchdo.ucsd.edu/data/41783/P16N1_chipod_raw.zip")
+    #others that dont have the finalize nc file yet:
+    elseif f=="33RR20230722"
+        list=(  txt="",
+                sum="https://cchdo.ucsd.edu/data/41041/33RR20230722su.txt",
+                chipod="",
+                chipod_raw="https://cchdo.ucsd.edu/data/41794/I05_chipod_raw.zip")
+    else
+        list=(txt="",sum="",chipod="",chipod_raw="")
+    end
+end
+
+open_chipod_file(x) = begin
+	fil0=basename(CCHDO.ancillary_files(x.ID).chipod)
+	fil1=joinpath(x.path,fil0)
+	Dataset(fil1)
+end
+
+list_CTD_files(x) = Glob.glob(x.ID*"*_ctd.nc",x.path)
+
+end
+
+
 module GliderFiles
 
 import OceanRobots: Gliders

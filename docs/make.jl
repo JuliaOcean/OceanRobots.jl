@@ -3,6 +3,11 @@ using Documenter, OceanRobots, PlutoSliderServer, CairoMakie, ArgoData
 ENV["DATADEPS_ALWAYS_ACCEPT"]=true
 OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
 OceanRobotsArgoDataExt=Base.get_extension(OceanRobots, :OceanRobotsArgoDataExt)
+
+using MeshArrays, Shapefile, DataDeps
+pol_file=demo.download_polygons("ne_110m_admin_0_countries.shp")
+pol=MeshArrays.read_polygons(pol_file)
+
 ##
 
 makedocs(;
@@ -23,7 +28,7 @@ makedocs(;
 GliderFiles.check_for_file_Spray("GulfStream.nc")
 GliderFiles.check_for_file_Spray("CUGN_along.nc")
 
-lst=("Drifter_CloudDrift.jl","SatelliteAltimetry.jl",
+lst=("ShipCruise_CCHDO.jl","Drifter_CloudDrift.jl","SatelliteAltimetry.jl",
   "Buoy_NWP_NOAA_monthly.jl","Glider_Spray.jl","OceanOPS.jl",
   "Buoy_NWP_NOAA.jl","Mooring_WHOTS.jl","Drifter_GDP.jl","Float_Argo.jl")
 for i in lst
