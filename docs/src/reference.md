@@ -5,9 +5,9 @@ Each type of ocean data gets :
 - a simple `read` function that downloads data if needed. 
 - a default `plot` function that depicts some of the data.
 
-For mapping purposes, it is useful to download country polygons.
+# Supported Datasets
 
-```@example ex1
+```@setup ex1
 using MeshArrays, Shapefile, DataDeps
 pol_file=demo.download_polygons("ne_110m_admin_0_countries.shp")
 pol=MeshArrays.read_polygons(pol_file)
@@ -72,13 +72,23 @@ gliders=read(Gliders(),"GulfStream.nc")
 plot(gliders,1,pol=pol)
 ```
 
-## Sea Level Anomaly
+!!! note
+    To put data in context, it is useful to download country polygons or gridded data sets.
+
+```@example ex1
+using MeshArrays, Shapefile, DataDeps
+pol_file=demo.download_polygons("ne_110m_admin_0_countries.shp")
+pol=MeshArrays.read_polygons(pol_file)
+nothing #hide
+```
 
 ```@example ex1
 using OceanRobots, CairoMakie
 sla=read(SeaLevelAnomaly(),:sla_podaac)
 plot(sla)
 ```
+
+# Functionalities
 
 ## read
 
