@@ -25,6 +25,8 @@
 
 ## How-To
 
+To install `OceanRobots.jl` in `julia` proceed as usual via the package manager (`using Pkg; Pkg.add(OceanRobots)`).
+
 To run a notebook interactively (`.jl` files) you want to use [Pluto.jl](https://github.com/fonsp/Pluto.jl). For example, copy and paste one of the above `code link`s in the [Pluto.jl interface](https://github.com/fonsp/Pluto.jl/wiki/🔎-Basic-Commands-in-Pluto). This will let you spin up the notebook in a web browser from the copied URL.
 
 All you need to do beforehand is to install [julia](https://julialang.org) and `Pluto.jl`. The installation of OceanRobots.jl and other Julia packages will then happen automatically when you run the notebook. 

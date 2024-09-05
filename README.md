@@ -101,16 +101,3 @@ Argo Float Track            |  Argo Float Profiles
 </p>
 </details>
 
-<details>
- <summary> Gridded Satellite Data </summary>
-<p>
-
-Visualize gridded data from satellites over a chosen region.
-
-👉 [Satellite Altimetry notebook](https://juliaocean.github.io/OceanRobots.jl/dev/examples/SatelliteAltimetry.html) 👈
-
-![](https://user-images.githubusercontent.com/20276764/209571354-d55e03ae-2063-4f9a-b5c5-131d6f4fb778.png)
-
-</p>
-</details>
-
