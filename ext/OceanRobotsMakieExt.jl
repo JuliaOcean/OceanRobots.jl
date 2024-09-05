@@ -148,15 +148,17 @@ plot(x::NOAAbuoy_monthly, var="T(°F)"; option=:demo, size=(900,600)) = begin
 end
 
 mean=NOAA.mean
+months=[:J :F :M :A :M :J :J :A :S :O :N :D]
 
 function plot_summary(tbl,all,var,uni;size=(900,600))
 	f=Figure(size=size)
 	xlm=maximum(abs.(all[:])).*(-1,1)
-	ax=Axis(f[1,1],title="full distribution of T1-T0 ",limits = (xlm, nothing)); hist!(ax,all)
-	ax=Axis(f[1,2],title="mean(T1-T0) each month"); barplot!(ax,[mean(tbl[m].T1)-mean(tbl[m].T0) for m in 1:12])
-	ax=Axis(f[2,1:2],title="seasonal cycle of $(var)",ylabel=uni);
+	ax=Axis(f[1,1],title="full distribution of T1-T0 ",xlabel=uni,ylabel="counts",limits = (xlm, nothing)); hist!(ax,all)
+	ax=Axis(f[1,2],title="mean(T1-T0) each month",xlabel=uni); barplot!(ax,[mean(tbl[m].T1)-mean(tbl[m].T0) for m in 1:12])
+	ax=Axis(f[2,1:2],title="seasonal cycle of $(var)",xlabel="month",ylabel=uni);
 	lines!(ax,[mean(tbl[m].T0) for m in 1:12],label="mean(T0)")
 	lines!(ax,[mean(tbl[m].T1) for m in 1:12],label="mean(T1)")
+	ax.xticks[]=1:12
 	axislegend(ax)
 	f
 end
