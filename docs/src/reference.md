@@ -2,8 +2,22 @@
 
 Each type of ocean data gets :
 
-- a simple `read` function that downloads data if needed. 
+- a simple `read` function that downloads data if needed.
 - a default `plot` function that depicts some of the data.
+
+# Functionalities
+
+## read
+
+```@docs
+read
+```
+
+## plot
+
+```@docs
+plot
+```
 
 # Supported Datasets
 
@@ -88,16 +102,3 @@ sla=read(SeaLevelAnomaly(),:sla_podaac)
 plot(sla)
 ```
 
-# Functionalities
-
-## read
-
-```@docs
-read
-```
-
-## plot
-
-```@docs
-plot
-```
