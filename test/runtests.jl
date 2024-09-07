@@ -112,6 +112,10 @@ using Test
     filename=podaac_sla.subset(; read_from_file=SLA.file)
     @test ispath(filename)
 
+    SLA=read(SeaLevelAnomaly(),:sla_cmems)
+    filename=cmems_sla.subset(; read_from_file=SLA.file)
+    @test ispath(filename)
+
     ##
 
     ID="33RR20160208"

@@ -93,7 +93,8 @@ function subset(;
     show(gr)
 
     if save_to_file
-        fil=joinpath(tempdir(),"sla_$(i0)_$(i1).nc")
+#        fil=joinpath(tempdir(),"sla_$(i0)_$(i1).nc")
+        fil=joinpath(tempdir(),"podaac_sla_dev.nc")
         Dataset(fil,"c",attrib = OrderedDict("title" => "Azores Regional Subset")) do ds
             defVar(ds,"SLA",data,("lon","lat","time"), attrib = OrderedDict(
                 "units" => "m", "long_name" => "Sea Level Anomaly",
@@ -134,24 +135,30 @@ function subset(;
     password="unknown",
     range_lon=(-35.0,-22),
     range_lat=(34.0,45),
+    read_from_file="",
     save_to_file=true,
     )
 
-    url="https://my.cmems-du.eu/thredds/dodsC/"*var
-    url2 = string(URI(URI(url),userinfo = string(username,":",password)))
-    ds = NCDataset(url2)
-
-    lon=ds["longitude"][:]
-    lat=ds["latitude"][:]
+    if !isempty(read_from_file)
+        ds=Dataset(read_from_file)
+        SSH=ds["SLA"]
+        lon=ds["lon"][:]
+        lat=ds["lat"][:]
+    else
+        url="https://my.cmems-du.eu/thredds/dodsC/"*var
+        url2 = string(URI(URI(url),userinfo = string(username,":",password)))
+        ds = NCDataset(url2)
+        SSH=ds["sla"]
+        lon=ds["longitude"][:]
+        lat=ds["latitude"][:]
+    end
 
     ii=findall( (lon.>range_lon[1]) .& (lon.<range_lon[2]) )
     jj=findall( (lat.>range_lat[1]) .& (lat.<range_lat[2]) )
-
-    SSH=ds["sla"]
-
     data = SSH[ii,jj,:]
+
     if save_to_file
-        fil=tempname()
+        fil=joinpath(tempdir(),"cmems_sla_dev.nc")
         Dataset(fil,"c",attrib = OrderedDict("title" => "Azores Regional Subset")) do ds
             defVar(ds,"SLA",data,("lon","lat","time"), attrib = OrderedDict(
                 "units" => "m", "long_name" => "Sea Level Anomaly",
