@@ -107,7 +107,10 @@ using Test
     f3=plot(SLA)
     @test isa(f3,Figure)
 
-    podaac_sla.get_grid(file=SLA.file)
+    gr=podaac_sla.get_grid(file=SLA.file)
+    data=podaac_sla.read_slice(SLA.file,gr)
+    filename=podaac_sla.subset(; read_from_file=SLA.file)
+    @test ispath(filename)
 
     ##
 

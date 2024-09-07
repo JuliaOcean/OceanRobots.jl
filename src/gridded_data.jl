@@ -62,7 +62,7 @@ end
 For download directions, see [this site](https://podaac.jpl.nasa.gov/dataset/SEA_SURFACE_HEIGHT_ALT_GRIDS_L4_2SATS_5DAY_6THDEG_V_JPL2205)
 
 ```
-podaac_sla.subset()
+podaac_sla.subset(; read_from_file=SLA.file)
 ```
 """
 function subset(;
@@ -71,17 +71,26 @@ function subset(;
     password="unknown",
     range_lon=360.0.+(-35.0,-22),
     range_lat=(34.0,45),
+    read_from_file="",
     save_to_file=true,
     )
-    
-    gr=get_grid(range_lon=range_lon,range_lat=range_lat)
-    show(gr)
-    i0=1; i1=gr.nt    
-    data=zeros(length(gr.ii),length(gr.jj),i1-i0+1)
-    for n=i0:i1
-        mod(n,100)==0 ? println(n) : nothing
-        data[:,:,n-i0+1]=read_slice(path0*file_name(n),gr)
+
+    if !isempty(read_from_file)
+        gr=podaac_sla.get_grid(file=read_from_file)
+        ds=podaac_sla.Dataset(read_from_file)
+        i0=1; i1=gr.nt
+        data=ds["SLA"][:,:,:]
+    else
+        gr=get_grid(range_lon=range_lon,range_lat=range_lat)
+        i0=1; i1=gr.nt    
+        data=zeros(length(gr.ii),length(gr.jj),i1-i0+1)
+        for n=i0:i1
+            mod(n,100)==0 ? println(n) : nothing
+            data[:,:,n-i0+1]=read_slice(path0*file_name(n),gr)
+        end
     end
+
+    show(gr)
 
     if save_to_file
         fil=joinpath(tempdir(),"sla_$(i0)_$(i1).nc")
