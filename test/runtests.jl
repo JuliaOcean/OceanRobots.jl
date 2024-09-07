@@ -103,11 +103,18 @@ using Test
 
     ##
 
-    b=read(SeaLevelAnomaly(),:sla_podaac)
-    f3=plot(b)
+    SLA=read(SeaLevelAnomaly(),:sla_podaac)
+    f3=plot(SLA)
     @test isa(f3,Figure)
 
-    podaac_sla.file_name(1)
+    gr=podaac_sla.get_grid(file=SLA.file)
+    data=podaac_sla.read_slice(SLA.file,gr)
+    filename=podaac_sla.subset(; read_from_file=SLA.file)
+    @test ispath(filename)
+
+    SLA=read(SeaLevelAnomaly(),:sla_cmems)
+    filename=cmems_sla.subset(; read_from_file=SLA.file)
+    @test ispath(filename)
 
     ##
 
