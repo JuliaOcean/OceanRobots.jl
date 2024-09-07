@@ -13,22 +13,31 @@ path0=joinpath(pwd(),"SEA_SURFACE_HEIGHT_ALT_GRIDS_L4_2SATS_5DAY_6THDEG_V_JPL220
 #url=url1*"oscar_currents_interim_20230101.nc"
 #path1=joinpath(pwd(),"OSCAR_L4_OC_INTERIM_V2.0")*"/"
 
-function get_grid(;url0=url0,
-        range_lon=360.0.+(-35.0,-22),
-        range_lat=(34.0,45),
-        )
-    url=url0*"ssh_grids_v2205_1992101012.dap.nc"
-#    fil=joinpath(tempdir(),"ssh_grids_v2205_1992101012.dap.nc")
-    fil=Downloads.download(url)
 
-    ds=Dataset(fil)
-    lon=Float64.(ds["Longitude"][:])
-    lat=Float64.(ds["Latitude"][:])
+"""
+    get_grid(;url=url0,file="",range_lon=360.0.+(-35.0,-22),range_lat=(34.0,45))
+
+"""
+function get_grid(;url=url0,file="",range_lon=360.0.+(-35.0,-22),range_lat=(34.0,45))
+
+    if !isempty(file)
+        fil=file
+        ds=Dataset(fil)
+        lon=ds["lon"][:]
+        lat=ds["lat"][:]
+    else
+        url=url*"ssh_grids_v2205_1992101012.dap.nc"
+    #    fil=joinpath(tempdir(),"ssh_grids_v2205_1992101012.dap.nc")
+        fil=Downloads.download(url)
+        ds=Dataset(fil)
+        lon=Float64.(ds["Longitude"][:])
+        lat=Float64.(ds["Latitude"][:])        
+    end
 
     ii=findall( (lon.>range_lon[1]) .& (lon.<range_lon[2]) )
     jj=findall( (lat.>range_lat[1]) .& (lat.<range_lat[2]) )
 
-    (lon=lon,lat=lat,ii=ii,jj=jj,nt=2190,url0=url0)
+    (lon=lon,lat=lat,ii=ii,jj=jj,nt=2190,file=fil)
 end
 
 function file_name(n)

@@ -103,11 +103,11 @@ using Test
 
     ##
 
-    b=read(SeaLevelAnomaly(),:sla_podaac)
-    f3=plot(b)
+    SLA=read(SeaLevelAnomaly(),:sla_podaac)
+    f3=plot(SLA)
     @test isa(f3,Figure)
 
-    podaac_sla.file_name(1)
+    podaac_sla.get_grid(file=SLA.file)
 
     ##
 
