@@ -107,6 +107,8 @@ using Test
     f3=plot(b)
     @test isa(f3,Figure)
 
+    podaac_sla.file_name(1)
+
     ##
 
     ID="33RR20160208"
