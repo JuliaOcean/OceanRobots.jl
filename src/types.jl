@@ -63,14 +63,6 @@ end
 
 OceanSite() = OceanSite(:unknown,NamedTuple(),NamedTuple())
 
-struct SeaLevelAnomaly <: AbstractOceanRobotData
-    ID::Symbol
-    data::Union{Array,Dataset}
-    file::String
-end
-
-SeaLevelAnomaly() = SeaLevelAnomaly(:unknown,[],"")
-
 Base.@kwdef struct ShipCruise <: AbstractOceanRobotData
     ID::String
     data::Union{Array,Dataset}
