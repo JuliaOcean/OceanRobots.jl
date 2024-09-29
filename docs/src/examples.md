@@ -21,7 +21,6 @@
 
 - For Argo and state estimates, see [ArgoData.jl](https://github.com/JuliaOcean/ArgoData.jl)
 - For simulations of drifter data, see [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl)
-- [SatelliteAltimetry.html](SatelliteAltimetry.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/SatelliteAltimetry.jl)) : gridded satellite data
 
 ## How-To
 

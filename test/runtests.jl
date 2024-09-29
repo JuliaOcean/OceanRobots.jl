@@ -103,18 +103,6 @@ using Test
 
     ##
 
-    SLA=read(SeaLevelAnomaly(),:sla_podaac)
-    gr=podaac_sla.get_grid(file=SLA.file)
-    data=podaac_sla.read_slice(SLA.file,gr)
-    filename=podaac_sla.subset(; read_from_file=SLA.file)
-    @test ispath(filename)
-
-    SLA=read(SeaLevelAnomaly(),:sla_cmems)
-    filename=cmems_sla.subset(; read_from_file=SLA.file)
-    @test ispath(filename)
-
-    ##
-
     ID="33RR20160208"
     path=CCHDO.download(ID)
     @test ispath(path)
