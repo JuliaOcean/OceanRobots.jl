@@ -97,8 +97,8 @@ nothing #hide
 ```
 
 ```@example ex1
-using OceanRobots, CairoMakie
-sla=read(SeaLevelAnomaly(),:sla_podaac)
+using Climatology, CairoMakie, DataDeps
+SLA=read(SeaLevelAnomaly(name="sla_podaac"))
 plot(sla)
 ```
 
