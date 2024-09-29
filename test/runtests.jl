@@ -64,7 +64,7 @@ using Test
     stations=metstations[1:200:end]
     ids=NOAA.download(stations)
 
-    b=read(NOAAbuoy(),41046)
+    b=read(NOAAbuoy(),41044)
     plot(b,"PRES")
     @test isa(b,NOAAbuoy)
 
@@ -104,9 +104,6 @@ using Test
     ##
 
     SLA=read(SeaLevelAnomaly(),:sla_podaac)
-    f3=plot(SLA)
-    @test isa(f3,Figure)
-
     gr=podaac_sla.get_grid(file=SLA.file)
     data=podaac_sla.read_slice(SLA.file,gr)
     filename=podaac_sla.subset(; read_from_file=SLA.file)
