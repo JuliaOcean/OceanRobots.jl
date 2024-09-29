@@ -97,7 +97,7 @@ nothing #hide
 ```
 
 ```@example ex1
-using Climatology, CairoMakie, DataDeps
+using Climatology, CairoMakie, NCDatasets
 SLA=read(SeaLevelAnomaly(name="sla_podaac"))
 plot(sla)
 ```
