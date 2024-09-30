@@ -56,7 +56,7 @@ plot(cruise,variable="salinity",colorrange=(33.5,35.0))
 
 ```@example ex1
 using OceanRobots, CairoMakie
-buoy=read(NOAAbuoy(),41046)
+buoy=read(NOAAbuoy(),41044)
 plot(buoy,["PRES","ATMP","WTMP"],size=(900,600))
 ```
 
