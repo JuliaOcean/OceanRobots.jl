@@ -1,6 +1,7 @@
 [deps]
 ArgoData = "9eb831cf-c491-48dc-bed4-6aca718df73c"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+Climatology = "9e9a4d37-2d2e-41e3-8b85-f7978328d9c7"
 DataDeps = "124859b0-ceae-595e-8997-d05f6a7a8dfe"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 Git = "d7ba0133-e1db-5d97-8f8c-041e4b3a1eb2"
