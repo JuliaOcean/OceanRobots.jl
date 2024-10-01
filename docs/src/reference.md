@@ -63,7 +63,7 @@ plot(buoy,["PRES","ATMP","WTMP"],size=(900,600))
 ```@example ex1
 using OceanRobots, CairoMakie
 buoy=read(NOAAbuoy_monthly(),44013)
-plot(buoy;option=:demo)
+plot(buoy)
 ```
 
 ## WHOTS Mooring
