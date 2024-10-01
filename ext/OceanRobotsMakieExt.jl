@@ -7,7 +7,7 @@ import Makie: plot
 ## DRIFTERS
 
 """
-    plot_drifter(ds)
+    plot_drifter(ds;size=(900,600),pol=Any[])
 
 Plot drifter data.        
 """
@@ -51,7 +51,12 @@ function plot_drifter(ds;size=(900,600),pol=Any[])
 end
 
 """
-    plot(x::SurfaceDrifter)
+    plot(x::SurfaceDrifter;size=(900,600),pol=Any[])
+
+Default plot for surface drifter data.
+	
+- size let's you set the figure dimensions
+- pol is a set of polygons (e.g., continents) 
 	
 ```
 using OceanRobots, CairoMakie
@@ -65,8 +70,14 @@ plot(x::SurfaceDrifter;size=(900,600),pol=Any[]) = plot_drifter(x.data,size=size
 ## WHOTS
 
 """
-    plot(x::OceanSite,args...)
+    plot(x::OceanSite,d0,d1;size=(900,600))
 	
+Default plot for OceanSite (mooring data).
+	
+- d0,d1 are two dates in DateTime format	
+- size let's you set the figure dimensions
+- pol is a set of polygons (e.g., continents) 
+
 ```
 using OceanRobots, Dates
 whots=read(OceanSite(),:WHOTS)
@@ -101,19 +112,24 @@ end
 ## NOAA
 
 """
-    plot(x::NOAAbuoy,var)
+    plot(x::NOAAbuoy,variables; size=(900,600))
+
+Default plot for NOAAbuoy (moored buoy data).
 	
+- variables (String, or array of String) are variables to plot
+- size let's you set the figure dimensions
+
 ```
 using OceanRobots, CairoMakie
-buoy=read(NOAAbuoy(),41046)
-plot(buoy,"PRES",size=(900,600))
+buoy=read(NOAAbuoy(),41044)
+plot(buoy,["PRES" "WTMP"],size=(900,600))
 ```
 """
-plot(x::NOAAbuoy,vars; size=(900,600)) = begin
+plot(x::NOAAbuoy,variables; size=(900,600)) = begin
 	f=Figure(size=size)
 	sta=x.ID
-	for vv in 1:length(vars)
-		var=vars[vv]
+	for vv in 1:length(variables)
+		var=variables[vv]
 		u=x.units[var]
 		ax=Axis(f[vv,1],title="Station= $(sta), Variable= $(var)",ylabel=u)
 		tim=DateTime.(x.data.YY,x.data.MM,x.data.DD,x.data.hh,x.data.mm)
@@ -127,24 +143,25 @@ plot(x::NOAAbuoy,var::String; kwargs...) = plot(x,[var]; kwargs...)
 
 
 """
-    plot(x::NOAAbuoy_monthly, var=""; option=:demo)
+    plot(x::NOAAbuoy_monthly, variable="T(°F)"; size=(900,600))
+
+Default plot for NOAAbuoy_monthly (monthly averaged moored buoy data).
 	
+- variable (String) is the variable to plot
+- size let's you set the figure dimensions
+
 ```
 using OceanRobots
 buoy=read(NOAAbuoy_monthly(),44013)
-plot(buoy;option=:demo)
+plot(buoy)
 ```
 """
-plot(x::NOAAbuoy_monthly, var="T(°F)"; option=:demo, size=(900,600)) = begin
-	if option==:demo
-		gmdf=NOAA.groupby(x.data,"MM")
-		tbl=[NOAA.summary_table(gmdf[m],25,var=var) for m in 1:12]
-		all=[]; [push!(all,(tbl[m].T1-tbl[m].T0)...) for m in 1:12]
-		uni=( var=="T(°F)" ? "°Fahrenheit" : x.units[var] )
-		plot_summary(tbl,all,var,uni,size=size)
-	else
-		@warn "case not implemented"
-	end
+plot(x::NOAAbuoy_monthly, variable="T(°F)"; size=(900,600)) = begin
+	gmdf=NOAA.groupby(x.data,"MM")
+	tbl=[NOAA.summary_table(gmdf[m],25,var=variable) for m in 1:12]
+	all=[]; [push!(all,(tbl[m].T1-tbl[m].T0)...) for m in 1:12]
+	uni=( variable=="T(°F)" ? "°Fahrenheit" : x.units[variable] )
+	plot_summary(tbl,all,variable,uni,size=size)
 end
 
 mean=NOAA.mean
@@ -251,6 +268,16 @@ end
 		markersize=6,pol=Any[],colorrange=(2,20),
 		size=(900,600),variable="temperature",apply_log10=false)
 
+Default plot for ShipCruise (source : https://cchdo.ucsd.edu).
+
+- variable (String) is the variable to plot
+- size let's you set the figure dimensions
+- pol is a set of polygons (e.g., continents) 
+- if `apply_log10=true` then we apply `log10`
+- `markersize` and `colorrange` are plotting parameters
+	
+note : the list of valid `expocode` values (e.g., "33RR20160208") can be found at https://usgoship.ucsd.edu/data/
+
 ```
 using OceanRobots, CairoMakie
 cruise=ShipCruise("33RR20160208")
@@ -306,7 +333,13 @@ function plot_chi!(x;variable="chi_up",colorrange=(-12.0,-10.0),apply_log10=true
 end
 
 """
-    plot(x::ArgoFloat; option=:standard, markersize=2,pol=Any[])
+    plot(x::ArgoFloat; option=:standard, markersize=2,pol=Any[],size=(900,600)
+
+Default plot for ArgoFloat (see https://argopy.readthedocs.io/en/latest/what_is_argo.html#what-is-argo).
+
+- option=:standard , :samples, or :ts
+- size let's you set the figure dimensions
+- pol is a set of polygons (e.g., continents) 
 
 ```
 using OceanRobots, ArgoData, CairoMakie
@@ -399,7 +432,13 @@ function plot_glider(df,gdf,ID;size=(900,600),pol=Any[])
 end
 
 """
-    plot(x::Gliders,ID)
+    plot(x::Gliders,ID;size=(900,600),pol=Any[])
+
+Default plot for glider data.
+	
+- ID is an integer (currently between 0 and 56)
+- size let's you set the figure dimensions
+- pol is a set of polygons (e.g., continents) 
 
 ```
 using OceanRobots, CairoMakie
