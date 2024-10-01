@@ -81,7 +81,7 @@ using Test
     @test isa(b,NOAAbuoy_monthly)
 
     a=read(NOAAbuoy_monthly(),44013)
-    b=plot(a;option=:demo)
+    b=plot(a)
     @test isa(b,Figure)
 
     files_year,files_url=OceanRobots.THREDDS.parse_catalog_NOAA_buoy()
