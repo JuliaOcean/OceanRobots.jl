@@ -39,7 +39,7 @@ plot(drifter,pol=pol)
 ## Argo Profilers
 
 ```@example ex1
-using OceanRobots, ArgoData, CairoMakie
+using OceanRobots, CairoMakie
 argo=read(ArgoFloat(),wmo=2900668)
 plot(argo,pol=pol)
 ```
