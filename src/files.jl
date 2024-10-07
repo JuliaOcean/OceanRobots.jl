@@ -113,6 +113,28 @@ list_CTD_files(x) = Glob.glob(x.ID*"*_ctd.nc",x.path)
 
 end
 
+##
+
+import ArgoData
+import Base: read
+
+"""
+    read(x::ArgoFloat;wmo=2900668)
+
+Note: the first time this method is used, it calls `ArgoData.GDAC.files_list()` 
+to get the list of Argo floats from server, and save it to a temporary file.
+
+```
+using OceanRobots
+read(ArgoFloat(),wmo=2900668)
+```
+"""
+function read(x::ArgoFloat;wmo=2900668,files_list="")
+    y=read(ArgoData.OneArgoFloat(),wmo=wmo,files_list=files_list)
+    ArgoFloat(y.ID,y.data)
+end
+
+##
 
 module GliderFiles
 

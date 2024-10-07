@@ -4,6 +4,11 @@ using OceanRobots, Makie
 import OceanRobots: Dates, CCHDO
 import Makie: plot
 
+## Argo
+
+import OceanRobots: ArgoData
+plot(x::ArgoFloat; kwargs...) = plot(ArgoData.OneArgoFloat(x.ID,x.data); kwargs...)
+
 ## DRIFTERS
 
 """
@@ -179,10 +184,6 @@ function plot_summary(tbl,all,var,uni;size=(900,600))
 	axislegend(ax)
 	f
 end
-
-##
-
-#plot(x::ArgoFloat; kwargs...) = plot(ArgoData.OneArgoFloat(x.ID,x.data); kwargs...)
 
 ##
 
