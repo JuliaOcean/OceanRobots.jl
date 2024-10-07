@@ -5,6 +5,6 @@
 ```
 
 ```@autodocs
-Modules = [OceanOPS, GDP, GDP_CloudDrift, NOAA, GliderFiles, ArgoFiles, OceanSites, CCHDO]
+Modules = [OceanOPS, GDP, GDP_CloudDrift, NOAA, GliderFiles, OceanSites, CCHDO]
 ```
 

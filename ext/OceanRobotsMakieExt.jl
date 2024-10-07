@@ -9,6 +9,20 @@ import Makie: plot
 import OceanRobots: ArgoData
 plot(x::ArgoFloat; kwargs...) = plot(ArgoData.OneArgoFloat(x.ID,x.data); kwargs...)
 
+## various 
+
+xrng(lon)=begin
+	a=[floor(minimum(skipmissing(lon))) ceil(maximum(skipmissing(lon)))]
+	dx=max(diff(a[:])[1],10)
+	b=(a[2]>180 ? +180 : 0)
+	(max(a[1]-dx/2,-180+b),min(a[2]+dx/2,180+b))
+end
+yrng(lat)=begin
+	a=[floor(minimum(skipmissing(lat))) ceil(maximum(skipmissing(lat)))]
+	dx=max(diff(a[:])[1],10)
+	b=(max(a[1]-dx/2,-90),min(a[2]+dx/2,90))
+end
+
 ## DRIFTERS
 
 """
