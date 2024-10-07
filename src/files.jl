@@ -234,13 +234,14 @@ function list_realtime(;ext=:all)
     txt0=String(HTTP.get(myurl0).body)
     txt1=split(txt0,"<tr><td valign=\"top\"><img src=\"/icons/text.gif\"")[3:end]
     lst1=[split(split(t,"href=\"")[2],"\">")[1]  for t in txt1]
-    if ext!==:all
+    lst2=(if ext!==:all
         extxt=String(ext)
         lst2=lst1[[split(t,".")[2]==string(ext) for t in lst1]]
         [split(t,".")[1] for t in  lst2]
     else
         lst1
-    end
+    end)
+    string.(lst2)
 end
 
 """
@@ -304,7 +305,7 @@ read(x::NOAAbuoy_monthly,args...) = read_monthly(args...)
 
 Read station file from specified path, and add meta-data (`units` and `descriptions`).
 """
-function read_station(station::Int,path=tempdir())        
+function read_station(station::Union{Int,String},path=tempdir())        
     fil1=joinpath(path,"$station.txt")
     !isfile(fil1) ? download(station,path)  : nothing
 

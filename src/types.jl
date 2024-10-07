@@ -4,7 +4,7 @@ using DataFrames, NCDatasets
 abstract type AbstractOceanRobotData <: Any end
 
 struct NOAAbuoy <: AbstractOceanRobotData
-    ID::Int64
+    ID::Union{Int64,String}
     data::DataFrame
     units::Dict
     descriptions::Dict
