@@ -45,9 +45,18 @@ md"""## Code and Data
 # ╔═╡ db662fb4-7413-11ec-1af6-43b18c0c15a9
 begin
 	#See https://www.ndbc.noaa.gov/
-    stations=[41046, 44065,  
-		31005, 41047, 41117, 42058, 44027, 44084, 45002, 45136, 45164,
-		45206, 46028, 46077, 46146, 46237, 46277, 51208, 62121, 64045]	
+    all_stations=NOAA.list_realtime(ext=:txt)
+    n=Int(floor.(length(all_stations)/10))
+    stations=all_stations[n:n:length(all_stations)]
+
+    #temporary fix
+    tmp_stations=[try
+        parse(Int,sta)
+    catch
+        0
+    end for sta in stations]
+    stations=tmp_stations[tmp_stations.!==0]
+
 	NOAA.download(stations)
    	"Done with downloading data"
 end
@@ -88,6 +97,9 @@ md"""
 - `Buoy information page :` $(myurl)
 - `Variable Units.       :` $(buoy.units[var])
 - `Variable Description  :` $(buoy.descriptions[var])"""
+
+# ╔═╡ 110d82f8-cdab-48ae-b21b-75829079aa40
+stations
 
 # ╔═╡ 06d96eef-f99d-44fe-8c6f-344ab29f3a48
 md"""## Additional Information
@@ -131,7 +143,7 @@ PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.10.4"
+julia_version = "1.10.5"
 manifest_format = "2.0"
 project_hash = "dab0cebf879211c8791496c0ee2161abb0037489"
 
@@ -1886,7 +1898,7 @@ version = "0.15.2+0"
 [[deps.libblastrampoline_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
-version = "5.8.0+1"
+version = "5.11.0+0"
 
 [[deps.libfdk_aac_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -1958,6 +1970,7 @@ version = "3.6.0+0"
 # ╟─c8d36a50-0473-410a-91fa-102f3d071388
 # ╟─db662fb4-7413-11ec-1af6-43b18c0c15a9
 # ╟─a1698e0e-db0d-4cd2-91b3-d530f77cd609
+# ╠═110d82f8-cdab-48ae-b21b-75829079aa40
 # ╟─06d96eef-f99d-44fe-8c6f-344ab29f3a48
 # ╟─38a48b6b-4e07-4965-8947-6b758318462b
 # ╟─00000000-0000-0000-0000-000000000001
