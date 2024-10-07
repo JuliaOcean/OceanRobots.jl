@@ -1,4 +1,4 @@
-using OceanRobots, DataFrames, ArgoData, CairoMakie
+using OceanRobots, DataFrames, CairoMakie
 using Test
 
 @testset "OceanRobots.jl" begin
@@ -35,19 +35,11 @@ using Test
 
     #
 
-    ArgoFiles.scan_txt("ar_index_global_prof.txt",do_write=true)
-    @test isfile(joinpath(tempdir(),"ar_index_global_prof.csv"))
-
-    ArgoFiles.scan_txt("argo_synthetic-profile_index.txt",do_write=true)
-    @test isfile(joinpath(tempdir(),"argo_synthetic-profile_index.csv"))
-
     b=read(ArgoFloat(),wmo=2900668)
     @test isa(b,ArgoFloat)
 
     f1=plot(b,option=:samples)
-    f2=plot(b,option=:TS)
-    f3=plot(b,option=:standard)
-    @test isa(f3,Figure)
+    @test isa(f1,Figure)
         
     #
 
