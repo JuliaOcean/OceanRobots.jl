@@ -15,17 +15,9 @@ using OceanRobots, ArgoData
 read(ArgoFloat(),wmo=2900668)
 ```
 """
-read(x::ArgoFloat;wmo=2900668,files_list="") = begin
-    isempty(files_list) ? nothing : @warn "specifycing files_list here is deprecated"
-    lst=try
-        ArgoFiles.list_floats()
-    catch
-        println("downloading floats list via ArgoData.jl")
-        ArgoFiles.list_floats(list=GDAC.files_list())
-    end
-    fil=ArgoFiles.download(lst,wmo)
-    arr=ArgoFiles.readfile(fil)
-    ArgoFloat(wmo,arr)
+function read(x::ArgoFloat;wmo=2900668,files_list="")
+    y=read(ArgoData.OneArgoFloat(),wmo=wmo,files_list=files_list)
+    ArgoFloat(y.ID,y.data)
 end
 
 end
