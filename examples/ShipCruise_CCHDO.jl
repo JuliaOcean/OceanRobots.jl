@@ -1176,9 +1176,9 @@ version = "0.5.5"
 
 [[deps.OceanRobots]]
 deps = ["CFTime", "CSV", "DataFrames", "DataStructures", "Dataverse", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "Interpolations", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "URIs"]
-git-tree-sha1 = "f930066d231abce9f3dcdf55eccaab1e7499b39e"
+git-tree-sha1 = "9d3415e0de6d97ea5854d1bdc55e57f28e609b67"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
-version = "0.2.4"
+version = "0.2.5"
 
     [deps.OceanRobots.extensions]
     OceanRobotsArgoDataExt = ["ArgoData"]
@@ -1239,9 +1239,9 @@ version = "1.4.3"
 
 [[deps.OpenSSL_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "a028ee3cb5641cccc4c24e90c36b0a4f7707bdf5"
+git-tree-sha1 = "1b35263570443fdd9e76c76b7062116e2f374ab8"
 uuid = "458c3c95-2e84-50aa-8efc-19380b2a3a95"
-version = "3.0.14+0"
+version = "3.0.15+0"
 
 [[deps.OpenSpecFun_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Pkg"]

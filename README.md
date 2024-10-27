@@ -3,7 +3,7 @@
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://JuliaOcean.github.io/OceanRobots.jl/stable)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://JuliaOcean.github.io/OceanRobots.jl/dev)
 [![CI](https://github.com/JuliaOcean/OceanRobots.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/JuliaOcean/OceanRobots.jl/actions/workflows/ci.yml)
-[![Codecov](https://codecov.io/gh/gaelforget/OceanRobots.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/gaelforget/OceanRobots.jl)
+[![Codecov](https://codecov.io/gh/JuliaOcean/OceanRobots.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaOcean/OceanRobots.jl)
 
 [![DOI](https://zenodo.org/badge/352859934.svg)](https://zenodo.org/badge/latestdoi/352859934)
  

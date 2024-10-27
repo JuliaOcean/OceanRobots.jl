@@ -4,7 +4,7 @@ using DataFrames, NCDatasets
 abstract type AbstractOceanRobotData <: Any end
 
 struct NOAAbuoy <: AbstractOceanRobotData
-    ID::Int64
+    ID::Union{Int64,String}
     data::DataFrame
     units::Dict
     descriptions::Dict
@@ -62,14 +62,6 @@ struct OceanSite <: AbstractOceanRobotData
 end
 
 OceanSite() = OceanSite(:unknown,NamedTuple(),NamedTuple())
-
-struct SeaLevelAnomaly <: AbstractOceanRobotData
-    ID::Symbol
-    data::Union{Array,Dataset}
-    file::String
-end
-
-SeaLevelAnomaly() = SeaLevelAnomaly(:unknown,[],"")
 
 Base.@kwdef struct ShipCruise <: AbstractOceanRobotData
     ID::String

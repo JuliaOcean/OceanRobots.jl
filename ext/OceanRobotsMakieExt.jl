@@ -4,10 +4,29 @@ using OceanRobots, Makie
 import OceanRobots: Dates, CCHDO
 import Makie: plot
 
+## Argo
+
+import OceanRobots: ArgoData
+plot(x::ArgoFloat; kwargs...) = plot(ArgoData.OneArgoFloat(x.ID,x.data); kwargs...)
+
+## various 
+
+xrng(lon)=begin
+	a=[floor(minimum(skipmissing(lon))) ceil(maximum(skipmissing(lon)))]
+	dx=max(diff(a[:])[1],10)
+	b=(a[2]>180 ? +180 : 0)
+	(max(a[1]-dx/2,-180+b),min(a[2]+dx/2,180+b))
+end
+yrng(lat)=begin
+	a=[floor(minimum(skipmissing(lat))) ceil(maximum(skipmissing(lat)))]
+	dx=max(diff(a[:])[1],10)
+	b=(max(a[1]-dx/2,-90),min(a[2]+dx/2,90))
+end
+
 ## DRIFTERS
 
 """
-    plot_drifter(ds)
+    plot_drifter(ds;size=(900,600),pol=Any[])
 
 Plot drifter data.        
 """
@@ -51,7 +70,12 @@ function plot_drifter(ds;size=(900,600),pol=Any[])
 end
 
 """
-    plot(x::SurfaceDrifter)
+    plot(x::SurfaceDrifter;size=(900,600),pol=Any[])
+
+Default plot for surface drifter data.
+	
+- size let's you set the figure dimensions
+- pol is a set of polygons (e.g., continents) 
 	
 ```
 using OceanRobots, CairoMakie
@@ -65,8 +89,14 @@ plot(x::SurfaceDrifter;size=(900,600),pol=Any[]) = plot_drifter(x.data,size=size
 ## WHOTS
 
 """
-    plot(x::OceanSite,args...)
+    plot(x::OceanSite,d0,d1;size=(900,600))
 	
+Default plot for OceanSite (mooring data).
+	
+- d0,d1 are two dates in DateTime format	
+- size let's you set the figure dimensions
+- pol is a set of polygons (e.g., continents) 
+
 ```
 using OceanRobots, Dates
 whots=read(OceanSite(),:WHOTS)
@@ -101,19 +131,24 @@ end
 ## NOAA
 
 """
-    plot(x::NOAAbuoy,var)
+    plot(x::NOAAbuoy,variables; size=(900,600))
+
+Default plot for NOAAbuoy (moored buoy data).
 	
+- variables (String, or array of String) are variables to plot
+- size let's you set the figure dimensions
+
 ```
 using OceanRobots, CairoMakie
-buoy=read(NOAAbuoy(),41046)
-plot(buoy,"PRES",size=(900,600))
+buoy=read(NOAAbuoy(),41044)
+plot(buoy,["PRES" "WTMP"],size=(900,600))
 ```
 """
-plot(x::NOAAbuoy,vars; size=(900,600)) = begin
+plot(x::NOAAbuoy,variables; size=(900,600)) = begin
 	f=Figure(size=size)
 	sta=x.ID
-	for vv in 1:length(vars)
-		var=vars[vv]
+	for vv in 1:length(variables)
+		var=variables[vv]
 		u=x.units[var]
 		ax=Axis(f[vv,1],title="Station= $(sta), Variable= $(var)",ylabel=u)
 		tim=DateTime.(x.data.YY,x.data.MM,x.data.DD,x.data.hh,x.data.mm)
@@ -127,24 +162,25 @@ plot(x::NOAAbuoy,var::String; kwargs...) = plot(x,[var]; kwargs...)
 
 
 """
-    plot(x::NOAAbuoy_monthly, var=""; option=:demo)
+    plot(x::NOAAbuoy_monthly, variable="T(°F)"; size=(900,600))
+
+Default plot for NOAAbuoy_monthly (monthly averaged moored buoy data).
 	
+- variable (String) is the variable to plot
+- size let's you set the figure dimensions
+
 ```
 using OceanRobots
 buoy=read(NOAAbuoy_monthly(),44013)
-plot(buoy;option=:demo)
+plot(buoy)
 ```
 """
-plot(x::NOAAbuoy_monthly, var="T(°F)"; option=:demo, size=(900,600)) = begin
-	if option==:demo
-		gmdf=NOAA.groupby(x.data,"MM")
-		tbl=[NOAA.summary_table(gmdf[m],25,var=var) for m in 1:12]
-		all=[]; [push!(all,(tbl[m].T1-tbl[m].T0)...) for m in 1:12]
-		uni=( var=="T(°F)" ? "°Fahrenheit" : x.units[var] )
-		plot_summary(tbl,all,var,uni,size=size)
-	else
-		@warn "case not implemented"
-	end
+plot(x::NOAAbuoy_monthly, variable="T(°F)"; size=(900,600)) = begin
+	gmdf=NOAA.groupby(x.data,"MM")
+	tbl=[NOAA.summary_table(gmdf[m],25,var=variable) for m in 1:12]
+	all=[]; [push!(all,(tbl[m].T1-tbl[m].T0)...) for m in 1:12]
+	uni=( variable=="T(°F)" ? "°Fahrenheit" : x.units[variable] )
+	plot_summary(tbl,all,variable,uni,size=size)
 end
 
 mean=NOAA.mean
@@ -163,164 +199,22 @@ function plot_summary(tbl,all,var,uni;size=(900,600))
 	f
 end
 
-## Satellite
-
-podaac_date(n)=Date("1992-10-05")+Dates.Day(5*n)
-podaac_sample_dates=podaac_date.(18:73:2190)
-cmems_date(n)=Date("1993-01-01")+Dates.Day(1*n)
-podaac_all_dates=podaac_date.(1:2190)
-cmems_all_dates=cmems_date.(1:10632)
-
-sla_dates(fil) = ( fil=="sla_podaac.nc" ? podaac_all_dates : cmems_all_dates)
-
-"""
-    plot(b::SeaLevelAnomaly; dates=[], kwargs...)
-	
-```
-using OceanRobots
-sla=read(SeaLevelAnomaly(),:sla_podaac)
-plot(sla)
-```
-"""
-plot(b::SeaLevelAnomaly; dates=[], kwargs...) = begin
-	ds=(isempty(dates) ? sla_dates(b.file) : dates)
-	fig,_,_=prep_movie(b.data; dates=ds, kwargs...)
-	fig
-end
-
-function prep_movie(ds; topo=[], colormap=:PRGn, color=:black, 
-	time=1, dates=[], resolution = (600, 400))
-	lon=ds["lon"][:]
-	lat=ds["lat"][:]
-	store=ds["SLA"][:,:,:]
-
-	nt=size(store,3)
-	kk=findall((!isnan).(store[:,:,end]))
-
-	n=Observable(time)
-	SLA=@lift(store[:,:,$n])
-	SLA2=@lift($(SLA).-mean($(SLA)[kk]))
-
-	fig=Figure(size=resolution,fontsize=11)
-	ax=Axis(fig[1,1])
-    hm=heatmap!(lon,lat,SLA2,colorrange=0.25.*(-1.0,1.0),colormap=colormap)
-
-	if !isempty(topo)
-		lon[1]>0.0 ? lon_off=360.0 : lon_off=0.0
-		contour!(lon_off.+topo.lon,topo.lat,topo.z,levels=-300:100:300,color=color,linewidth=1)
-		contour!(lon_off.+topo.lon,topo.lat,topo.z,levels=-2500:500:-500,color=color,linewidth=0.25)
-		contour!(lon_off.+topo.lon,topo.lat,topo.z,levels=-6000:1000:-3000,color=color,linewidth=0.1)
-	end
-
-	lon0=minimum(lon)+(maximum(lon)-minimum(lon))/20.0
-	lat0=maximum(lat)-(maximum(lat)-minimum(lat))/10.0
-	
-	if isempty(dates)
-		println("no date")
-	else
-	    dtxt=@lift(string(dates[$n]))
-		text!(lon0,lat0,text=dtxt,color=:blue2,fontsize=14,font = :bold)	
-	end
-	
-	Colorbar(fig[1,2],hm)
-
-	fig,n,nt
-end
-
-function make_movie(ds,tt; framerate = 90, dates=[])
-	fig,n,nt=prep_movie(ds,dates=dates)
-    record(fig,tempname()*".mp4", tt; framerate = framerate) do t
-        n[] = t
-    end
-end
-
-## Argo
-
-function heatmap_profiles!(ax,TIME,TEMP,cmap)
-	x=TIME[1,:]; y=collect(0.0:5:500.0)
-	co=Float64.(permutedims(TEMP))
-	rng=extrema(TEMP[:])
-	sca=heatmap!(ax, x , y , co, colorrange=rng,colormap=cmap)
-	ax.ylabel="depth (m)"
-	sca
-end
-
-function plot_profiles!(ax,TIME,PRES,TEMP,cmap)
-	ii=findall(((!ismissing).(PRES)).*((!ismissing).(TEMP)))
-
-	x=TIME[ii]
-	y=-PRES[ii] #pressure in decibars ~ depth in meters
-	co=Float64.(TEMP[ii])
-	rng=extrema(co)
-
-	sca=scatter!(ax, x , y ,color=co,colormap=cmap, markersize=5)
-
-	ax.xlabel="time (day)"
-	ax.ylabel="depth (m)"
-
-	sca
-end
-
-function plot_trajectory!(ax,lon,lat,co;
-		markersize=2,linewidth=3, pol=Any[],xlims=(-180,180),ylims=(-90,90),title="")
-	li=lines!(ax,lon, lat, linewidth=linewidth, color=co, colormap=:turbo)
-	scatter!(ax,lon, lat, marker=:circle, markersize=markersize, color=:black)
-	!isempty(pol) ? [lines!(ax,l1,color = :black, linewidth = 0.5) for l1 in pol] : nothing
-	ax.xlabel="longitude";  ax.ylabel="latitude"; ax.title=title
-	xlims!(xlims...); ylims!(ylims...)
-	li
-end
-
-xrng(lon)=begin
-	a=[floor(minimum(skipmissing(lon))) ceil(maximum(skipmissing(lon)))]
-	dx=max(diff(a[:])[1],10)
-	b=(a[2]>180 ? +180 : 0)
-	(max(a[1]-dx/2,-180+b),min(a[2]+dx/2,180+b))
-end
-yrng(lat)=begin
-	a=[floor(minimum(skipmissing(lat))) ceil(maximum(skipmissing(lat)))]
-	dx=max(diff(a[:])[1],10)
-	b=(max(a[1]-dx/2,-90),min(a[2]+dx/2,90))
-end
-
-function plot_standard(wmo,arr,spd,T_std,S_std; markersize=2,pol=Any[],size=(900,600))
-
-	xlims=xrng(arr.lon)
-	ylims=yrng(arr.lat)
-	
-	fig1=Figure(size=size)
-
-	ax=Axis(fig1[1,1])
-	li1=plot_trajectory!(ax,arr.lon,arr.lat,arr.TIME[1,:];
-		linewidth=5,pol=pol,xlims=xlims,ylims=ylims,
-		title="time since launch, in days")
-	Colorbar(fig1[1,2], li1, height=Relative(0.65))
-
-	ax=Axis(fig1[1,3])
-	li2=plot_trajectory!(ax,arr.lon,arr.lat,spd.speed;
-		linewidth=5,pol=pol,xlims=xlims,ylims=ylims,
-		title="estimated speed (m/s)")
-	Colorbar(fig1[1,4], li2, height=Relative(0.65))
-
-	ax=Axis(fig1[2,1:3],title="Temperature, °C")
-	hm1=heatmap_profiles!(ax,arr.DATE,T_std,:thermal)
-	Colorbar(fig1[2,4], hm1, height=Relative(0.65))
-	ylims!(ax, 500, 0)
-
-	ax=Axis(fig1[3,1:3],title="Salinity, [PSS-78]")
-	hm2=heatmap_profiles!(ax,arr.DATE,S_std,:viridis)
-	Colorbar(fig1[3,4], hm2, height=Relative(0.65))
-	ylims!(ax, 500, 0)
-
-	rowsize!(fig1.layout, 1, Relative(1/2))
-
-	fig1
-end
+##
 
 """
     plot(x::ShipCruise; 
 		markersize=6,pol=Any[],colorrange=(2,20),
 		size=(900,600),variable="temperature",apply_log10=false)
+
+Default plot for ShipCruise (source : https://cchdo.ucsd.edu).
+
+- variable (String) is the variable to plot
+- size let's you set the figure dimensions
+- pol is a set of polygons (e.g., continents) 
+- if `apply_log10=true` then we apply `log10`
+- `markersize` and `colorrange` are plotting parameters
+	
+note : the list of valid `expocode` values (e.g., "33RR20160208") can be found at https://usgoship.ucsd.edu/data/
 
 ```
 using OceanRobots, CairoMakie
@@ -376,55 +270,6 @@ function plot_chi!(x;variable="chi_up",colorrange=(-12.0,-10.0),apply_log10=true
 	scatter!(a,b,color=c,markersize=markersize,colorrange=colorrange)
 end
 
-"""
-    plot(x::ArgoFloat; option=:standard, markersize=2,pol=Any[])
-
-```
-using OceanRobots, ArgoData, CairoMakie
-
-argo=read(ArgoFloat),wmo=2900668)
-
-f1=plot(argo,option=:samples)
-f2=plot(argo,option=:TS)
-f3=plot(argo,option=:standard)
-```
-"""
-plot(x::ArgoFloat; option=:standard, markersize=2,pol=Any[],size=(900,600)) = begin
-	if option==:standard
-		T_std,S_std=ArgoFiles.interp_z_all(x.data)
-		spd=ArgoFiles.speed(x.data)
-		plot_standard(x.ID,x.data,spd,T_std,S_std; markersize=markersize, pol=pol, size=size)
-	elseif option==:samples
-		plot_samples(x.data,x.ID)
-	elseif option==:TS
-		plot_TS(x.data,x.ID)
-	end
-end
-
-function plot_TS(arr,wmo)
-	fig1=Figure(size=(600,600))
-	ax=Axis(fig1[1,1],title="Float wmo="*string(wmo),xlabel="Salinity",ylabel="Temperature")
-	scatter!(ax,arr.PSAL[:],arr.TEMP[:],markersize=2.0)
-	fig1
-end
-
-function plot_samples(arr,wmo;ylims=(-2000.0, 0.0))
-	
-	fig1=Figure(size = (1200, 900))
-	lims=(nothing, nothing, ylims...)
-
-	ttl="Float wmo="*string(wmo)
-	ax=Axis(fig1[1,1],title=ttl*", temperature, degree C", limits=lims)
-	hm1=OceanRobotsMakieExt.plot_profiles!(ax,arr.TIME,arr.PRES,arr.TEMP,:thermal)
-	Colorbar(fig1[1,2], hm1, height=Relative(0.65))
-
-	ax=Axis(fig1[2,1],title=ttl*", salinity, psu", limits=lims)
-	hm2=OceanRobotsMakieExt.plot_profiles!(ax,arr.TIME,arr.PRES,arr.PSAL,:viridis)
-	Colorbar(fig1[2,2], hm2, height=Relative(0.65))
-
-	fig1
-end
-
 ## Gliders
 
 rng(x;mini=NaN,maxi=NaN,pad=0.1) = begin
@@ -470,7 +315,13 @@ function plot_glider(df,gdf,ID;size=(900,600),pol=Any[])
 end
 
 """
-    plot(x::Gliders,ID)
+    plot(x::Gliders,ID;size=(900,600),pol=Any[])
+
+Default plot for glider data.
+	
+- ID is an integer (currently between 0 and 56)
+- size let's you set the figure dimensions
+- pol is a set of polygons (e.g., continents) 
 
 ```
 using OceanRobots, CairoMakie

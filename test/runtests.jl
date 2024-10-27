@@ -1,4 +1,4 @@
-using OceanRobots, DataFrames, ArgoData, CairoMakie
+using OceanRobots, DataFrames, CairoMakie
 using Test
 
 @testset "OceanRobots.jl" begin
@@ -35,19 +35,11 @@ using Test
 
     #
 
-    ArgoFiles.scan_txt("ar_index_global_prof.txt",do_write=true)
-    @test isfile(joinpath(tempdir(),"ar_index_global_prof.csv"))
-
-    ArgoFiles.scan_txt("argo_synthetic-profile_index.txt",do_write=true)
-    @test isfile(joinpath(tempdir(),"argo_synthetic-profile_index.csv"))
-
     b=read(ArgoFloat(),wmo=2900668)
     @test isa(b,ArgoFloat)
 
     f1=plot(b,option=:samples)
-    f2=plot(b,option=:TS)
-    f3=plot(b,option=:standard)
-    @test isa(f3,Figure)
+    @test isa(f1,Figure)
         
     #
 
@@ -64,7 +56,7 @@ using Test
     stations=metstations[1:200:end]
     ids=NOAA.download(stations)
 
-    b=read(NOAAbuoy(),41046)
+    b=read(NOAAbuoy(),41044)
     plot(b,"PRES")
     @test isa(b,NOAAbuoy)
 
@@ -81,7 +73,7 @@ using Test
     @test isa(b,NOAAbuoy_monthly)
 
     a=read(NOAAbuoy_monthly(),44013)
-    b=plot(a;option=:demo)
+    b=plot(a)
     @test isa(b,Figure)
 
     files_year,files_url=OceanRobots.THREDDS.parse_catalog_NOAA_buoy()
@@ -100,12 +92,6 @@ using Test
 
     tmp=OceanOPS.list_platform_types()
     @test isa(tmp.name,Vector)
-
-    ##
-
-    b=read(SeaLevelAnomaly(),:sla_podaac)
-    f3=plot(b)
-    @test isa(f3,Figure)
 
     ##
 

@@ -2,8 +2,22 @@
 
 Each type of ocean data gets :
 
-- a simple `read` function that downloads data if needed. 
+- a simple `read` function that downloads data if needed.
 - a default `plot` function that depicts some of the data.
+
+# Functionalities
+
+## read
+
+```@docs
+read
+```
+
+## plot
+
+```@docs
+plot
+```
 
 # Supported Datasets
 
@@ -25,7 +39,7 @@ plot(drifter,pol=pol)
 ## Argo Profilers
 
 ```@example ex1
-using OceanRobots, ArgoData, CairoMakie
+using OceanRobots, CairoMakie
 argo=read(ArgoFloat(),wmo=2900668)
 plot(argo,pol=pol)
 ```
@@ -42,14 +56,14 @@ plot(cruise,variable="salinity",colorrange=(33.5,35.0))
 
 ```@example ex1
 using OceanRobots, CairoMakie
-buoy=read(NOAAbuoy(),41046)
+buoy=read(NOAAbuoy(),41044)
 plot(buoy,["PRES","ATMP","WTMP"],size=(900,600))
 ```
 
 ```@example ex1
 using OceanRobots, CairoMakie
 buoy=read(NOAAbuoy_monthly(),44013)
-plot(buoy;option=:demo)
+plot(buoy)
 ```
 
 ## WHOTS Mooring
@@ -83,21 +97,8 @@ nothing #hide
 ```
 
 ```@example ex1
-using OceanRobots, CairoMakie
-sla=read(SeaLevelAnomaly(),:sla_podaac)
-plot(sla)
+using Climatology, CairoMakie, NCDatasets
+SLA=read(SeaLevelAnomaly(name="sla_podaac"))
+plot(SLA)
 ```
 
-# Functionalities
-
-## read
-
-```@docs
-read
-```
-
-## plot
-
-```@docs
-plot
-```
