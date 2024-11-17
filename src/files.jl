@@ -466,9 +466,10 @@ end #module NOAA
 
 module GDP
 
-using DataFrames, FTPClient, NCDatasets, Dates, CSV
+using DataFrames, NCDatasets, Dates, CSV
 import OceanRobots: SurfaceDrifter
 import Base: read
+import Downloads, FTPClient
 
 """
     list_files()
@@ -547,6 +548,30 @@ read(x::SurfaceDrifter,ii::Int; list_files=[]) = begin
 	ds=Dataset(fil)
     wmo=ds[:WMO][1]
     SurfaceDrifter(lst.ID[ii],ds,wmo,lst)
+end
+
+"""
+    read(x::SurfaceDrifter; ID=300234065515480, version="v2.01")
+
+Download file from NOAA http server read it using `NCDatasets.jl`.
+
+Server : https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/
+
+```
+using OceanRobots
+sd=read(SurfaceDrifter(),ID=300234065515480)
+```
+"""
+read(x::SurfaceDrifter; ID=300234065515480, version="v2.01") = begin
+    prefix = (version=="v2.01" ? "drifter_hourly_" : "drifter_")
+    fil=prefix*"$(ID).nc"
+    url0="https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/$(version)/netcdf/"
+    path0=joinpath(tempdir(),"drifters_hourly_noaa")
+    !isdir(path0) ? mkdir(path0) : nothing
+    Downloads.download(url0*fil,path0*fil)
+	ds=Dataset(path0*fil)
+    wmo=ds[:WMO][1]
+    SurfaceDrifter(ID,ds,wmo,DataFrame())
 end
 
 missing_to_NaN(x) = [(ismissing(y) ? NaN : y) for y in x]
