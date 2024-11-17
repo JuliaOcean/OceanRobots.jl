@@ -466,9 +466,10 @@ end #module NOAA
 
 module GDP
 
-using DataFrames, FTPClient, NCDatasets, Dates, CSV
+using DataFrames, NCDatasets, Dates, CSV
 import OceanRobots: SurfaceDrifter
 import Base: read
+import Downloads, FTPClient
 
 """
     list_files()
@@ -485,7 +486,7 @@ function list_files()
         list_files=CSV.read(fil,DataFrame)
     else
         list_files=DataFrame("folder" => [],"filename" => [])
-        ftp=FTP("ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/")
+        ftp=FTPClient.FTP("ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/")
         tmp=readdir(ftp)
         append!(list_files,DataFrame("folder" => "","filename" => tmp))
         list_files.ID=[parse(Int,split(f,"_")[2][1:end-3]) for f in list_files.filename]
@@ -514,7 +515,7 @@ function download(list_files,ii=1)
     url0="ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/"
     pth0=list_files[ii,"folder"]
     url1=(ismissing(pth0) ? url0 : joinpath(url0,pth0))
-    ftp=FTP(url1)
+    ftp=FTPClient.FTP(url1)
 
     fil=list_files[ii,"filename"]
     
@@ -547,6 +548,30 @@ read(x::SurfaceDrifter,ii::Int; list_files=[]) = begin
 	ds=Dataset(fil)
     wmo=ds[:WMO][1]
     SurfaceDrifter(lst.ID[ii],ds,wmo,lst)
+end
+
+"""
+    read(x::SurfaceDrifter; ID=300234065515480, version="v2.01")
+
+Download file from NOAA http server read it using `NCDatasets.jl`.
+
+Server : https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/
+
+```
+using OceanRobots
+sd=read(SurfaceDrifter(),ID=300234065515480)
+```
+"""
+read(x::SurfaceDrifter; ID=300234065515480, version="v2.01") = begin
+    prefix = (version=="v2.01" ? "drifter_hourly_" : "drifter_")
+    fil=prefix*"$(ID).nc"
+    url0="https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/$(version)/netcdf/"
+    path0=joinpath(tempdir(),"drifters_hourly_noaa")
+    !isdir(path0) ? mkdir(path0) : nothing
+    Downloads.download(url0*fil,path0*fil)
+	ds=Dataset(path0*fil)
+    wmo=ds[:WMO][1]
+    SurfaceDrifter(ID,ds,wmo,DataFrame())
 end
 
 missing_to_NaN(x) = [(ismissing(y) ? NaN : y) for y in x]
@@ -695,7 +720,8 @@ end
 
 module OceanSites
 
-using NCDatasets, FTPClient, CSV, DataFrames, Dates
+using NCDatasets, CSV, DataFrames, Dates
+import FTPClient
 import OceanRobots: OceanSite
 import Base: read
 
@@ -757,7 +783,7 @@ oceansites_index=OceanSites.index()
 function index()
     url="ftp://ftp.ifremer.fr/ifremer/oceansites/"
     fil=joinpath(tempdir(),"oceansites_index.txt")
-    ftp=FTP(url)
+    ftp=FTPClient.FTP(url)
     !isfile(fil) ? FTPClient.download(ftp, "oceansites_index.txt",fil) : nothing
 
     #main table
