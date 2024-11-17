@@ -89,10 +89,7 @@ Argo profiling floats (blue dots in Fig.~\ref{fig:ocean-ops}; Code~\ref{lst:Argo
     caption={Download and visualize one Argo float data as in Fig.~\ref{fig:Argo_Float}.}
 ]
 using OceanRobots, ArgoData, CairoMakie
-
-lst=GDAC.files_list(); wmo=6900900
-argo=read(ArgoFloat(),wmo=wmo,files_list=lst)
-
+argo=read(ArgoFloat(),wmo=6900900)
 fig=plot(argo,option=:standard)
 \end{lstlisting}
 
