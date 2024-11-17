@@ -16,7 +16,7 @@ makedocs(;
         "Home" => "index.md",
         "User Interface" => "reference.md",
         "Notebooks" => "examples.md",
-        "Contribute" => "contributing.md",
+        "User Directions" => "contributing.md",
         ],
     repo="https://github.com/JuliaOcean/OceanRobots.jl/blob/{commit}{path}#L{line}",
     sitename="OceanRobots.jl",
