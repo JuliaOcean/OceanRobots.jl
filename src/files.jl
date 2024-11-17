@@ -486,7 +486,7 @@ function list_files()
         list_files=CSV.read(fil,DataFrame)
     else
         list_files=DataFrame("folder" => [],"filename" => [])
-        ftp=FTP("ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/")
+        ftp=FTPClient.FTP("ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/")
         tmp=readdir(ftp)
         append!(list_files,DataFrame("folder" => "","filename" => tmp))
         list_files.ID=[parse(Int,split(f,"_")[2][1:end-3]) for f in list_files.filename]
@@ -515,7 +515,7 @@ function download(list_files,ii=1)
     url0="ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/"
     pth0=list_files[ii,"folder"]
     url1=(ismissing(pth0) ? url0 : joinpath(url0,pth0))
-    ftp=FTP(url1)
+    ftp=FTPClient.FTP(url1)
 
     fil=list_files[ii,"filename"]
     
@@ -720,7 +720,8 @@ end
 
 module OceanSites
 
-using NCDatasets, FTPClient, CSV, DataFrames, Dates
+using NCDatasets, CSV, DataFrames, Dates
+import FTPClient
 import OceanRobots: OceanSite
 import Base: read
 
@@ -782,7 +783,7 @@ oceansites_index=OceanSites.index()
 function index()
     url="ftp://ftp.ifremer.fr/ifremer/oceansites/"
     fil=joinpath(tempdir(),"oceansites_index.txt")
-    ftp=FTP(url)
+    ftp=FTPClient.FTP(url)
     !isfile(fil) ? FTPClient.download(ftp, "oceansites_index.txt",fil) : nothing
 
     #main table
