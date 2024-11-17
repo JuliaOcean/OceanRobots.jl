@@ -101,3 +101,16 @@ Argo Float Track            |  Argo Float Profiles
 </p>
 </details>
 
+### Installation
+
+To install `OceanRobots.jl` in `julia` proceed as usual via the package manager.
+
+`using Pkg; Pkg.add("OceanRobots")`
+
+To download OceanRobots.jl folder, which includes the notebooks folder, you can use `Git.jl`.
+
+```
+using Pkg; Pkg.add("Git"); using Git
+url="https://github.com/JuliaOcean/OceanRobots.jl"
+run(`$(git()) clone $(url)`)
+```
