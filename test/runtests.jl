@@ -9,7 +9,7 @@ using Test
     @test isa(files[1],String)
     @test isempty(folders)
 
-    b=read(SurfaceDrifter(),1)
+    b=read(SurfaceDrifter(),ID=300234065515480)
     @test haskey(b.data,"ve")
 
     f3=plot(b)
