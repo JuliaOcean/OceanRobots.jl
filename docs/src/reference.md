@@ -19,9 +19,7 @@ read
 plot
 ```
 
-### Add-Ons
-
-```@example ex1
+```@setup ex1
 using MeshArrays, Shapefile, DataDeps
 pol_file=demo.download_polygons("ne_110m_admin_0_countries.shp")
 pol=MeshArrays.read_polygons(pol_file)
@@ -98,15 +96,18 @@ gliders=read(Gliders(),"GulfStream.nc")
 plot(gliders,1,pol=pol)
 ```
 
+### Add-Ons
+
 !!! note
     To put data in context, it is useful to download country polygons or gridded data sets.
 
 ```@example ex1
-using MeshArrays, Shapefile, DataDeps
+using MeshArrays, Shapefile, DataDeps, CairoMakie
 pol_file=demo.download_polygons("ne_110m_admin_0_countries.shp")
 pol=MeshArrays.read_polygons(pol_file)
-nothing #hide
+plot(argo,pol=pol)
 ```
+
 
 ```@example ex1
 using Climatology, CairoMakie, NCDatasets
