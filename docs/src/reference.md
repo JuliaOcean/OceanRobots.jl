@@ -5,21 +5,19 @@ Each type of ocean data gets :
 - a simple `read` function that downloads data if needed.
 - a default `plot` function that depicts some of the data.
 
-# Functionalities
+## `read` and `plot`
 
-## read
+### read
 
 ```@docs
 read
 ```
 
-## plot
+### plot
 
 ```@docs
 plot
 ```
-
-# Supported Datasets
 
 ```@setup ex1
 using MeshArrays, Shapefile, DataDeps
@@ -28,7 +26,19 @@ pol=MeshArrays.read_polygons(pol_file)
 nothing #hide
 ```
 
-## Surface Drifters
+## Supported Datasets
+
+- `OceanOPS.jl`
+- `Float_Argo.jl`
+- `Drifter_CloudDrift.jl`
+- `Drifter_GDP.jl`
+- `Glider_Spray.jl`
+- `ShipCruise_CCHDO.jl`
+- `Buoy_NWP_NOAA.jl`
+- `Buoy_NWP_NOAA_monthly.jl`
+- `Mooring_WHOTS.jl`
+
+### Surface Drifters
 
 ```@example ex1
 using OceanRobots, CairoMakie
@@ -36,7 +46,7 @@ drifter=read(SurfaceDrifter(),1)
 plot(drifter,pol=pol)
 ```
 
-## Argo Profilers
+### Argo Profilers
 
 ```@example ex1
 using OceanRobots, CairoMakie
@@ -44,7 +54,7 @@ argo=read(ArgoFloat(),wmo=2900668)
 plot(argo,pol=pol)
 ```
 
-## CTD profiles
+### Ship-Based CTD
 
 ```@example ex1
 using OceanRobots, CairoMakie
@@ -52,7 +62,7 @@ cruise=ShipCruise("33RR20160208")
 plot(cruise,variable="salinity",colorrange=(33.5,35.0))
 ```
 
-## NOAA Buoys
+### NOAA Buoys
 
 ```@example ex1
 using OceanRobots, CairoMakie
@@ -66,7 +76,7 @@ buoy=read(NOAAbuoy_monthly(),44013)
 plot(buoy)
 ```
 
-## WHOTS Mooring
+### WHOTS Mooring
 
 ```@example ex1
 using OceanRobots
@@ -78,7 +88,7 @@ date2=DateTime(2005,2,1)
 plot(whots,date1,date2)
 ```
 
-## Spray Gliders
+### Spray Gliders
 
 ```@example ex1
 using OceanRobots, CairoMakie
@@ -86,15 +96,18 @@ gliders=read(Gliders(),"GulfStream.nc")
 plot(gliders,1,pol=pol)
 ```
 
+### Add-Ons
+
 !!! note
     To put data in context, it is useful to download country polygons or gridded data sets.
 
 ```@example ex1
-using MeshArrays, Shapefile, DataDeps
+using MeshArrays, Shapefile, DataDeps, CairoMakie
 pol_file=demo.download_polygons("ne_110m_admin_0_countries.shp")
 pol=MeshArrays.read_polygons(pol_file)
-nothing #hide
+plot(argo,pol=pol)
 ```
+
 
 ```@example ex1
 using Climatology, CairoMakie, NCDatasets
