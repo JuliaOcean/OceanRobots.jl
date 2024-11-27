@@ -2,6 +2,7 @@
 % JuliaCon proceedings template
 \documentclass{juliacon}[12pt]
 \setcounter{page}{1}
+\usepackage[utf8]{inputenc}
 
 %\newcommand{\pkg}[1]{{\it #1}}
 \newcommand{\pkg}[1]{{\small \textsc{#1}}}
@@ -82,12 +83,12 @@ Argo profiling floats (blue dots in Fig.~\ref{fig:ocean-ops}; Code~\ref{lst:Argo
 
 \begin{lstlisting}[
     language = Julia,
-    numbers=left,
+%    numbers=left,
     label={lst:ArgoCode},
     caption={Download and visualize one Argo float data as in Fig.~\ref{fig:Argo_Float}.}
 ]
-using OceanRobots, ArgoData, CairoMakie
-argo=read(ArgoFloat(),wmo=6900900)
+using OceanRobots, ArgoData, CairoMakie;
+argo=read(ArgoFloat(),wmo=6900900);
 fig=plot(argo,option=:standard)
 \end{lstlisting}
 
@@ -138,23 +139,17 @@ Much more could be done to improve the details and skill of the simple models us
 
 \begin{lstlisting}[
     language = Julia,
-    numbers=left,
     label={lst:IndDispCode},
-    caption={Simulate surface drifter pathways in the Gulf of Mexico (Fig.~\ref{fig:drifters_speed}) from flow fields $u,v$ and initial positions $x,y$.}
+    caption={Simulate surface drifter pathways in the Gulf of Mexico (Fig.~\ref{fig:drifters_speed}) from flow fields $u,v$ and initial positions $x,y$. 
+    Visualization code is provided in the \pkg{Drifters.jl} documentation.}
 ]
-using Drifters, DataFrames
 
-dT=6*3600 #6 hours
-nt=120*86400/dT #120 days
-
-T=(0.,dT)
-F=FlowFields(u=u,v=v,period=T)
-I=Individuals(F,x,y)
-
-[solve!(I,T.+dT*(n-1)) for n in 1:nt]
-trajectories=groupby(I,:ID)
+using JLD2, CairoMakie, Drifters, OceanRobots;
+P=Drifters.Gulf_of_Mexico_setup();
+F=FlowFields(u=P.u,v=P.v,period=P.T);
+I=Individuals(F,P.x0,P.y0);
+[solve!(I,P.T .+P.dT*(n-1)) for n in 1:P.nt]
 \end{lstlisting}
-
 
 \section{Digital Twin Framework} \label{sec:DT}
 
