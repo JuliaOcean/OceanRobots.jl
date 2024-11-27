@@ -16,18 +16,27 @@ include(notebook)</code></pre><pre class="documenter-example-output"><code class
 
 
    Installed Hyperscript ─────────── v0.0.5
+   Installed XSLT_jll ────────────── v1.1.41+0
+   Installed JLD2 ────────────────── v0.5.9
    Installed PlutoUI ─────────────── v0.7.60
+   Installed ArgoData ────────────── v0.1.25
    Installed OceanRobots ─────────── v0.2.7
+   Installed HTTP ────────────────── v1.10.11
    Installed DelaunayTriangulation ─ v1.6.2
 Precompiling project...
-   1367.4 ms  ✓ Hyperscript
-   3064.5 ms  ✓ PlutoUI
-  48754.9 ms  ✓ DelaunayTriangulation
-   4553.2 ms  ✓ OceanRobots
- 135418.0 ms  ✓ OceanRobots → OceanRobotsMakieExt
-  5 dependencies successfully precompiled in 190 seconds. 352 already precompiled.
-  3 dependencies precompiled but different versions are currently loaded. Restart julia to access the new versions
-19207×2 DataFrame
+   1033.1 ms  ✓ XSLT_jll
+   1727.8 ms  ✓ Hyperscript
+   4612.3 ms  ✓ PlutoUI
+  20588.1 ms  ✓ HTTP
+  60448.0 ms  ✓ DelaunayTriangulation
+  40150.3 ms  ✓ JLD2
+   9870.0 ms  ✓ ArgoData
+ 149717.2 ms  ✓ ArgoData → ArgoDataMakieExt
+   4847.1 ms  ✓ OceanRobots
+   8143.0 ms  ✓ OceanRobots → OceanRobotsMakieExt
+  10 dependencies successfully precompiled in 234 seconds. 347 already precompiled.
+  8 dependencies precompiled but different versions are currently loaded. Restart julia to access the new versions
+19243×2 DataFrame
    Row │ folder  wmo
        │ Any     Any
 ───────┼─────────────────
@@ -40,28 +49,28 @@ Precompiling project...
      7 │ aoml    15852
      8 │ aoml    15853
    ⋮   │   ⋮        ⋮
- 19201 │ nmdis   2901627
- 19202 │ nmdis   2901628
- 19203 │ nmdis   2901629
- 19204 │ nmdis   2901630
- 19205 │ nmdis   2901631
- 19206 │ nmdis   2901632
- 19207 │ nmdis   2901633
-       19192 rows omitted┌──────────┬─────────┐
+ 19237 │ nmdis   2901627
+ 19238 │ nmdis   2901628
+ 19239 │ nmdis   2901629
+ 19240 │ nmdis   2901630
+ 19241 │ nmdis   2901631
+ 19242 │ nmdis   2901632
+ 19243 │ nmdis   2901633
+       19228 rows omitted┌──────────┬─────────┐
 │   folder │     wmo │
 ├──────────┼─────────┤
 │     aoml │   13857 │
-│     aoml │ 3900462 │
-│     aoml │ 4903010 │
-│     aoml │ 5902512 │
-│     aoml │ 5906138 │
-│ coriolis │ 1900105 │
-│ coriolis │ 6901470 │
-│     csio │ 2901584 │
-│   incois │ 2902227 │
-│      jma │ 5905857 │
+│     aoml │ 3900455 │
+│     aoml │ 4902979 │
+│     aoml │ 5902503 │
+│     aoml │ 5906129 │
+│ coriolis │ 1900064 │
+│ coriolis │ 6901445 │
+│     csio │ 2901559 │
+│   incois │ 2902200 │
+│      jma │ 5905226 │
 └──────────┴─────────┘
 ┌ Warning: specifycing files_list here is deprecated
-└ @ ArgoData ~/.julia/packages/ArgoData/s0ZAd/src/data_structures.jl:164
+└ @ ArgoData ~/.julia/packages/ArgoData/U5joI/src/data_structures.jl:164
 downloading floats list via ArgoData.jl
-  Activating project at `~/work/OceanRobots.jl/OceanRobots.jl/docs`</code></pre><h2 id="how-to-seek-support"><a class="docs-heading-anchor" href="#how-to-seek-support">How to Seek Support</a><a id="how-to-seek-support-1"></a><a class="docs-heading-anchor-permalink" href="#how-to-seek-support" title="Permalink"></a></h2><p>If something is unclear or proves difficult to use, please seek support by <a href="https://github.com/juliaocean/OceanRobots.jl/issues">opening an issue on the repository</a>.</p><h2 id="how-to-contribute"><a class="docs-heading-anchor" href="#how-to-contribute">How to Contribute</a><a id="how-to-contribute-1"></a><a class="docs-heading-anchor-permalink" href="#how-to-contribute" title="Permalink"></a></h2><p>Thank you for considering contributing to OceanRobots.jl! If you&#39;re interested in contributing we want your help no matter how big or small a contribution you make! </p><h3 id="reporting-bugs"><a class="docs-heading-anchor" href="#reporting-bugs">Reporting Bugs</a><a id="reporting-bugs-1"></a><a class="docs-heading-anchor-permalink" href="#reporting-bugs" title="Permalink"></a></h3><p>If you encounter a bug, please help us fix it by following these steps:</p><ol><li>Ensure the bug is not already reported by checking the <a href="https://github.com/juliaocean/OceanRobots.jl/issues">issue tracker</a>.</li><li>If the bug isn&#39;t reported, open a new issue. Clearly describe the issue, including steps to reproduce it.</li></ol><h3 id="suggesting-enhancements"><a class="docs-heading-anchor" href="#suggesting-enhancements">Suggesting Enhancements</a><a id="suggesting-enhancements-1"></a><a class="docs-heading-anchor-permalink" href="#suggesting-enhancements" title="Permalink"></a></h3><p>If you have ideas for enhancements, new features, or improvements, we&#39;d love to hear them! Follow these steps:</p><ol><li>Check the <a href="https://github.com/juliaocean/OceanRobots.jl/issues">issue tracker</a> to see if your suggestion has been discussed.</li><li>If not, open a new issue, providing a detailed description of your suggestion and the use case it addresses.</li></ol><h3 id="code-contribution"><a class="docs-heading-anchor" href="#code-contribution">Code Contribution</a><a id="code-contribution-1"></a><a class="docs-heading-anchor-permalink" href="#code-contribution" title="Permalink"></a></h3><p>If you&#39;d like to contribute code to the project:</p><ol><li>Fork the repository.</li><li>Clone your fork: <code>git clone https://github.com/juliaocean/OceanRobots.jl</code></li><li>Create a new branch for your changes: <code>git checkout -b feature-branch</code></li><li>Make your changes and commit them with a clear message.</li><li>Push your changes to your fork: <code>git push origin feature-branch</code></li><li>Open a pull request against the <code>master</code> branch of the main repository.</li></ol><h2 id="pull-request-process"><a class="docs-heading-anchor" href="#pull-request-process">Pull Request Process</a><a id="pull-request-process-1"></a><a class="docs-heading-anchor-permalink" href="#pull-request-process" title="Permalink"></a></h2><p>Please ensure your pull request follows these guidelines:</p><ol><li>Adheres to the coding standards.</li><li>Includes relevant tests for new functionality.</li><li>Has a clear commit history and messages.</li><li>References the relevant issue if applicable.</li></ol><p>Please don&#39;t hesistate to get in touch to discuss, or with any questions!</p><h2 id="license"><a class="docs-heading-anchor" href="#license">License</a><a id="license-1"></a><a class="docs-heading-anchor-permalink" href="#license" title="Permalink"></a></h2><p>By contributing to this project, you agree that your contributions will be licensed under the <a href="https://github.com/juliaocean/OceanRobots.jl/blob/master/LICENSE">LICENSE</a> file of this repository.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../examples/">« Notebooks</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.0 on <span class="colophon-date" title="Sunday 24 November 2024 02:50">Sunday 24 November 2024</span>. Using Julia version 1.11.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  Activating project at `~/work/OceanRobots.jl/OceanRobots.jl/docs`</code></pre><h2 id="how-to-seek-support"><a class="docs-heading-anchor" href="#how-to-seek-support">How to Seek Support</a><a id="how-to-seek-support-1"></a><a class="docs-heading-anchor-permalink" href="#how-to-seek-support" title="Permalink"></a></h2><p>If something is unclear or proves difficult to use, please seek support by <a href="https://github.com/juliaocean/OceanRobots.jl/issues">opening an issue on the repository</a>.</p><h2 id="how-to-contribute"><a class="docs-heading-anchor" href="#how-to-contribute">How to Contribute</a><a id="how-to-contribute-1"></a><a class="docs-heading-anchor-permalink" href="#how-to-contribute" title="Permalink"></a></h2><p>Thank you for considering contributing to OceanRobots.jl! If you&#39;re interested in contributing we want your help no matter how big or small a contribution you make! </p><h3 id="reporting-bugs"><a class="docs-heading-anchor" href="#reporting-bugs">Reporting Bugs</a><a id="reporting-bugs-1"></a><a class="docs-heading-anchor-permalink" href="#reporting-bugs" title="Permalink"></a></h3><p>If you encounter a bug, please help us fix it by following these steps:</p><ol><li>Ensure the bug is not already reported by checking the <a href="https://github.com/juliaocean/OceanRobots.jl/issues">issue tracker</a>.</li><li>If the bug isn&#39;t reported, open a new issue. Clearly describe the issue, including steps to reproduce it.</li></ol><h3 id="suggesting-enhancements"><a class="docs-heading-anchor" href="#suggesting-enhancements">Suggesting Enhancements</a><a id="suggesting-enhancements-1"></a><a class="docs-heading-anchor-permalink" href="#suggesting-enhancements" title="Permalink"></a></h3><p>If you have ideas for enhancements, new features, or improvements, we&#39;d love to hear them! Follow these steps:</p><ol><li>Check the <a href="https://github.com/juliaocean/OceanRobots.jl/issues">issue tracker</a> to see if your suggestion has been discussed.</li><li>If not, open a new issue, providing a detailed description of your suggestion and the use case it addresses.</li></ol><h3 id="code-contribution"><a class="docs-heading-anchor" href="#code-contribution">Code Contribution</a><a id="code-contribution-1"></a><a class="docs-heading-anchor-permalink" href="#code-contribution" title="Permalink"></a></h3><p>If you&#39;d like to contribute code to the project:</p><ol><li>Fork the repository.</li><li>Clone your fork: <code>git clone https://github.com/juliaocean/OceanRobots.jl</code></li><li>Create a new branch for your changes: <code>git checkout -b feature-branch</code></li><li>Make your changes and commit them with a clear message.</li><li>Push your changes to your fork: <code>git push origin feature-branch</code></li><li>Open a pull request against the <code>master</code> branch of the main repository.</li></ol><h2 id="pull-request-process"><a class="docs-heading-anchor" href="#pull-request-process">Pull Request Process</a><a id="pull-request-process-1"></a><a class="docs-heading-anchor-permalink" href="#pull-request-process" title="Permalink"></a></h2><p>Please ensure your pull request follows these guidelines:</p><ol><li>Adheres to the coding standards.</li><li>Includes relevant tests for new functionality.</li><li>Has a clear commit history and messages.</li><li>References the relevant issue if applicable.</li></ol><p>Please don&#39;t hesistate to get in touch to discuss, or with any questions!</p><h2 id="license"><a class="docs-heading-anchor" href="#license">License</a><a id="license-1"></a><a class="docs-heading-anchor-permalink" href="#license" title="Permalink"></a></h2><p>By contributing to this project, you agree that your contributions will be licensed under the <a href="https://github.com/juliaocean/OceanRobots.jl/blob/master/LICENSE">LICENSE</a> file of this repository.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../examples/">« Notebooks</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.0 on <span class="colophon-date" title="Wednesday 27 November 2024 16:12">Wednesday 27 November 2024</span>. Using Julia version 1.11.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
