@@ -642,8 +642,13 @@ function to_DataFrame(ds)
 	in("drogue_status",names(df)) ? df.drogue_status=ds[:drogue_status][:] : nothing
 	df.sst1=ds[:sst1][:]
 	df.sst2=ds[:sst2][:]
-	df.longitude=ds[:longitude][:]
-	df.latitude=ds[:latitude][:]
+    if haskey(ds,"longitude")
+        df.longitude=ds[:longitude][:]
+        df.latitude=ds[:latitude][:]
+    else
+        df.longitude=ds[:lon][:]
+        df.latitude=ds[:lat][:]
+    end    
 	df.time=ds[:time][:]
 	df
 end
@@ -669,10 +674,9 @@ end
 function add_ID!(df,ds)
 	tmp=ds[:ID][:]
 	rowsize=ds[:rowsize][:]
-	ID=fill(0,0)
-	[push!(ID,fill(tmp[i],rowsize[i])...) for i in 1:length(rowsize)]
-
-	df.ID=ID
+    nn=[0 ; cumsum(ds["rowsize"])]
+	df.ID=fill(0,nn[end])
+	[df.ID[nn[i]+1:nn[i+1]].=tmp[i] for i in 1:length(nn)-1];
 end
 
 """
@@ -680,6 +684,7 @@ end
 """
 function to_Grid(gdf,grid)
 	df2=combine(gdf) do df
+#		(ve=median(df.ve) , vn=median(df.vn) )
 		(ve=mean(df.ve) , vn=mean(df.vn) )
 	end
 		
