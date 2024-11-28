@@ -5,20 +5,6 @@ Each type of ocean data gets :
 - a simple `read` function that downloads data if needed.
 - a default `plot` function that depicts some of the data.
 
-## `read` and `plot`
-
-### read
-
-```@docs
-read
-```
-
-### plot
-
-```@docs
-plot
-```
-
 ```@setup ex1
 using MeshArrays, Shapefile, DataDeps
 pol_file=demo.download_polygons("ne_110m_admin_0_countries.shp")
@@ -28,15 +14,13 @@ nothing #hide
 
 ## Supported Datasets
 
-- `OceanOPS.jl`
-- `Float_Argo.jl`
-- `Drifter_CloudDrift.jl`
-- `Drifter_GDP.jl`
-- `Glider_Spray.jl`
-- `ShipCruise_CCHDO.jl`
-- `Buoy_NWP_NOAA.jl`
-- `Buoy_NWP_NOAA_monthly.jl`
-- `Mooring_WHOTS.jl`
+- OceanOPS data base (`OceanOPS.jl`)
+- Surface Drifters (`Drifter_GDP.jl` , `Drifter_CloudDrift.jl`)
+- Argo Profilers (`Float_Argo.jl`)
+- Ship-Based CTD (`ShipCruise_CCHDO.jl`)
+- NOAA Buoys (`Buoy_NWP_NOAA.jl` , `Buoy_NWP_NOAA_monthly.jl`)
+- Spray Gliders (`Glider_Spray.jl`)
+- WHOTS Mooring (`Mooring_WHOTS.jl`)
 
 ### Surface Drifters
 
@@ -95,11 +79,22 @@ using OceanRobots, CairoMakie
 gliders=read(Gliders(),"GulfStream.nc")
 plot(gliders,1,pol=pol)
 ```
+## `read` methods
 
-### Add-Ons
+```@docs
+read
+```
+
+## `plot` methods
+
+```@docs
+plot
+```
+
+## Add-Ons
 
 !!! note
-    To put data in context, it is useful to download country polygons or gridded data sets.
+    To put data in context, it is useful to download country polygons.
 
 ```@example ex1
 using MeshArrays, Shapefile, DataDeps, CairoMakie
@@ -108,6 +103,8 @@ pol=MeshArrays.read_polygons(pol_file)
 plot(argo,pol=pol)
 ```
 
+!!! note
+    To put data in context, it is useful to download gridded data sets.
 
 ```@example ex1
 using Climatology, CairoMakie, NCDatasets

@@ -1,12 +1,11 @@
-module Drifters_Gulf_of_Mexico
+module Gulf_of_Mexico
 
 using OceanRobots
-import MeshArrays, Shapefile, DataDeps, CairoMakie, JLD2
 
-function read_polygons()
-    fil=MeshArrays.demo.download_polygons("ne_110m_admin_0_countries.shp")
-    MeshArrays.read_polygons(fil)
-end
+#function read_polygons()
+#    fil=MeshArrays.demo.download_polygons("ne_110m_admin_0_countries.shp")
+#    MeshArrays.read_polygons(fil)
+#end
 
 function read_GDP_subset(file::String)
     GDP_CD=read(CloudDrift(),file)
@@ -29,13 +28,20 @@ end
     Drifters_example_prep(file::String)
 
 ```
-file=GDP_CloudDrift.CloudDrift_subset_download()
+using OceanRobots
+
+#pol=read_polygons()
+pol=[]
+
 #file="gdp-v2.01.nc"
-Main.Drifters_Gulf_of_Mexico.Drifters_example_prep()
+file=GDP_CloudDrift.CloudDrift_subset_download()
+GM=Gulf_of_Mexico.example_prep(file=file,pol=pol)
+
+output_file=joinpath(tempdir(),"Drifters_example.jld2")
+JLD2.jldsave(output_file,GM...)
 ```
 """
-function Drifters_example_prep(file::String)
-    pol=read_polygons()
+function example_prep(;file="", pol=[])
     GDP_CD,GM=read_GDP_subset(file)
 
     res=1/2
@@ -55,12 +61,9 @@ function Drifters_example_prep(file::String)
     x0=np*(0.5 .+ 0.3*rand(1000))
     y0=nq*(0.0 .+ 0.3*rand(1000))
 
-    output_file=joinpath(tempdir(),"Drifters_example.jld2")
-    JLD2.jldsave(output_file,drifters_real=GDP_CD.data.subset,
-        u=u,v=v,x=GM["x"],y=GM["y"],x0=x0,y0=y0,polygons=pol,            
-        res = res, dx = dx, dT = dT, nt = nt)
-
-    output_file
+    (drifters_real=GDP_CD.data.subset,
+    u=u,v=v,x=GM["x"],y=GM["y"],x0=x0,y0=y0,polygons=pol,            
+    res = res, dx = dx, dT = dT, nt = nt)
 end
 
 end
