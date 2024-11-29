@@ -20,6 +20,10 @@ using Test
     b=read(CloudDrift(),"")
     @test isa(b,CloudDrift)
 
+    file=GDP_CloudDrift.CloudDrift_subset_download()
+    GM=OceanRobots.Gulf_of_Mexico.example_prep(file=file)
+    @test isa(GM.drifters_real,DataFrame)
+
     #
 
     oceansites_index=OceanSites.index()
