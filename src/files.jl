@@ -33,9 +33,11 @@ function download(cruise::Union{Symbol,String,Vector},path=tempdir())
             Dataverse.unzip(fil2)
             #unzip ctd files
             tmp1=readdir(path1)
-            tmp2=findall(occursin.(Ref("_nc_ctd.zip"),tmp1))[1]
-            fil3=joinpath(path1,tmp1[tmp2])
-            Dataverse.unzip(fil3)
+            tmp2=findall(occursin.(Ref("_nc_ctd.zip"),tmp1))
+            if length(tmp2)>1
+                fil3=joinpath(path1,tmp1[tmp2[1]])
+                Dataverse.unzip(fil3)
+            end
             #download ancillary files
             for i in list
                 isempty(i) ? nothing : Downloads.download(i,joinpath(path1,basename(i)))
