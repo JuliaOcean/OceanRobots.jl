@@ -44,7 +44,7 @@ The model hierarchy includes fast climate model emulators, global model output, 
 
 \begin{figure}[t]
 \centerline{\includegraphics[width=\columnwidth]{figs/20240528_OceanOPS.png}}
-\caption{Locations of ocean robots collecting data on {\it 2024/05/27}. Data source : https://www.ocean-ops.org}
+\caption{Locations of ocean robots collecting data and planned deployments, on {\it 2024/05/27}. Data source : https://www.ocean-ops.org}
 \label{fig:ocean-ops}
 \end{figure}
 
@@ -54,7 +54,7 @@ Part of the fleet of ocean robots currently at sea is depicted in Fig.~\ref{fig:
 
 \begin{figure}[t]
 \centerline{\includegraphics[width=\columnwidth]{figs/20240528_drifters_5percent.png}}
-\caption{A few of the ocean drifters (5\% of 19396) that have been deployed to follow near surface ocean currents.}
+\caption{A few of the ocean drifters (5\% of 19396) that have been deployed to follow near surface ocean currents in the past.}
 \label{fig:drifters}
 \end{figure}
 
@@ -62,7 +62,7 @@ A fraction of the geospatial data obtained by surface ocean drifters in the past
 
 
 \begin{table}
-\tbl{Ocean observing platforms targeted by \pkg{OceanRobots.jl}, and associated data structures (or blank if not yet implemented).}{
+\tbl{Ocean observing systems targeted by \pkg{OceanRobots.jl}, and associated data structures (or blank if not yet implemented).}{
 \begin{tabular}{|l||r|}\hline
 Platform Type & Data Structure\\\hline\hline
 surface drifters & \struct{SurfaceDrifter}, \struct{CloudDrift} \\
@@ -74,7 +74,7 @@ sail drones & \tbd \\
 \hline
 research vessel data & \struct{CCHDO} \\
 ships of opportunity data & \tbd \\
-marine mammals & \tbd \\\hline
+marine mammals data & \tbd \\\hline
 \end{tabular}}
 \label{tab:robots}
 \end{table}
@@ -132,7 +132,7 @@ Much more could be done to improve the details and skill of the simple models us
 
 \begin{figure}[t]
 \centerline{\includegraphics[width=\columnwidth]{figs/20240529_speed_subset_IndDisp.png}}
-\caption{Virtual drifter trajectories predicted using (1) just the climatological mean flow field estimated from drifters (Fig.~\ref{fig:drifters_ve}, and the northward component) and (2) \pkg{Drifters.jl} to calculate trajectories.}
+\caption{Virtual drifter trajectories predicted using (1) just the climatological mean flow field estimated from drifters (Fig.~\ref{fig:drifters_ve}, plus the corresponding northward component) and (2) \pkg{Drifters.jl} to calculate trajectories.}
 \label{fig:drifters_speed_simu}
 \end{figure}
 
@@ -173,7 +173,7 @@ Within our model hierarchy, future climate scenarios like Fig.~\ref{fig:globalwa
 
 \begin{figure}[th] 
 \includegraphics[width=\columnwidth]{figs/Chl_av_NN3D5.jpg}
-\caption{Ensemble of model predictions (black curves) by a simple multi-layer perceptron (from Flux.jl) trained to predict Chlorophyll concentration (present in green algea and marine microbes) from environmental variables (T, S, but also oxygen, optical backscatter, and solar radiation). The blue line is the {\it ground truth} that we seek to estimate, and was obtained through proper spatial averaging of the gridded data set from which the training data itself was generated.}
+\caption{Ensemble of model predictions (black curves) by a simple multi-layer perceptron (from Flux.jl) trained to predict Chlorophyll concentration (present in green algea and marine microbes) from environmental variables (T, S, but also oxygen, optical backscatter, and solar radiation). The blue line is the model {\it ground truth} that we seek to estimate, and was obtained through proper spatial averaging of the gridded data set from which the training data itself was generated.}
 \label{fig:MLP}
 \end{figure} 
 
