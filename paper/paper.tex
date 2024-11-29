@@ -131,7 +131,6 @@ Our second example focuses on the simulation of observing platforms moving with 
     caption={Simulate surface drifter pathways in the Gulf of Mexico (Fig.~\ref{fig:drifters_speed}) from flow fields $u,v$ and initial positions $x,y$. 
     Visualization code is provided in the \pkg{Drifters.jl} documentation.}
 ]
-
 using OceanRobots, Drifters, CairoMakie ;
 P=Drifters.Gulf_of_Mexico_setup();
 F=FlowFields(u=P.u,v=P.v,period=P.T);
