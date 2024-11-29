@@ -44,7 +44,7 @@ The model hierarchy includes fast climate model emulators, global model output, 
 
 \begin{figure}[t]
 \centerline{\includegraphics[width=\columnwidth]{figs/20240528_OceanOPS.png}}
-\caption{Locations of ocean robots collecting data and planned deployments, on {\it 2024/05/27}. Data source : https://www.ocean-ops.org}
+\caption{Location of ocean robots that were collecting data on {\it 2024/05/27} for three types of observations (blue, green, and red dots). Deployments of Argo profilers that were being planned at the time are also shown (purple dots). Data is from https://www.ocean-ops.org and queried via \pkg{OceanRobots.jl}.}
 \label{fig:ocean-ops}
 \end{figure}
 
@@ -100,6 +100,8 @@ fig=plot(argo,option=:standard)
 \label{fig:drifters_ve}
 \end{figure}
 
+\newpage
+
 \section{Simulating Ocean Robots}
 
 Our ability to simulate the data produced by ocean robots is directly linked to our ability, or lack thereof, to explain observed variations and decipher mechanisms from data. Numerical modeling is thus often motivated and driven by observations. Many research activities involve combining ocean models and observations, with the typical goal of learning model parameters, statistics, and dynamics from data \cite{Forget2010,Forget2015a,FFL15,FP15,Forget2024a}. Observing system simulations in a digital environment (using models) enable a wide range of applications -- to test out innovative platform or sensor designs ahead of deployment, to optimize global monitoring strategies, or to guide deployed assets in real time for example.
@@ -122,20 +124,6 @@ To create Fig.~\ref{fig:Argo_Float_simu}, we use \pkg{Climatology.jl} to access 
 
 Our second example focuses on the simulation of observing platforms moving with ocean currents. This basic simulation of surface drifter pathways uses the geostatistical average of velocities calculated in Fig.~\ref{fig:drifters_ve} as a predictive model for the $U(x,y,t)$, $V(x,y,t)$ velocity fields. In Code~\ref{lst:IndDispCode}, this gridded data set is provided as input to \pkg{Drifters.jl}, which then releases virtual drifters and calculates their trajectories following the flow field (Fig.~\ref{fig:drifters_speed_simu}). While this simple drifter trajectory prediction model neglects stochastic variability and small scales in ocean currents altogether (Fig.~\ref{fig:km_scale}), it is sufficient to capture the main mean pathway of sea water through the Gulf of Mexico region -- the well-known loop current feeding the Gulf Stream via Florida Strait (Fig.~\ref{fig:drifters_speed_simu}).
 
-Much more could be done to improve the details and skill of the simple models used here. Higher-order and higher-resolution model output are available to represent important aspects of what is being observed, but neglected in Figs.~\ref{fig:Argo_Float_simu} and~\ref{fig:drifters_speed_simu}, such as the turbulent dispersion seen in Fig.~\ref{fig:drifters_speed} or the small-scale variations visible in Fig.~\ref{fig:Argo_Float}. Small scale temperature fronts and currents are present everywhere in the ocean, with a lot of heterogeneity across regions, as illustrated in Fig.~\ref{fig:km_scale}. Hence it is important to include global km-scale ocean simulations in our model hierarchy (see section~\ref{sec:DT}). 
-
-\begin{figure}[t]
-\centerline{\includegraphics[width=\columnwidth]{figs/20240528_speed_subset.png}}
-\caption{Drifter trajectories in the Gulf of Mexico region. Large velocities highlight the path of the Gulf Stream, being fed by the loop current.}
-\label{fig:drifters_speed}
-\end{figure}
-
-\begin{figure}[t]
-\centerline{\includegraphics[width=\columnwidth]{figs/20240529_speed_subset_IndDisp.png}}
-\caption{Virtual drifter trajectories predicted using (1) just the climatological mean flow field estimated from drifters (Fig.~\ref{fig:drifters_ve}, plus the corresponding northward component) and (2) \pkg{Drifters.jl} to calculate trajectories.}
-\label{fig:drifters_speed_simu}
-\end{figure}
-
 
 \begin{lstlisting}[
     language = Julia,
@@ -150,6 +138,20 @@ F=FlowFields(u=P.u,v=P.v,period=P.T);
 I=Individuals(F,P.x0,P.y0);
 [solve!(I,P.T .+P.dT*(n-1)) for n in 1:P.nt];
 \end{lstlisting}
+
+Much more could be done to improve the details and skill of the simple models used here. Higher-order and higher-resolution model output are available to represent important aspects of what is being observed, but neglected in Figs.~\ref{fig:Argo_Float_simu} and~\ref{fig:drifters_speed_simu}, such as the turbulent dispersion seen in Fig.~\ref{fig:drifters_speed} or the small-scale variations visible in Fig.~\ref{fig:Argo_Float}. Small scale temperature fronts and currents are present everywhere in the ocean, with a lot of heterogeneity across regions, as illustrated in Fig.~\ref{fig:km_scale}. Hence it is important to include global km-scale ocean simulations in our model hierarchy (see section~\ref{sec:DT}). 
+
+\begin{figure}[t]
+\centerline{\includegraphics[width=\columnwidth]{figs/20240528_speed_subset.png}}
+\caption{Drifter trajectories in the Gulf of Mexico region. Large velocities highlight the path of the Gulf Stream, being fed by the loop current.}
+\label{fig:drifters_speed}
+\end{figure}
+
+\begin{figure}[t]
+\centerline{\includegraphics[width=\columnwidth]{figs/20240529_speed_subset_IndDisp.png}}
+\caption{Virtual drifter trajectories predicted using (1) just the climatological mean flow field estimated from drifters (Fig.~\ref{fig:drifters_ve}, plus the corresponding northward component) and (2) \pkg{Drifters.jl} to calculate trajectories.}
+\label{fig:drifters_speed_simu}
+\end{figure}
 
 \section{Digital Twin Framework} \label{sec:DT}
 

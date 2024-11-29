@@ -931,7 +931,7 @@ to\hsize{\if@nfeven\else\hfil\fi\box\@tempboxa\if@nfeven\hfil\fi}
 %% \usepackage[mtbold]{mathtime}
 \usepackage{bm}
 \usepackage{graphicx}% Include figure files
-\usepackage{hyperref}
+\usepackage[colorlinks=true,linkcolor=black,anchorcolor=black,citecolor=black,filecolor=black,menucolor=black,runcolor=black,urlcolor=black]{hyperref}
 %%\usepackage{microtype}
 \renewcommand{\ttdefault}{cmtt}
 
