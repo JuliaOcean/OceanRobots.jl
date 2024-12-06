@@ -130,35 +130,35 @@ begin
 end
 
 # ╔═╡ c5f24071-1c1f-4edf-b7b2-b6194c33b571
-let
+begin
 	function demofigure()
 		lon0=-160
 		proj=Proj.Transformation(MA_preset=2,lon0=lon0)
 	
 		fi0=Figure(size=(900,600),fontsize=24)
-		ax0=Axis(fi0[1,1],backgroundcolor = :gray20,
-			title="Distribution of Ocean Observing Platforms")
+		ax0=Axis(fi0[1,1],title="Distribution of Ocean Observing Platforms")
 		pr_ax=MeshArrays.ProjAxis(ax0; proj=proj,lon0=lon0)
 		lines!(pr_ax,polygons=pol;color=:white, linewidth = 0.5)
 	
 		sc1=scatter!(pr_ax,argo_operational.lon,argo_operational.lat,
-			markersize=6.0,label="Argo (operational)",color=:deepskyblue)
+			markersize=6.0,label="Argo (operational)" => (; markersize = 15),color=:deepskyblue)
 		sc2=scatter!(pr_ax,argo_planned.lon,argo_planned.lat,
-			markersize=6.0,label="Argo (planned)",color=:violet)
+			markersize=6.0,label="Argo (planned)" => (; markersize = 15),color=:violet)
 		sc3=scatter!(pr_ax,drifter_operational.lon,drifter_operational.lat,
-			markersize=8.0,label="Drifter",color=:green1)
+			markersize=8.0,label="Drifter" => (; markersize = 15),color=:green1)
 		sc4=scatter!(pr_ax,more_operational.lon,more_operational.lat,
-			markersize=12.0,label=more_platform_name,color=:red,marker=:star5)
+			markersize=12.0,label=more_platform_name => (; markersize = 15),color=:red,marker=:star5)
 		
 		MeshArrays.grid_lines!(pr_ax;color=:yellow,linewidth=0.5)
 
-		Legend(fi0[2, 1],[sc1,sc2,sc3,sc4],[sc1.label,sc2.label,sc3.label,sc4.label],
-			orientation = :horizontal, fontsize=16)
-		
+#		Legend(fi0[2, 1],[sc1,sc2,sc3,sc4],[sc1.label,sc2.label,sc3.label,sc4.label],
+#			orientation = :horizontal, fontsize=16)
+        Legend(fi0[2, 1],ax0,orientation = :horizontal, fontsize=16)
+
 		fi0
 	end
 
-	with_theme(demofigure, theme_dark())
+	fig1=with_theme(demofigure, theme_black())
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -173,6 +173,17 @@ PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 PrettyTables = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
 Proj = "c94c279d-25a6-4763-9509-64d165bea63e"
 Shapefile = "8e980c4a-a4fe-5da2-b3a7-4b4b0353a2f4"
+
+[compat]
+CairoMakie = "~0.12.16"
+DataDeps = "~0.7.13"
+GeoJSON = "~0.8.1"
+MeshArrays = "~0.3.17"
+OceanRobots = "~0.2.9"
+PlutoUI = "~0.7.60"
+PrettyTables = "~2.4.0"
+Proj = "~1.8.0"
+Shapefile = "~0.13.1"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -181,7 +192,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.11.1"
 manifest_format = "2.0"
-project_hash = "82bbe4cf1530b846f3d1c459bac330c67e4eefd5"
+project_hash = "a98d7659a8e3ea4e4349ea403c49edbd5fc50a40"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -238,9 +249,9 @@ version = "1.1.2"
 
 [[deps.ArgoData]]
 deps = ["Bootstrap", "CSV", "DataFrames", "Dataverse", "Dates", "Downloads", "FTPClient", "Glob", "Interpolations", "JLD2", "MeshArrays", "NCDatasets", "NetworkOptions", "OrderedCollections", "Pkg", "Printf", "Statistics", "YAML"]
-git-tree-sha1 = "e9fda125cc3784d3c684787bc0677d5f1b84cbb9"
+git-tree-sha1 = "922395f20966ce7782583d233b59d05a6b758e6e"
 uuid = "9eb831cf-c491-48dc-bed4-6aca718df73c"
-version = "0.1.25"
+version = "0.1.26"
 
     [deps.ArgoData.extensions]
     ArgoDataClimatologyExt = ["Climatology"]
@@ -516,10 +527,10 @@ uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
 version = "1.11.0"
 
 [[deps.DelaunayTriangulation]]
-deps = ["AdaptivePredicates", "EnumX", "ExactPredicates", "PrecompileTools", "Random"]
-git-tree-sha1 = "ffc2e0358599a6a0db3a5c0142a9fa3dc5694f65"
+deps = ["AdaptivePredicates", "EnumX", "ExactPredicates", "Random"]
+git-tree-sha1 = "e1371a23fd9816080c828d0ce04373857fe73d33"
 uuid = "927a84f5-c5f4-47a5-9785-b46e178433df"
-version = "1.6.2"
+version = "1.6.3"
 
 [[deps.DiskArrays]]
 deps = ["LRUCache", "OffsetArrays"]
@@ -810,9 +821,9 @@ version = "1.14.2+1"
 
 [[deps.HTTP]]
 deps = ["Base64", "CodecZlib", "ConcurrentUtilities", "Dates", "ExceptionUnwrapping", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "PrecompileTools", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
-git-tree-sha1 = "6c4d6a1babbbee6f283b3da64ac895f0a3bfbc96"
+git-tree-sha1 = "ae350b8225575cc3ea385d4131c81594f86dfe4f"
 uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-version = "1.10.11"
+version = "1.10.12"
 
 [[deps.HarfBuzz_jll]]
 deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "Graphite2_jll", "JLLWrappers", "Libdl", "Libffi_jll"]
@@ -997,9 +1008,9 @@ version = "1.0.0"
 
 [[deps.JLD2]]
 deps = ["FileIO", "MacroTools", "Mmap", "OrderedCollections", "PrecompileTools", "Requires", "TranscodingStreams"]
-git-tree-sha1 = "14030aa1cb6b5551f425b0e6d0f3cb749a152965"
+git-tree-sha1 = "f1a1c1037af2a4541ea186b26b0c0e7eeaad232b"
 uuid = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
-version = "0.5.9"
+version = "0.5.10"
 
 [[deps.JLLWrappers]]
 deps = ["Artifacts", "Preferences"]
@@ -1367,9 +1378,9 @@ version = "0.5.5"
 
 [[deps.OceanRobots]]
 deps = ["ArgoData", "CFTime", "CSV", "DataFrames", "Dataverse", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "Interpolations", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "URIs"]
-git-tree-sha1 = "ce7d5e0718a2a7571cc1df67f10a73fef581bbbb"
+git-tree-sha1 = "b6ac39404e2dbec4e2c778eb328037251cde8972"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
-version = "0.2.7"
+version = "0.2.9"
 weakdeps = ["Makie"]
 
     [deps.OceanRobots.extensions]
@@ -1443,9 +1454,9 @@ uuid = "91d4177d-7536-5919-b921-800302f37372"
 version = "1.3.3+0"
 
 [[deps.OrderedCollections]]
-git-tree-sha1 = "dfdf5519f235516220579f949664f1bf44e741c5"
+git-tree-sha1 = "12f1439c4f986bb868acda6ea33ebc78e19b95ad"
 uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
-version = "1.6.3"
+version = "1.7.0"
 
 [[deps.PCRE2_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -1975,9 +1986,9 @@ version = "0.4.1"
 
 [[deps.Unitful]]
 deps = ["Dates", "LinearAlgebra", "Random"]
-git-tree-sha1 = "d95fe458f26209c66a187b1114df96fd70839efd"
+git-tree-sha1 = "01915bfcd62be15329c9a07235447a89d588327c"
 uuid = "1986cc42-f94f-5a68-af5c-568840ba703d"
-version = "1.21.0"
+version = "1.21.1"
 weakdeps = ["ConstructionBase", "InverseFunctions"]
 
     [deps.Unitful.extensions]
@@ -2015,9 +2026,9 @@ version = "2.13.5+0"
 
 [[deps.XSLT_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libgcrypt_jll", "Libgpg_error_jll", "Libiconv_jll", "XML2_jll", "Zlib_jll"]
-git-tree-sha1 = "a54ee957f4c86b526460a720dbc882fa5edcbefc"
+git-tree-sha1 = "7d1671acbe47ac88e981868a078bd6b4e27c5191"
 uuid = "aed1982a-8fda-507f-9586-7b0439959a61"
-version = "1.1.41+0"
+version = "1.1.42+0"
 
 [[deps.XZ_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
