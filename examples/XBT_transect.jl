@@ -4,8 +4,23 @@
 using Markdown
 using InteractiveUtils
 
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    #! format: off
+    quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
+        el
+    end
+    #! format: on
+end
+
 # ╔═╡ e7f710ec-e429-4b93-b687-1e6d4678bbe3
-using TableScraper, HTTP, Downloads, OceanRobots, CodecZlib, CairoMakie
+begin
+	using TableScraper, HTTP, Downloads, CodecZlib
+	using OceanRobots, CairoMakie, PlutoUI
+end
 
 # ╔═╡ 7e8b02b8-546e-46ca-989c-a29961c11730
 md"""# XBT transect
@@ -15,11 +30,11 @@ For more information, [see this page](https://www-hrx.ucsd.edu/index.html).
 _Data were made available by the Scripps High Resolution XBT program (www-hrx.ucsd.edu)_
 """
 
-# ╔═╡ 67669bc3-b7e9-4935-bf4e-be28b81bab73
-begin
-	PX=81
-	cr=3
-end
+# ╔═╡ 0b9d4b00-2fdc-4a13-aa90-239e16a87469
+TableOfContents()
+
+# ╔═╡ 0b69a4c8-3aba-4086-9deb-377307fc8fcc
+@bind cr NumberField(1:3) #length(cruises))
 
 # ╔═╡ 86c3f772-d5f0-4266-aa52-baaa65b636e9
 md"""## Read data"""
@@ -27,49 +42,8 @@ md"""## Read data"""
 # ╔═╡ 66d64a82-0e69-4089-96e3-645e54e52cfb
 md"""## Download data"""
 
-# ╔═╡ 3b2eee5f-4f78-46c1-8536-b5173ddb6b7a
-dep = -(5:10:895) # Depth (m), same for all profiles
-
 # ╔═╡ c796c837-09a4-41b3-93e8-60e76f9adc16
 md"""## Appendix"""
-
-# ╔═╡ 20006b02-b382-11ef-0d01-2f3ad65c1d67
-
-"""
-    list_of_cruises(PX=81)
-
-```
-include("parse_xbt_html.jl")
-
-PX=81
-cruises,years,months,url_base=list_of_cruises(PX)
-
-CR=cruises[1]
-url1=url_base*CR*".html"
-url2=get_url_to_download(url1)
-
-path2=download_file(url2)
-```
-"""
-function list_of_cruises(PX=81)
-    url0="https://www-hrx.ucsd.edu/px$(PX).html"
-    url_base=url0[1:end-5]*"/p$(PX)"
-    x=scrape_tables(url0)
-    y=x[4].rows
-
-    months=Int[]; years=Int[]; cruises=String[]
-    for row in 3:length(y)
-    z=y[row]
-    a=findall( (z.!==" \n           ").&&(z.!==" ") )
-    if length(a)>1
-        push!(months,Int.(a[2:end].-1)...)
-        push!(years,parse(Int,z[1])*ones(length(a)-1)...)
-        push!(cruises,z[a[2:end]]...)
-    end
-    end
-
-    cruises,years,months,url_base
-end
 
 # ╔═╡ 15da50e2-fe05-4a67-8e35-ab8b257ceb3f
 function get_url_to_download(url1)
@@ -80,9 +54,9 @@ function get_url_to_download(url1)
 end
 
 # ╔═╡ d80c5b9f-78c0-46d8-993b-918dca5e75d6
-function download_file(url2)
+function download_file_if_needed(url2)
 	path1=joinpath(tempdir(),basename(url2))
-	Downloads.download(url2,path1)
+	isfile(path1) ? nothing : Downloads.download(url2,path1)
 
 	path2=path1[1:end-3]*".txt"
 	open(GzipDecompressorStream, path1) do stream
@@ -92,16 +66,8 @@ function download_file(url2)
 	path2
 end
 
-# ╔═╡ f62537ce-6953-4f5c-9c82-a057d8f05831
-begin
-	cruises,years,months,url_base=list_of_cruises(PX)
-	
-	CR=cruises[cr]
-	url1=url_base*CR*".html"
-	url2=get_url_to_download(url1)
-
-	path2=download_file(url2)
-end
+# ╔═╡ 3b2eee5f-4f78-46c1-8536-b5173ddb6b7a
+dep = -(5:10:895) # Depth (m), same for all profiles
 
 # ╔═╡ 56610316-4833-4aa5-8603-5f8f45a0e2bb
 function read_data(path2)
@@ -137,10 +103,78 @@ function read_data(path2)
 #	lines(T,dep)
 end
 
+# ╔═╡ f659759f-a04f-4b77-9994-975b2174a4d1
+begin
+	list_of_transects=[
+	"PX05", "PX06", "PX30", "PX34", "PX37", "PX37-South", "PX38", "PX40", 
+	"PX06-Loop", "PX08", "PX10", "PX25", "PX44", "PX50", "PX81", 
+	"AX22", "IX15", "IX28"]	
+end
+
+# ╔═╡ e51b6b37-2448-42eb-b33b-6e9ee6524acd
+@bind transect Select(list_of_transects)
+
+# ╔═╡ 20006b02-b382-11ef-0d01-2f3ad65c1d67
+
+"""
+    list_of_cruises(transect)
+
+```
+include("parse_xbt_html.jl")
+
+transect="PX05"
+cruises,years,months,url_base=list_of_cruises(transect)
+
+CR=cruises[1]
+url1=url_base*CR*".html"
+url2=get_url_to_download(url1)
+
+path2=download_file(url2)
+```
+"""
+function list_of_cruises(transect="PX05")
+	PX=transect[3:end]
+	PX=( transect=="PX06-South" ? "37s" : PX )
+	PX=( transect=="PX06-Loop" ? "06" : PX )
+
+	pp="p"
+	pp=( transect[1]=='I' ? "i" : pp )
+	pp=( transect[1]=='A' ? "a" : pp )
+	
+    url0="https://www-hrx.ucsd.edu/$(pp)x$(PX).html"
+    url_base=url0[1:end-5]*"/$(pp)$(PX)"
+    x=scrape_tables(url0)
+    y=x[4].rows
+
+    months=Int[]; years=Int[]; cruises=String[]
+    for row in 3:length(y)
+    z=y[row]
+    a=findall( (z.!==" \n           ").&&(z.!==" ") )
+    if length(a)>1
+        push!(months,Int.(a[2:end].-1)...)
+        push!(years,parse(Int,z[1])*ones(length(a)-1)...)
+        push!(cruises,z[a[2:end]]...)
+    end
+    end
+
+    cruises,years,months,url_base
+end
+
+# ╔═╡ 0781af39-bec9-4e40-a9c1-ff30f4da7bf9
+cruises,years,months,url_base=list_of_cruises(transect)
+
+# ╔═╡ 04795136-bc21-4d84-837b-20d943a49ba3
+begin	
+	CR=cruises[cr]
+	url1=url_base*CR*".html"
+	url2=get_url_to_download(url1)
+	path2=download_file_if_needed(url2)
+end
+
 # ╔═╡ e356501e-10f7-4d70-9cdb-1f087027c3ce
 T_all=read_data(path2)
 
-# ╔═╡ 1d0bdb3f-0363-44bb-90e6-ec52f858e9f4
+# ╔═╡ 032df07d-519b-4d12-97a5-bbd6a91697a1
 heatmap(1:size(T_all,1),dep,T_all)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -151,6 +185,7 @@ CodecZlib = "944b1d66-785c-5afd-91f1-9de20f533193"
 Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 OceanRobots = "0b51df41-3294-4961-8d23-db645e32016d"
+PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 TableScraper = "3d876f86-fca9-45cb-9864-7207416dc431"
 
 [compat]
@@ -158,6 +193,7 @@ CairoMakie = "~0.12.16"
 CodecZlib = "~0.7.6"
 HTTP = "~1.10.12"
 OceanRobots = "~0.2.9"
+PlutoUI = "~0.7.60"
 TableScraper = "~0.1.4"
 """
 
@@ -167,7 +203,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.11.1"
 manifest_format = "2.0"
-project_hash = "01de889f819a92bb370e9285f05a051bb84c69c3"
+project_hash = "593371edf5f8deae86758440d4b0d03c38326721"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -179,6 +215,12 @@ weakdeps = ["ChainRulesCore", "Test"]
     [deps.AbstractFFTs.extensions]
     AbstractFFTsChainRulesCoreExt = "ChainRulesCore"
     AbstractFFTsTestExt = "Test"
+
+[[deps.AbstractPlutoDingetjes]]
+deps = ["Pkg"]
+git-tree-sha1 = "6e1d2a35f2f90a4bc7c2ed98079b2ba09c35b83a"
+uuid = "6e696c72-6542-2067-7265-42206c756150"
+version = "1.3.2"
 
 [[deps.AbstractTrees]]
 git-tree-sha1 = "2d9c9a55f9c93e8887ad391fbae72f8ef55e1177"
@@ -790,6 +832,24 @@ git-tree-sha1 = "b1c2585431c382e3fe5805874bda6aea90a95de9"
 uuid = "34004b35-14d8-5ef3-9330-4cdb6864b03a"
 version = "0.3.25"
 
+[[deps.Hyperscript]]
+deps = ["Test"]
+git-tree-sha1 = "179267cfa5e712760cd43dcae385d7ea90cc25a4"
+uuid = "47d2ed2b-36de-50cf-bf87-49c2cf4b8b91"
+version = "0.0.5"
+
+[[deps.HypertextLiteral]]
+deps = ["Tricks"]
+git-tree-sha1 = "7134810b1afce04bbc1045ca1985fbe81ce17653"
+uuid = "ac1192a8-f4b3-4bfe-ba22-af5b92cd3ab2"
+version = "0.9.5"
+
+[[deps.IOCapture]]
+deps = ["Logging", "Random"]
+git-tree-sha1 = "b6d6bfdd7ce25b0f9b2f6b3dd56b2673a66c8770"
+uuid = "b5f81e59-6552-4d32-b1f0-c071b021bf89"
+version = "0.2.5"
+
 [[deps.ImageAxes]]
 deps = ["AxisArrays", "ImageBase", "ImageCore", "Reexport", "SimpleTraits"]
 git-tree-sha1 = "e12629406c6c4442539436581041d372d69c55ba"
@@ -1155,6 +1215,11 @@ git-tree-sha1 = "abf88ff67f4fd89839efcae2f4c39cbc4ecd0846"
 uuid = "5ced341a-0733-55b8-9ab6-a4889d929147"
 version = "1.10.0+1"
 
+[[deps.MIMEs]]
+git-tree-sha1 = "65f28ad4b594aebe22157d6fac869786a255b7eb"
+uuid = "6c6e2e6c-3030-632d-7369-2d6c69616d65"
+version = "0.1.4"
+
 [[deps.MKL_jll]]
 deps = ["Artifacts", "IntelOpenMP_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "oneTBB_jll"]
 git-tree-sha1 = "f046ccd0c6db2832a9f639e2c669c6fe867e5f4f"
@@ -1460,6 +1525,12 @@ deps = ["ColorSchemes", "Colors", "Dates", "PrecompileTools", "Printf", "Random"
 git-tree-sha1 = "3ca9a356cd2e113c420f2c13bea19f8d3fb1cb18"
 uuid = "995b91a9-d308-5afd-9ec6-746e21dbc043"
 version = "1.4.3"
+
+[[deps.PlutoUI]]
+deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
+git-tree-sha1 = "eba4810d5e6a01f612b948c9fa94f905b49087b0"
+uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+version = "0.7.60"
 
 [[deps.PolygonOps]]
 git-tree-sha1 = "77b3d3605fc1cd0b42d95eba87dfcd2bf67d5ff6"
@@ -1848,6 +1919,11 @@ git-tree-sha1 = "0c45878dcfdcfa8480052b6ab162cdd138781742"
 uuid = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
 version = "0.11.3"
 
+[[deps.Tricks]]
+git-tree-sha1 = "7822b97e99a1672bfb1b49b668a6d46d58d8cbcb"
+uuid = "410a4b4d-49e4-4fbc-ab6d-cb71b17b3775"
+version = "0.1.9"
+
 [[deps.TriplotBase]]
 git-tree-sha1 = "4d4ed7f294cda19382ff7de4c137d24d16adc89b"
 uuid = "981d1d27-644d-49a2-9326-4793e63143c3"
@@ -2098,18 +2174,22 @@ version = "3.6.0+0"
 
 # ╔═╡ Cell order:
 # ╟─7e8b02b8-546e-46ca-989c-a29961c11730
-# ╠═67669bc3-b7e9-4935-bf4e-be28b81bab73
-# ╠═1d0bdb3f-0363-44bb-90e6-ec52f858e9f4
+# ╟─0b9d4b00-2fdc-4a13-aa90-239e16a87469
+# ╟─e51b6b37-2448-42eb-b33b-6e9ee6524acd
+# ╟─0b69a4c8-3aba-4086-9deb-377307fc8fcc
+# ╟─0781af39-bec9-4e40-a9c1-ff30f4da7bf9
+# ╠═032df07d-519b-4d12-97a5-bbd6a91697a1
 # ╟─86c3f772-d5f0-4266-aa52-baaa65b636e9
-# ╟─e356501e-10f7-4d70-9cdb-1f087027c3ce
+# ╠═e356501e-10f7-4d70-9cdb-1f087027c3ce
 # ╟─66d64a82-0e69-4089-96e3-645e54e52cfb
-# ╠═f62537ce-6953-4f5c-9c82-a057d8f05831
-# ╠═3b2eee5f-4f78-46c1-8536-b5173ddb6b7a
+# ╠═04795136-bc21-4d84-837b-20d943a49ba3
 # ╟─c796c837-09a4-41b3-93e8-60e76f9adc16
 # ╠═e7f710ec-e429-4b93-b687-1e6d4678bbe3
-# ╟─20006b02-b382-11ef-0d01-2f3ad65c1d67
 # ╟─15da50e2-fe05-4a67-8e35-ab8b257ceb3f
 # ╟─d80c5b9f-78c0-46d8-993b-918dca5e75d6
 # ╟─56610316-4833-4aa5-8603-5f8f45a0e2bb
+# ╟─3b2eee5f-4f78-46c1-8536-b5173ddb6b7a
+# ╟─f659759f-a04f-4b77-9994-975b2174a4d1
+# ╟─20006b02-b382-11ef-0d01-2f3ad65c1d67
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
