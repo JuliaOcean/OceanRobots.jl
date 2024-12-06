@@ -8,8 +8,8 @@
 ## Included Notebooks
 
 - [OceanOPS.html](OceanOPS.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/OceanOPS.jl)) : global ocean observing systems
-- [ShipCruise\_CCHDO.html](ShipCruise_CCHDO.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/ShipCruise_CCHDO.jl)) : [ship](https://cchdo.ucsd.edu) CTD and other data
-- [XBT\_transect.html](XBT_transect.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/XBT_transect.jl)) : [ship](https://cchdo.ucsd.edu) XBT data
+- [ShipCruise\_CCHDO.html](ShipCruise_CCHDO.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/ShipCruise_CCHDO.jl)) : [CTD rosette](https://cchdo.ucsd.edu) and related data
+- [XBT\_transect.html](XBT_transect.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/XBT_transect.jl)) : [XBT](https://cchdo.ucsd.edu) data
 - [Float\_Argo.html](Float_Argo.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/Float_Argo.jl)) : Argo profiling [float](https://argo.ucsd.edu) data
 - [Drifter\_GDP.html](Drifter_GDP.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/Drifter_GDP.jl)) : [drifter](https://www.aoml.noaa.gov/phod/gdp/hourly_data.php) time series
 - [Drifter\_CloudDrift.html](Drifter_CloudDrift.html) (➭ [code link](https://github.com/JuliaOcean/OceanRobots.jl/blob/master/examples/Drifter_CloudDrift.jl)) : drifter statistics

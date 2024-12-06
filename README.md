@@ -38,6 +38,16 @@ Global Data Coverage | Individual Data Platforms
 </details>
 
 <details>
+ <summary> Commercial Ships </summary>
+<p>
+
+👉 [XBT\_transect.html](https://juliaocean.github.io/OceanRobots.jl/dev/examples/XBT_transect.html) 👈
+
+</p>
+</details>
+
+
+<details>
  <summary> Profiling Floats </summary>
 <p>
 
