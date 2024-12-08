@@ -3,6 +3,9 @@ using Test
 
 @testset "OceanRobots.jl" begin
 
+    list1=OceanRobots.query(SurfaceDrifter)
+    @test isa(list1,Vector)
+
     url="https://dods.ndbc.noaa.gov/thredds/catalog/oceansites/long_timeseries/WHOTS/catalog.xml"
     files,folders=OceanRobots.THREDDS.parse_catalog(url)
 
@@ -54,9 +57,10 @@ using Test
 
     ##
 
-    allstations=NOAA.list_stations()
-    metstations=NOAA.list_realtime(ext=:txt)
+    allstations=OceanRobots.query(NOAAbuoy)
+    @test isa(allstations,Vector)
 
+    metstations=NOAA.list_realtime(ext=:txt)
     stations=metstations[1:200:end]
     ids=NOAA.download(stations)
 
@@ -99,14 +103,23 @@ using Test
 
     ##
 
+    list1=OceanRobots.query(ShipCruise)
+    @test isa(list1,Vector)
+
     ID="33RR20160208"
     path=CCHDO.download(ID)
     @test ispath(path)
 
-    cruise=ShipCruise(ID)
+    cruise=read(ShipCruise(),ID)
     @test isa(cruise,ShipCruise)
 
     fig=plot(cruise)
+    @test isa(fig,Figure)
+
+    ##
+
+    xbt=read(XBTtransect(),transect="PX05",cruise="0910")
+    fig=plot(xbt)
     @test isa(fig,Figure)
 
 end

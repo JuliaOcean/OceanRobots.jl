@@ -18,6 +18,7 @@ nothing #hide
 - Surface Drifters (`Drifter_GDP.jl` , `Drifter_CloudDrift.jl`)
 - Argo Profilers (`Float_Argo.jl`)
 - Ship-Based CTD (`ShipCruise_CCHDO.jl`)
+- Ship-Based XBT (`XBT_transect.jl`)
 - NOAA Buoys (`Buoy_NWP_NOAA.jl` , `Buoy_NWP_NOAA_monthly.jl`)
 - Spray Gliders (`Glider_Spray.jl`)
 - WHOTS Mooring (`Mooring_WHOTS.jl`)
@@ -42,8 +43,16 @@ plot(argo,pol=pol)
 
 ```@example ex1
 using OceanRobots, CairoMakie
-cruise=ShipCruise("33RR20160208")
+cruise=read(ShipCruise(),"33RR20160208")
 plot(cruise,variable="salinity",colorrange=(33.5,35.0))
+```
+
+### Ship-Based XBT
+
+```@example ex1
+using OceanRobots, CairoMakie
+xbt=read(XBTtransect(),transect="PX05",cruise="0910")
+fig=plot(xbt,pol=pol)
 ```
 
 ### NOAA Buoys
@@ -79,6 +88,7 @@ using OceanRobots, CairoMakie
 gliders=read(Gliders(),"GulfStream.nc")
 plot(gliders,1,pol=pol)
 ```
+
 ## `read` methods
 
 ```@docs
@@ -89,6 +99,12 @@ read
 
 ```@docs
 plot
+```
+
+## `query` method
+
+```@docs
+OceanRobots.query
 ```
 
 ## Add-Ons
