@@ -85,6 +85,11 @@ XBTtransect()=XBTtransect("unknown",[],tempdir())
 
 Get list of observing platforms.
 
+```
+using OceanRobots
+OceanRobots.query(ShipCruise)
+```
+
 #not treated yet : Gliders, CloudDrift
 """
 function query(x::DataType)
