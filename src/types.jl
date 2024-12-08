@@ -83,7 +83,7 @@ function query(x::DataType)
         table=CCHDO.extract_json_table()
         [t.expocode for t in table]
     elseif x==NOAAbuoy
-        list_stations()
+        NOAA.list_stations()
     elseif x==SurfaceDrifter
         list=GDP.list_files()
         list.ID
