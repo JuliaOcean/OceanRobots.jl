@@ -3,7 +3,37 @@ module CCHDO
 
 import Downloads, Dataverse, NCDatasets, Glob
 import NCDatasets: Dataset
+import DataFrames: DataFrame
 import JSON3, HTTP
+
+import Base: read
+import OceanRobots: ShipCruise
+import Dates: DateTime
+
+"""
+    read(x::ShipCruise, ID="unknown")
+
+Read ShipCruise data.    
+"""
+read(x::ShipCruise,ID="unknown") = begin
+    if ID!=="unknown"
+        path=CCHDO.download(ID)
+        x=ShipCruise(ID,[],path)
+        list1=CCHDO.list_CTD_files(x)	
+		df1=CCHDO.DataFrame("depth"=>Float64[],"time"=>DateTime[],"temperature"=>Float64[],"salinity"=>Float64[])
+		for f in list1
+			ds=CCHDO.NCDatasets.Dataset(f)
+			tim=fill(ds["time"][1],ds.dim["pressure"])
+			append!(df1,CCHDO.DataFrame("depth"=>-ds["pressure"][:],"time"=>tim,
+            "temperature"=>ds["temperature"][:],"salinity"=>ds["salinity"][:]))
+		end
+        push!(x.data,df1)
+        x
+    else
+        @warn "unknown cruise"
+        ShipCruise()
+    end
+end
 
 """
     extract_json_table(url)

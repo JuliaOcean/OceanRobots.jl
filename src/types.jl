@@ -63,21 +63,21 @@ end
 
 OceanSite() = OceanSite(:unknown,NamedTuple(),NamedTuple())
 
-Base.@kwdef struct ShipCruise <: AbstractOceanRobotData
+struct ShipCruise <: AbstractOceanRobotData
     ID::String
     data::Union{Array,Dataset}
     path::String
 end
 
-ShipCruise(ID::String)=begin
-    path=CCHDO.download(ID)
-    ShipCruise(ID,[],path)
-end
+ShipCruise()=ShipCruise("unknown",[],tempdir())
 
-#ArgoFloat
-#Gliders
-#CloudDrift
-#OceanSite
+"""
+    query(x::DataType)
+
+Get list of observing platforms.
+
+#not treated yet : ArgoFloat, Gliders, CloudDrift, OceanSite
+"""
 function query(x::DataType)
     if x==ShipCruise
         table=CCHDO.extract_json_table()

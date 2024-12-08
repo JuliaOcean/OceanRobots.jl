@@ -235,13 +235,8 @@ function plot(x::ShipCruise;
 
 	known_chipod_variables=["chi_up","chi_dn","KT_up","KT_dn"]
 	if variable=="temperature"||variable=="salinity"
-		list1=CCHDO.list_CTD_files(x)		
-		for f in list1
-			ds=CCHDO.NCDatasets.Dataset(f)
-			tim=fill(ds["time"][1],ds.dim["pressure"])
-			depth=-ds["pressure"][:]
-			scatter!(tim,depth,color=ds[variable][:],markersize=markersize,colorrange=colorrange)
-		end
+		df=x.data[1]
+		scatter!(df.time,df.depth,color=df[!,variable],markersize=markersize,colorrange=colorrange)
 	elseif variable in known_chipod_variables
 		plot_chi!(x;variable=variable,apply_log10=apply_log10,
 			colorrange=colorrange,markersize=markersize)
