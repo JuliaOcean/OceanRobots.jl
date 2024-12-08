@@ -17,10 +17,7 @@ macro bind(def, element)
 end
 
 # ╔═╡ e7f710ec-e429-4b93-b687-1e6d4678bbe3
-begin
-	using TableScraper, HTTP, Downloads, CodecZlib, Dates
-	using OceanRobots, CairoMakie, PlutoUI
-end
+using OceanRobots, CairoMakie, PlutoUI
 
 # ╔═╡ 58bffbe1-dd21-4551-95ff-d8727d010c58
 begin
@@ -40,192 +37,44 @@ _Data were made available by the Scripps High Resolution XBT program (www-hrx.uc
 # ╔═╡ 0b9d4b00-2fdc-4a13-aa90-239e16a87469
 TableOfContents()
 
+# ╔═╡ e51b6b37-2448-42eb-b33b-6e9ee6524acd
+@bind transect Select(XBT.list_of_transects)
+
 # ╔═╡ 0b69a4c8-3aba-4086-9deb-377307fc8fcc
 @bind cr NumberField(1:3) #length(cruises))
 
-# ╔═╡ 86c3f772-d5f0-4266-aa52-baaa65b636e9
-md"""## Read data"""
-
 # ╔═╡ 66d64a82-0e69-4089-96e3-645e54e52cfb
-md"""## Download data"""
+md"""## Read data
+
+_Data gets downloaded if needed._
+"""
+
+# ╔═╡ 8821d099-b91b-4677-9425-b94d6d1d38fa
+xbt=read(XBTtransect(),transect=transect,cr=cr)
+
+# ╔═╡ 5c0f77e2-f11d-4f21-9a87-ce4aee0a2f2b
+plot(xbt,pol=pol)
 
 # ╔═╡ c796c837-09a4-41b3-93e8-60e76f9adc16
 md"""## Appendix"""
-
-# ╔═╡ 15da50e2-fe05-4a67-8e35-ab8b257ceb3f
-function get_url_to_download(url1)
-    r = HTTP.get(url1)
-    h = String(r.body)
-    tmp=split(split(h,"../www-hrx/")[2],".gz")[1]
-    "https://www-hrx.ucsd.edu/www-hrx/"*tmp*".gz"
-end
-
-# ╔═╡ d80c5b9f-78c0-46d8-993b-918dca5e75d6
-function download_file_if_needed(url2)
-	path1=joinpath(tempdir(),basename(url2))
-	isfile(path1) ? nothing : Downloads.download(url2,path1)
-
-	path2=path1[1:end-3]*".txt"
-	open(GzipDecompressorStream, path1) do stream
-       write(path2,stream)
-    end
-	
-	path2
-end
-
-# ╔═╡ 3b2eee5f-4f78-46c1-8536-b5173ddb6b7a
-dep = -(5:10:895) # Depth (m), same for all profiles
-
-# ╔═╡ 56610316-4833-4aa5-8603-5f8f45a0e2bb
-function read_data(path2)
-	txt=readlines(path2)
-	
-	nlines=parse(Int,txt[1])
-	T_all=zeros(nlines,length(dep))
-	meta_all=Array{Any}(undef,nlines,4)
-
-	for li in 1:nlines
-		i=2+(li-1)*9
-	
-		lat=parse(Float64,txt[i][1:11])
-		lon=parse(Float64,txt[i][12:19])
-		lon+=(lon>180 ? -360 : 0)
-		day=parse(Float64,txt[i][19:21])
-		mon=parse(Float64,txt[i][23:24])
-		year=parse(Float64,txt[i][26:27])
-		hour=parse(Float64,txt[i][29:30])
-		min=parse(Float64,txt[i][32:33])
-		sec=parse(Float64,txt[i][35:36])
-		profile_number=parse(Float64,txt[i][38:40])
-		year=year+(year > 50 ? 1900 : 2000)
-		date=DateTime(year,mon,day,hour,min,sec)
-
-		meta_all[li,:]=[lon lat date profile_number]
-
-		T=[]
-		for ii in 1:8	
-		push!(T,1/1000*parse.(Int,split(txt[i+ii]))...)
-		end
-		T[T.<0.0].=NaN
-		T_all[li,:].=T
-	end
-
-	T_all,meta_all
-#	lines(T,dep)
-end
-
-# ╔═╡ f659759f-a04f-4b77-9994-975b2174a4d1
-begin
-	list_of_transects=[
-	"PX05", "PX06", "PX30", "PX34", "PX37", "PX37-South", "PX38", "PX40", 
-	"PX06-Loop", "PX08", "PX10", "PX25", "PX44", "PX50", "PX81", 
-	"AX22", "IX15", "IX28"]	
-end
-
-# ╔═╡ e51b6b37-2448-42eb-b33b-6e9ee6524acd
-@bind transect Select(list_of_transects)
-
-# ╔═╡ 20006b02-b382-11ef-0d01-2f3ad65c1d67
-
-"""
-    list_of_cruises(transect)
-
-```
-include("parse_xbt_html.jl")
-
-transect="PX05"
-cruises,years,months,url_base=list_of_cruises(transect)
-
-CR=cruises[1]
-url1=url_base*CR*".html"
-url2=get_url_to_download(url1)
-
-path2=download_file(url2)
-```
-"""
-function list_of_cruises(transect="PX05")
-	PX=transect[3:end]
-	PX=( transect=="PX06-South" ? "37s" : PX )
-	PX=( transect=="PX06-Loop" ? "06" : PX )
-
-	pp="p"
-	pp=( transect[1]=='I' ? "i" : pp )
-	pp=( transect[1]=='A' ? "a" : pp )
-	
-    url0="https://www-hrx.ucsd.edu/$(pp)x$(PX).html"
-    url_base=url0[1:end-5]*"/$(pp)$(PX)"
-    x=scrape_tables(url0)
-    y=x[4].rows
-
-    months=Int[]; years=Int[]; cruises=String[]
-    for row in 3:length(y)
-    z=y[row]
-    a=findall( (z.!==" \n           ").&&(z.!==" ") )
-    if length(a)>1
-        push!(months,Int.(a[2:end].-1)...)
-        push!(years,parse(Int,z[1])*ones(length(a)-1)...)
-        push!(cruises,z[a[2:end]]...)
-    end
-    end
-
-    cruises,years,months,url_base
-end
-
-# ╔═╡ 0781af39-bec9-4e40-a9c1-ff30f4da7bf9
-cruises,years,months,url_base=list_of_cruises(transect)
-
-# ╔═╡ 04795136-bc21-4d84-837b-20d943a49ba3
-begin	
-	CR=cruises[cr]
-	url1=url_base*CR*".html"
-	url2=get_url_to_download(url1)
-	path2=download_file_if_needed(url2)
-end
-
-# ╔═╡ e356501e-10f7-4d70-9cdb-1f087027c3ce
-T_all,meta_all=read_data(path2)
-
-# ╔═╡ 032df07d-519b-4d12-97a5-bbd6a91697a1
-let
-	fig=Figure()
-	
-	ax=Axis(fig[1,1],title=transect*" -- cruise "*CR,ylabel="depth")
-	hm=heatmap!(meta_all[:,3],dep,T_all)
-	Colorbar(fig[1,2],hm)
-
-	ax=Axis(fig[2,1:2],title=transect*" -- cruise "*CR)
-	lines!(pol;color=:black, linewidth = 0.5)
-	scatter!(meta_all[:,1],meta_all[:,2],color=:red)
-	xlims!(-180,180); ylims!(-90,90)
-
-	fig
-end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
-CodecZlib = "944b1d66-785c-5afd-91f1-9de20f533193"
 DataDeps = "124859b0-ceae-595e-8997-d05f6a7a8dfe"
-Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
-Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
-HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 MeshArrays = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
 OceanRobots = "0b51df41-3294-4961-8d23-db645e32016d"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Shapefile = "8e980c4a-a4fe-5da2-b3a7-4b4b0353a2f4"
-TableScraper = "3d876f86-fca9-45cb-9864-7207416dc431"
 
 [compat]
 CairoMakie = "~0.12.16"
-CodecZlib = "~0.7.6"
 DataDeps = "~0.7.13"
-HTTP = "~1.10.12"
 MeshArrays = "~0.3.17"
 OceanRobots = "~0.2.9"
 PlutoUI = "~0.7.60"
 Shapefile = "~0.13.1"
-TableScraper = "~0.1.4"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -234,7 +83,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.11.1"
 manifest_format = "2.0"
-project_hash = "9b46d973d091e9adbe6cc33c15947d846acbff8f"
+project_hash = "e3571c24e17d2c165e9c1cf362c138bc6144d904"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -395,9 +244,9 @@ version = "1.1.1"
 
 [[deps.CairoMakie]]
 deps = ["CRC32c", "Cairo", "Cairo_jll", "Colors", "FileIO", "FreeType", "GeometryBasics", "LinearAlgebra", "Makie", "PrecompileTools"]
-git-tree-sha1 = "c3161fbfe99d9d7ee121cf2017d49966b152857c"
+git-tree-sha1 = "076fca013bc2c73b2038f7d27ea4fa3a624fcd9d"
 uuid = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
-version = "0.12.16"
+version = "0.12.17"
 
 [[deps.Cairo_jll]]
 deps = ["Artifacts", "Bzip2_jll", "CompilerSupportLibraries_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "JLLWrappers", "LZO_jll", "Libdl", "Pixman_jll", "Xorg_libXext_jll", "Xorg_libXrender_jll", "Zlib_jll", "libpng_jll"]
@@ -648,9 +497,9 @@ version = "0.1.11"
 
 [[deps.Expat_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "cc5231d52eb1771251fbd37171dbc408bcc8a1b6"
+git-tree-sha1 = "e51db81749b0777b2147fbe7b783ee79045b8e99"
 uuid = "2e619515-83b5-522b-bb60-26c02a35a201"
-version = "2.6.4+0"
+version = "2.6.4+1"
 
 [[deps.Extents]]
 git-tree-sha1 = "81023caa0021a41712685887db1fc03db26f41f5"
@@ -813,9 +662,9 @@ version = "5.2.2+0"
 
 [[deps.Glib_jll]]
 deps = ["Artifacts", "Gettext_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Libiconv_jll", "Libmount_jll", "PCRE2_jll", "Zlib_jll"]
-git-tree-sha1 = "b36c7e110080ae48fdef61b0c31e6b17ada23b33"
+git-tree-sha1 = "48b5d4c75b2c9078ead62e345966fa51a25c05ad"
 uuid = "7746bdde-850d-59dc-9ae8-88ece973131d"
-version = "2.82.2+0"
+version = "2.82.2+1"
 
 [[deps.Glob]]
 git-tree-sha1 = "97285bbd5230dd766e9ef6749b80fc617126d496"
@@ -858,16 +707,16 @@ uuid = "528830af-5a63-567c-a44a-034ed33b8444"
 version = "0.10.2+0"
 
 [[deps.HDF5_jll]]
-deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LLVMOpenMP_jll", "LazyArtifacts", "LibCURL_jll", "Libdl", "MPICH_jll", "MPIPreferences", "MPItrampoline_jll", "MicrosoftMPI_jll", "OpenMPI_jll", "OpenSSL_jll", "TOML", "Zlib_jll", "libaec_jll"]
-git-tree-sha1 = "38c8874692d48d5440d5752d6c74b0c6b0b60739"
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LazyArtifacts", "LibCURL_jll", "Libdl", "MPICH_jll", "MPIPreferences", "MPItrampoline_jll", "MicrosoftMPI_jll", "OpenMPI_jll", "OpenSSL_jll", "TOML", "Zlib_jll", "libaec_jll"]
+git-tree-sha1 = "82a471768b513dc39e471540fdadc84ff80ff997"
 uuid = "0234f1f7-429e-5d53-9886-15a909be8d59"
-version = "1.14.2+1"
+version = "1.14.3+3"
 
 [[deps.HTTP]]
 deps = ["Base64", "CodecZlib", "ConcurrentUtilities", "Dates", "ExceptionUnwrapping", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "PrecompileTools", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
-git-tree-sha1 = "ae350b8225575cc3ea385d4131c81594f86dfe4f"
+git-tree-sha1 = "6c22309e9a356ac1ebc5c8a217045f9bae6f8d9a"
 uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-version = "1.10.12"
+version = "1.10.13"
 
 [[deps.HarfBuzz_jll]]
 deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "Graphite2_jll", "JLLWrappers", "Libdl", "Libffi_jll"]
@@ -1303,15 +1152,15 @@ version = "0.5.13"
 
 [[deps.Makie]]
 deps = ["Animations", "Base64", "CRC32c", "ColorBrewer", "ColorSchemes", "ColorTypes", "Colors", "Contour", "Dates", "DelaunayTriangulation", "Distributions", "DocStringExtensions", "Downloads", "FFMPEG_jll", "FileIO", "FilePaths", "FixedPointNumbers", "Format", "FreeType", "FreeTypeAbstraction", "GeometryBasics", "GridLayoutBase", "ImageBase", "ImageIO", "InteractiveUtils", "Interpolations", "IntervalSets", "InverseFunctions", "Isoband", "KernelDensity", "LaTeXStrings", "LinearAlgebra", "MacroTools", "MakieCore", "Markdown", "MathTeXEngine", "Observables", "OffsetArrays", "Packing", "PlotUtils", "PolygonOps", "PrecompileTools", "Printf", "REPL", "Random", "RelocatableFolders", "Scratch", "ShaderAbstractions", "Showoff", "SignedDistanceFields", "SparseArrays", "Statistics", "StatsBase", "StatsFuns", "StructArrays", "TriplotBase", "UnicodeFun", "Unitful"]
-git-tree-sha1 = "5e4e0e027642293da251bf35dac408d692ccba8b"
+git-tree-sha1 = "260d6e1ac8abcebd939029e6eedeba4e3870f13a"
 uuid = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-version = "0.21.16"
+version = "0.21.17"
 
 [[deps.MakieCore]]
 deps = ["ColorTypes", "GeometryBasics", "IntervalSets", "Observables"]
-git-tree-sha1 = "ae4dbe0fcf1594ed98594e5f4ee685295a2a6f74"
+git-tree-sha1 = "b774d0563bc332f64d136d50d0420a195d9bdcc6"
 uuid = "20f20a25-4f0e-4fdf-b5d1-57303727442b"
-version = "0.8.10"
+version = "0.8.11"
 
 [[deps.MappedArrays]]
 git-tree-sha1 = "2dab0221fe2b0f2cb6754eaa743cc266339f527e"
@@ -1407,10 +1256,10 @@ uuid = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
 version = "0.4.21"
 
 [[deps.NetCDF_jll]]
-deps = ["Artifacts", "Blosc_jll", "Bzip2_jll", "HDF5_jll", "JLLWrappers", "LibCURL_jll", "Libdl", "OpenMPI_jll", "XML2_jll", "Zlib_jll", "Zstd_jll", "libzip_jll"]
-git-tree-sha1 = "a8af1798e4eb9ff768ce7fdefc0e957097793f15"
+deps = ["Artifacts", "Blosc_jll", "Bzip2_jll", "HDF5_jll", "JLLWrappers", "LazyArtifacts", "LibCURL_jll", "Libdl", "MPICH_jll", "MPIPreferences", "MPItrampoline_jll", "MicrosoftMPI_jll", "OpenMPI_jll", "TOML", "XML2_jll", "Zlib_jll", "Zstd_jll", "libzip_jll"]
+git-tree-sha1 = "4686378c4ae1d1948cfbe46c002a11a4265dcb07"
 uuid = "7243133f-43d8-5620-bbf4-c2c921802cf3"
-version = "400.902.209+0"
+version = "400.902.211+1"
 
 [[deps.Netpbm]]
 deps = ["FileIO", "ImageCore", "ImageMetadata"]
@@ -1428,19 +1277,19 @@ uuid = "510215fc-4207-5dde-b226-833fc4488ee2"
 version = "0.5.5"
 
 [[deps.OceanRobots]]
-deps = ["ArgoData", "CFTime", "CSV", "DataFrames", "Dataverse", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "Interpolations", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "URIs"]
-git-tree-sha1 = "b6ac39404e2dbec4e2c778eb328037251cde8972"
+deps = ["ArgoData", "CFTime", "CSV", "CodecZlib", "DataFrames", "Dataverse", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "Interpolations", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "TableScraper", "URIs"]
+git-tree-sha1 = "d3a9817a842bec9248f63a69ba05a7c4b8636f3e"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
-version = "0.2.9"
+version = "0.2.11"
 weakdeps = ["Makie"]
 
     [deps.OceanRobots.extensions]
     OceanRobotsMakieExt = ["Makie"]
 
 [[deps.OffsetArrays]]
-git-tree-sha1 = "1a27764e945a152f7ca7efa04de513d473e9542e"
+git-tree-sha1 = "39d000d9c33706b8364817d8894fae1548f40295"
 uuid = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
-version = "1.14.1"
+version = "1.14.2"
 weakdeps = ["Adapt"]
 
     [deps.OffsetArrays.extensions]
@@ -1475,10 +1324,10 @@ uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
 version = "0.8.1+2"
 
 [[deps.OpenMPI_jll]]
-deps = ["Artifacts", "CompilerSupportLibraries_jll", "Hwloc_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "MPIPreferences", "TOML", "Zlib_jll"]
-git-tree-sha1 = "2dace87e14256edb1dd0724ab7ba831c779b96bd"
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "MPIPreferences", "TOML"]
+git-tree-sha1 = "e25c1778a98e34219a00455d6e4384e017ea9762"
 uuid = "fe0851c0-eecd-5654-98d4-656369965a5c"
-version = "5.0.6+0"
+version = "4.1.6+0"
 
 [[deps.OpenSSL]]
 deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "OpenSSL_jll", "Sockets"]
@@ -2245,20 +2094,11 @@ version = "3.6.0+0"
 # ╟─0b9d4b00-2fdc-4a13-aa90-239e16a87469
 # ╟─e51b6b37-2448-42eb-b33b-6e9ee6524acd
 # ╟─0b69a4c8-3aba-4086-9deb-377307fc8fcc
-# ╟─0781af39-bec9-4e40-a9c1-ff30f4da7bf9
-# ╟─032df07d-519b-4d12-97a5-bbd6a91697a1
-# ╟─86c3f772-d5f0-4266-aa52-baaa65b636e9
-# ╠═e356501e-10f7-4d70-9cdb-1f087027c3ce
+# ╟─5c0f77e2-f11d-4f21-9a87-ce4aee0a2f2b
 # ╟─66d64a82-0e69-4089-96e3-645e54e52cfb
-# ╠═04795136-bc21-4d84-837b-20d943a49ba3
+# ╠═8821d099-b91b-4677-9425-b94d6d1d38fa
 # ╟─c796c837-09a4-41b3-93e8-60e76f9adc16
 # ╠═e7f710ec-e429-4b93-b687-1e6d4678bbe3
-# ╟─15da50e2-fe05-4a67-8e35-ab8b257ceb3f
-# ╟─d80c5b9f-78c0-46d8-993b-918dca5e75d6
-# ╟─56610316-4833-4aa5-8603-5f8f45a0e2bb
-# ╟─f659759f-a04f-4b77-9994-975b2174a4d1
-# ╟─20006b02-b382-11ef-0d01-2f3ad65c1d67
-# ╟─58bffbe1-dd21-4551-95ff-d8727d010c58
-# ╟─3b2eee5f-4f78-46c1-8536-b5173ddb6b7a
+# ╠═58bffbe1-dd21-4551-95ff-d8727d010c58
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
