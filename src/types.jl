@@ -85,7 +85,7 @@ XBTtransect()=XBTtransect("unknown",[],tempdir())
 
 Get list of observing platforms.
 
-#not treated yet : ArgoFloat, Gliders, CloudDrift, OceanSite
+#not treated yet : Gliders, CloudDrift
 """
 function query(x::DataType)
     if x==ShipCruise
@@ -98,6 +98,11 @@ function query(x::DataType)
         list.ID
     elseif x==XBTtransect
         XBT.list_of_transects
+    elseif x==ArgoFloat
+        list=ArgoData.GDAC.files_list()
+        list.wmo
+    elseif x==OceanSite
+        OceanSites.index()
     else
         warning("unknown data type")
     end
