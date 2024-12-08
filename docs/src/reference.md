@@ -42,8 +42,16 @@ plot(argo,pol=pol)
 
 ```@example ex1
 using OceanRobots, CairoMakie
-cruise=ShipCruise("33RR20160208")
+cruise=read(ShipCruise(),"33RR20160208")
 plot(cruise,variable="salinity",colorrange=(33.5,35.0))
+```
+
+### Ship-Based XBT
+
+```@example ex1
+using OceanRobots, CairoMakie
+xbt=read(XBTtransect(),transect="PX05",cruise="0910")
+fig=plot(xbt)
 ```
 
 ### NOAA Buoys

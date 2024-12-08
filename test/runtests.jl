@@ -116,4 +116,10 @@ using Test
     fig=plot(cruise)
     @test isa(fig,Figure)
 
+    ##
+
+    xbt=read(XBTtransect(),transect="PX05",cruise="0910")
+    fig=plot(xbt)
+    @test isa(fig,Figure)
+
 end

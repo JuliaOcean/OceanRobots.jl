@@ -1065,3 +1065,144 @@ end
 
 ##
 
+module XBT
+
+using TableScraper, HTTP, Downloads, CodecZlib, Dates
+import OceanRobots: XBTtransect
+import Base: read
+
+"""# XBT transect
+
+For more information, [see this page](https://www-hrx.ucsd.edu/index.html).
+
+_Data were made available by the Scripps High Resolution XBT program (www-hrx.ucsd.edu)_
+"""
+
+dep = -(5:10:895) # Depth (m), same for all profiles
+
+list_of_transects=[
+	"PX05", "PX06", "PX30", "PX34", "PX37", "PX37-South", "PX38", "PX40", 
+	"PX06-Loop", "PX08", "PX10", "PX25", "PX44", "PX50", "PX81", 
+	"AX22", "IX15", "IX28"]
+
+function get_url_to_download(url1)
+    r = HTTP.get(url1)
+    h = String(r.body)
+    tmp=split(split(h,"../www-hrx/")[2],".gz")[1]
+    "https://www-hrx.ucsd.edu/www-hrx/"*tmp*".gz"
+end
+
+function download_file_if_needed(url2)
+	path1=joinpath(tempdir(),basename(url2))
+	isfile(path1) ? nothing : Downloads.download(url2,path1)
+
+	path2=path1[1:end-3]*".txt"
+	open(GzipDecompressorStream, path1) do stream
+       write(path2,stream)
+    end
+	
+	path2
+end
+
+function read_data(path2)
+	txt=readlines(path2)
+	
+	nlines=parse(Int,txt[1])
+	T_all=zeros(nlines,length(dep))
+	meta_all=Array{Any}(undef,nlines,4)
+
+	for li in 1:nlines
+		i=2+(li-1)*9
+	
+		lat=parse(Float64,txt[i][1:11])
+		lon=parse(Float64,txt[i][12:19])
+		lon+=(lon>180 ? -360 : 0)
+		day=parse(Float64,txt[i][19:21])
+		mon=parse(Float64,txt[i][23:24])
+		year=parse(Float64,txt[i][26:27])
+		hour=parse(Float64,txt[i][29:30])
+		min=parse(Float64,txt[i][32:33])
+		sec=parse(Float64,txt[i][35:36])
+		profile_number=parse(Float64,txt[i][38:40])
+		year=year+(year > 50 ? 1900 : 2000)
+		date=DateTime(year,mon,day,hour,min,sec)
+
+		meta_all[li,:]=[lon lat date profile_number]
+
+		T=[]
+		for ii in 1:8	
+		push!(T,1/1000*parse.(Int,split(txt[i+ii]))...)
+		end
+		T[T.<0.0].=NaN
+		T_all[li,:].=T
+	end
+
+	T_all,meta_all
+#	lines(T,dep)
+end
+
+"""
+    list_of_cruises(transect)
+
+```
+include("parse_xbt_html.jl")
+
+transect="PX05"
+cruises,years,months,url_base=list_of_cruises(transect)
+
+CR=cruises[1]
+url1=url_base*CR*".html"
+url2=get_url_to_download(url1)
+
+path2=download_file(url2)
+```
+"""
+function list_of_cruises(transect="PX05")
+	PX=transect[3:end]
+	PX=( transect=="PX06-South" ? "37s" : PX )
+	PX=( transect=="PX06-Loop" ? "06" : PX )
+
+	pp="p"
+	pp=( transect[1]=='I' ? "i" : pp )
+	pp=( transect[1]=='A' ? "a" : pp )
+	
+    url0="https://www-hrx.ucsd.edu/$(pp)x$(PX).html"
+    url_base=url0[1:end-5]*"/$(pp)$(PX)"
+    x=scrape_tables(url0)
+    y=x[4].rows
+
+    months=Int[]; years=Int[]; cruises=String[]
+    for row in 3:length(y)
+    z=y[row]
+    a=findall( (z.!==" \n           ").&&(z.!==" ") )
+    if length(a)>1
+        push!(months,Int.(a[2:end].-1)...)
+        push!(years,parse(Int,z[1])*ones(length(a)-1)...)
+        push!(cruises,z[a[2:end]]...)
+    end
+    end
+
+    cruises,years,months,url_base
+end
+
+"""
+    read(x::XBTtransect;transect="PX05",cr=1,cruise="")
+
+```
+using OceanRobots
+read(XBTtransect(),transect="PX05",cruise="0910")
+```
+"""
+function read(x::XBTtransect;transect="PX05",cr=1,cruise="")
+    cruises,years,months,url_base=list_of_cruises(transect)
+    CR=(isempty(cruise) ? cruises[cr] : cruise)
+    url1=url_base*CR*".html"
+    url2=get_url_to_download(url1)
+    path2=download_file_if_needed(url2)
+    T_all,meta_all=read_data(path2)
+    XBTtransect(transect,[T_all,meta_all,CR],path2)
+end
+
+end
+
+##

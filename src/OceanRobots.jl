@@ -10,9 +10,9 @@ include("thredds_servers.jl")
 include("files.jl")
 include("example_GOM.jl")
 
-export GDP, GDP_CloudDrift, NOAA, GliderFiles, ArgoFiles, OceanSites, OceanOPS, CCHDO
+export GDP, GDP_CloudDrift, NOAA, GliderFiles, ArgoFiles, OceanSites, OceanOPS, CCHDO, XBT
 #export THREDDS
 export NOAAbuoy, NOAAbuoy_monthly, ArgoFloat, SurfaceDrifter, Gliders
-export OceanSite, CloudDrift, ShipCruise
+export OceanSite, CloudDrift, ShipCruise, XBTtransect
 
 end # module
