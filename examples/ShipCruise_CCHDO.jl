@@ -35,7 +35,7 @@ CCHDO provides access to high quality, global, ship-based CTD (Conductivity-Temp
 @bind ID Select(["33RR20160208","74EQ20151206","33RO20131223"])
 
 # ╔═╡ f5415f1d-0e98-41e3-a6fb-459580141611
-cruise=ShipCruise(ID)
+cruise=read(ShipCruise(),ID)
 
 # ╔═╡ fa2c9be1-1198-4852-b7b1-623e42f5c871
 begin

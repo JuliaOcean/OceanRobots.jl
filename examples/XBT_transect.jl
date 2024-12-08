@@ -17,9 +17,7 @@ macro bind(def, element)
 end
 
 # ╔═╡ e7f710ec-e429-4b93-b687-1e6d4678bbe3
-begin
-	using OceanRobots, CairoMakie, PlutoUI
-end
+using OceanRobots, CairoMakie, PlutoUI
 
 # ╔═╡ 58bffbe1-dd21-4551-95ff-d8727d010c58
 begin
