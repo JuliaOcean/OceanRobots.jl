@@ -3,6 +3,41 @@ module CCHDO
 
 import Downloads, Dataverse, NCDatasets, Glob
 import NCDatasets: Dataset
+import JSON3, HTTP
+
+"""
+    extract_json_table(url)
+
+```
+using JSON3, HTTP
+
+url="https://cchdo.ucsd.edu/search?q=GO-SHIP"
+url="https://cchdo.ucsd.edu/search?bbox=-75,-60,20,65" #Atlantic
+url="https://cchdo.ucsd.edu/search?dtstart=1999-12-31&dtend=2000-01-31" #one month
+url="https://cchdo.ucsd.edu/search?q=ARS01" # BATS
+url="https://cchdo.ucsd.edu/search?q=PRS02" #HOT
+
+table=extract_json_table(url)
+
+ta=table[1]
+xy1=ta.track.coordinates
+x1=[i[1] for i in xy1]
+y1=[i[2] for i in xy1]  
+
+using GLMakie
+scatter(x1,y1)
+```
+"""
+function extract_json_table(url="https://cchdo.ucsd.edu/search?q=GO-SHIP")
+  tmp=String(HTTP.get(url).body)
+
+  x1=findall("var results =",tmp)[1]
+  x2=findall("]]}}]",tmp)[1]
+  y=maximum(x1)+1:maximum(x2)
+
+  JSON3.read(tmp[y])
+end
+
 
 """
     CCHDO.download(cruise::Union(Symbol,Symbol[]),path=tempdir())

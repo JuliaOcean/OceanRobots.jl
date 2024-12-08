@@ -99,6 +99,9 @@ using Test
 
     ##
 
+    table=CCHDO.extract_json_table()
+    @test isa(table[1].id,Int)
+
     ID="33RR20160208"
     path=CCHDO.download(ID)
     @test ispath(path)
