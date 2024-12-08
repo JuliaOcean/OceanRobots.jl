@@ -73,3 +73,21 @@ ShipCruise(ID::String)=begin
     path=CCHDO.download(ID)
     ShipCruise(ID,[],path)
 end
+
+#ArgoFloat
+#Gliders
+#CloudDrift
+#OceanSite
+function query(x::DataType)
+    if x==ShipCruise
+        table=CCHDO.extract_json_table()
+        [t.expocode for t in table]
+    elseif x==NOAAbuoy
+        list_stations()
+    elseif x==SurfaceDrifter
+        list=GDP.list_files()
+        list.ID
+    else
+        warning("unknown data type")
+    end
+end
