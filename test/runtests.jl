@@ -57,7 +57,7 @@ using Test
 
     ##
 
-    allstations=query(NOAAbuoy)
+    allstations=OceanRobots.query(NOAAbuoy)
     @test isa(allstations,Vector)
 
     metstations=NOAA.list_realtime(ext=:txt)
