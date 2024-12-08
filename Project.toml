@@ -1,12 +1,13 @@
 name = "OceanRobots"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
 authors = ["gaelforget <gforget@mit.edu>"]
-version = "0.2.10"
+version = "0.2.11"
 
 [deps]
 ArgoData = "9eb831cf-c491-48dc-bed4-6aca718df73c"
 CFTime = "179af706-886a-5703-950a-314cd64e0468"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+CodecZlib = "944b1d66-785c-5afd-91f1-9de20f533193"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Dataverse = "9c0b9be8-e31e-490f-90fe-77697562404d"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
@@ -20,6 +21,7 @@ LightXML = "9c8b4983-aa76-5018-a973-4c85ecc9e179"
 NCDatasets = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+TableScraper = "3d876f86-fca9-45cb-9864-7207416dc431"
 URIs = "5c2747f8-b7ea-4ff2-ba2e-563bfd36b1d4"
 
 [weakdeps]
@@ -32,6 +34,7 @@ OceanRobotsMakieExt = ["Makie"]
 ArgoData = "0.1"
 CFTime = "0.1"
 CSV = "0.10"
+CodecZlib = "0.7"
 DataFrames = "1"
 Dataverse = "0.2"
 Downloads = "1"
@@ -44,5 +47,6 @@ LightXML = "0.9"
 Makie = "0.21"
 NCDatasets = "0.12, 0.13, 0.14"
 Statistics = "1"
+TableScraper = "0.1"
 URIs = "1"
 julia = "^1.9"

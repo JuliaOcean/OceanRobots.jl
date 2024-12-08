@@ -1,7 +1,7 @@
 module OceanRobotsMakieExt
 
 using OceanRobots, Makie
-import OceanRobots: Dates, CCHDO
+import OceanRobots: Dates
 import Makie: plot
 
 ## Argo
@@ -235,13 +235,8 @@ function plot(x::ShipCruise;
 
 	known_chipod_variables=["chi_up","chi_dn","KT_up","KT_dn"]
 	if variable=="temperature"||variable=="salinity"
-		list1=CCHDO.list_CTD_files(x)		
-		for f in list1
-			ds=CCHDO.NCDatasets.Dataset(f)
-			tim=fill(ds["time"][1],ds.dim["pressure"])
-			depth=-ds["pressure"][:]
-			scatter!(tim,depth,color=ds[variable][:],markersize=markersize,colorrange=colorrange)
-		end
+		df=x.data[1]
+		scatter!(df.time,df.depth,color=df[!,variable],markersize=markersize,colorrange=colorrange)
 	elseif variable in known_chipod_variables
 		plot_chi!(x;variable=variable,apply_log10=apply_log10,
 			colorrange=colorrange,markersize=markersize)
@@ -335,6 +330,40 @@ plot(x::Gliders,ID;size=(900,600),pol=Any[]) = begin
 end
 
 ## OceanOPS
+
+## XBT
+
+"""
+    plot(x::XBTtransect;pol=Any[])	
+
+Default plot for XBT data.
+	
+```
+using OceanRobots, CairoMakie
+xbt=read(XBTtransect(),transect="PX05",cruise="0910")
+plot(xbt)
+```
+"""
+function plot(x::XBTtransect;pol=Any[])	
+	transect=x.ID
+	T_all=x.data[1]
+	meta_all=x.data[2]
+	CR=x.data[3]
+	dep=XBT.dep
+
+	fig=Figure()
+	
+	ax=Axis(fig[1,1],title=transect*" -- cruise "*CR,ylabel="depth")
+	hm=heatmap!(meta_all[:,3],dep,T_all)
+	Colorbar(fig[1,2],hm)
+
+	ax=Axis(fig[2,1:2],title=transect*" -- cruise "*CR)
+	isempty(pol) ? nothing : lines!(pol;color=:black, linewidth = 0.5)
+	scatter!(meta_all[:,1],meta_all[:,2],color=:red)
+	xlims!(-180,180); ylims!(-90,90)
+
+	fig
+end
 
 end
 

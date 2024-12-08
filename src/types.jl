@@ -63,13 +63,42 @@ end
 
 OceanSite() = OceanSite(:unknown,NamedTuple(),NamedTuple())
 
-Base.@kwdef struct ShipCruise <: AbstractOceanRobotData
+struct ShipCruise <: AbstractOceanRobotData
     ID::String
     data::Union{Array,Dataset}
     path::String
 end
 
-ShipCruise(ID::String)=begin
-    path=CCHDO.download(ID)
-    ShipCruise(ID,[],path)
+ShipCruise()=ShipCruise("unknown",[],tempdir())
+
+struct XBTtransect <: AbstractOceanRobotData
+    ID::String
+    data::Union{Array,Dataset}
+    path::String
+end
+
+XBTtransect()=XBTtransect("unknown",[],tempdir())
+
+
+"""
+    query(x::DataType)
+
+Get list of observing platforms.
+
+#not treated yet : ArgoFloat, Gliders, CloudDrift, OceanSite
+"""
+function query(x::DataType)
+    if x==ShipCruise
+        table=CCHDO.extract_json_table()
+        [t.expocode for t in table]
+    elseif x==NOAAbuoy
+        NOAA.list_stations()
+    elseif x==SurfaceDrifter
+        list=GDP.list_files()
+        list.ID
+    elseif x==XBTtransect
+        XBT.list_of_transects
+    else
+        warning("unknown data type")
+    end
 end
