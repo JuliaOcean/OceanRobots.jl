@@ -96,6 +96,8 @@ function query(x::DataType)
     elseif x==SurfaceDrifter
         list=GDP.list_files()
         list.ID
+    elseif x==XBTtransect
+        XBT.list_of_transects
     else
         warning("unknown data type")
     end
