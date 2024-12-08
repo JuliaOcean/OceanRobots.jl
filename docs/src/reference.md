@@ -88,6 +88,7 @@ using OceanRobots, CairoMakie
 gliders=read(Gliders(),"GulfStream.nc")
 plot(gliders,1,pol=pol)
 ```
+
 ## `read` methods
 
 ```@docs
@@ -98,6 +99,12 @@ read
 
 ```@docs
 plot
+```
+
+## `query` method
+
+```@docs
+OceanRobots.query
 ```
 
 ## Add-Ons
