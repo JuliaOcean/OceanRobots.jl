@@ -108,6 +108,11 @@ plot
 OceanRobots.query
 ```
 
+```@example ex1
+using OceanRobots
+OceanRobots.query(XBTtransect,"AOML")
+```
+
 ## Add-Ons
 
 !!! note
