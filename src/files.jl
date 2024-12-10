@@ -1079,7 +1079,7 @@ _Data were made available by the Scripps High Resolution XBT program (www-hrx.uc
 """
 
 """
-    list_transects(; group=:AOML)
+    list_transects(; group="AOML")
 
 known groups : AOML, SIO    
 
@@ -1089,10 +1089,10 @@ OceanRobots.list_transects(:SIO)
 ```
 read_NOAA_csv(path)
 """
-function list_transects(group=:SIO)
-    if group==:AOML
+function list_transects(group="SIO")
+    if group=="AOML"
         list_of_transects_AOML
-    elseif group==:SIO
+    elseif group=="SIO"
         list_of_transects_SIO
     else
         @warn "unknown group"
@@ -1220,17 +1220,29 @@ end
 
 ```
 using OceanRobots
-read(XBTtransect(),transect="PX05",cruise="0910")
+read(XBTtransect(),source="SIO",transect="PX05",cruise="0910")
 ```
 """
-function read(x::XBTtransect;transect="PX05",cr=1,cruise="")
-    cruises=list_of_cruises(transect)
-    CR=(isempty(cruise) ? cr : findall(cruises.cruise.=="0910")[1])
-    url1=cruises.url[CR]
-    url2=get_url_to_download(url1)
-    path2=download_file_if_needed(url2)
-    T_all,meta_all=read_data(path2)
-    XBTtransect(transect,[T_all,meta_all,cruises.cruise[CR]],path2)
+function read(x::XBTtransect;source="SIO",transect="PX05",cr=1,cruise="")
+    if source=="SIO"
+        cruises=list_of_cruises(transect)
+        CR=(isempty(cruise) ? cr : findall(cruises.cruise.=="0910")[1])
+        url1=cruises.url[CR]
+        url2=get_url_to_download(url1)
+        path2=download_file_if_needed(url2)
+        T_all,meta_all=read_data(path2)
+        XBTtransect(source,transect,[T_all,meta_all,cruises.cruise[CR]],path2)
+    elseif source=="AOML"
+        list1=XBT.list_files_on_server(transect)
+#       list2=XBT.get_url_to_transect(ax)
+        CR=(isempty(cruise) ? cr : findall(list1.==cruise)[1])
+        files=XBT.download_file_if_needed_AOML(transect,list1[CR])
+        path=dirname(files[1])
+        (data,meta)=XBT.read_NOAA_XBT(path)
+        XBTtransect(source,string(transect),[data,meta,list1[CR]],path)
+    else
+        @warn "unknown source"
+    end
 end
 
 ### AOML transects
@@ -1261,15 +1273,28 @@ function read_NOAA_XBT(path; silencewarnings=true)
   for ii in 1:length(list)
     fil=list[ii]
     #println(fil)
-    append!(meta,CSV.read(fil,DataFrame,header=1,limit=1,delim=' ',ignorerepeated=true, silencewarnings=silencewarnings))
+    tmp1=CSV.read(fil,DataFrame,header=1,limit=1,delim=' ',ignorerepeated=true, silencewarnings=silencewarnings)
+    #
+    tmp2=tmp1[1,5]
+    t=(size(tmp1,2)==7 ? tmp2*"200"*string(tmp1[1,6]) : tmp2[1:end-3]*"19"*tmp2[end-1:end] )
+    d=Date(t,"mm/dd/yyyy")
+    h=div(tmp1[1,end],100)
+    m=rem(tmp1[1,end],100)
+    t=DateTime(d,Time(h,m,0))
+    #
+    append!(meta,DataFrame("lon"=>tmp1.long,"lat"=>tmp1.lat,"time"=>t,"cast"=>tmp1.Cast))
     d=CSV.read(fil,DataFrame,header=11,skipto=13,delim=' ',ignorerepeated=true, silencewarnings=silencewarnings)
-    d.Cast.=meta.Cast[end]
+    d.lon.=meta.lon[end]
+    d.lat.=meta.lat[end]
+    d.time.=meta.time[end]
+    d.cast.=meta.cast[end]
     append!(data,d)
   end
   (data,meta)
 end
 
-function get_url_to_transect(ax=8)
+function get_url_to_transect(transect="AX08")
+    ax=parse(Int,transect[3:end])
     url1="https://www.aoml.noaa.gov/phod/hdenxbt/ax_home.php?ax="*string(ax)
     r = HTTP.get(url1)
     h = String(r.body)
@@ -1281,7 +1306,8 @@ function get_url_to_transect(ax=8)
 #    tmp=split(split(h,"../www-hrx/")[2],".gz")[1]
 end 
 
-function list_files_on_server(ax=8)
+function list_files_on_server(transect="AX08")
+    ax=parse(Int,transect[3:end])
     url1="https://www.aoml.noaa.gov/phod/hdenxbt/ax"*string(ax)*"/"
     r = HTTP.get(url1)
     h = String(r.body)
@@ -1298,23 +1324,24 @@ end
 
 
 """
-    XBT.download_file_if_needed_AOML(ax=8,file="ax80102_qc.tgz")
+    XBT.download_file_if_needed_AOML(transect="AX08",file="ax80102_qc.tgz")
 
 ```
 using OceanRobots
 
-list=XBT.list_transects(:AOML)
+list=XBT.list_transects("AOML")
 
-ax=8
-list1=XBT.list_files_on_server(ax)
-list2=XBT.get_url_to_transect(ax)
+transect="AX08"
+list1=XBT.list_files_on_server(transect)
+list2=XBT.get_url_to_transect(transect)
 
-files=XBT.download_file_if_needed_AOML(ax,"ax80102_qc.tgz")
+files=XBT.download_file_if_needed_AOML(transect,"ax80102_qc.tgz")
 path=dirname(files[1])
 (data,meta)=XBT.read_NOAA_XBT(path)
 ```
 """
-function download_file_if_needed_AOML(ax=8,file="ax80102_qc.tgz")
+function download_file_if_needed_AOML(transect="AX08",file="ax80102_qc.tgz")
+    ax=parse(Int,transect[3:end])
     url1="https://www.aoml.noaa.gov/phod/hdenxbt/ax"*string(ax)*"/"*file
 	path1=joinpath(tempdir(),file)
 	isfile(path1) ? nothing : Downloads.download(url1,path1)

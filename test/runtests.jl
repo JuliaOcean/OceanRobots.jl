@@ -118,24 +118,20 @@ using Test
 
     ##
 
-    list=OceanRobots.query(XBTtransect,:SIO)
+    list=OceanRobots.query(XBTtransect,"SIO")
     cruises=XBT.list_of_cruises("PX05")
     
-    xbt=read(XBTtransect(),transect="PX05",cruise="0910")
+    xbt=read(XBTtransect(),source="SIO",transect="PX05",cruise="0910")
     fig=plot(xbt)
     @test isa(fig,Figure)
 
     ##
 
-    list=OceanRobots.query(XBTtransect,:AOML)
+    list=OceanRobots.query(XBTtransect,"AOML")
+    list1=XBT.list_files_on_server("AX08")
+    list2=XBT.get_url_to_transect("AX08")
 
-    ax=8
-    list1=XBT.list_files_on_server(ax)
-    list2=XBT.get_url_to_transect(ax)
-
-    files=XBT.download_file_if_needed_AOML(ax,"ax80102_qc.tgz")
-    path=dirname(files[1])
-    (data,meta)=XBT.read_NOAA_XBT(path)
-
-    @test in("Cast",names(data))
+    xbt=read(XBTtransect(),source="AOML",transect="AX08",cr=1)
+    fig=plot(xbt)
+    @test isa(fig,Figure)
 end

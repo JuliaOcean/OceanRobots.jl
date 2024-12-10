@@ -345,6 +345,17 @@ plot(xbt)
 ```
 """
 function plot(x::XBTtransect;pol=Any[])	
+	if x.source=="AOML"
+        plot_XBT_AOML(x,pol=pol)
+    elseif x.source=="SIO"
+        plot_XBT_SIO(x,pol=pol)
+    else
+        @warn "unknown source"
+        Figure()
+    end
+end
+
+function plot_XBT_SIO(x::XBTtransect;pol=Any[])	
 	transect=x.ID
 	T_all=x.data[1]
 	meta_all=x.data[2]
@@ -360,6 +371,26 @@ function plot(x::XBTtransect;pol=Any[])
 	ax=Axis(fig[2,1:2],title=transect*" -- cruise "*CR)
 	isempty(pol) ? nothing : lines!(pol;color=:black, linewidth = 0.5)
 	scatter!(meta_all[:,1],meta_all[:,2],color=:red)
+	xlims!(-180,180); ylims!(-90,90)
+
+	fig
+end
+
+function plot_XBT_AOML(x::XBTtransect;pol=Any[])	
+	transect=x.ID
+	d=x.data[1]
+	m=x.data[2]
+	CR=x.data[3]
+	dep=XBT.dep
+
+	fig=Figure()
+	ax=Axis(fig[1,1],title=transect*" -- cruise "*CR,ylabel="depth")
+	hm=scatter!(d.time,-d.de,color=d.th)
+	Colorbar(fig[1,2],hm)
+
+	ax=Axis(fig[2,1:2],title=transect*" -- cruise "*CR)
+	isempty(pol) ? nothing : lines!(pol;color=:black, linewidth = 0.5)
+	scatter!(m.lon,m.lat,color=:red)
 	xlims!(-180,180); ylims!(-90,90)
 
 	fig

@@ -72,12 +72,13 @@ end
 ShipCruise()=ShipCruise("unknown",[],tempdir())
 
 struct XBTtransect <: AbstractOceanRobotData
+    source::String
     ID::String
     data::Union{Array,Dataset}
     path::String
 end
 
-XBTtransect()=XBTtransect("unknown",[],tempdir())
+XBTtransect()=XBTtransect("unknown","unknown",[],tempdir())
 
 
 """
