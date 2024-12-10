@@ -29,16 +29,25 @@ end
 # ╔═╡ 7e8b02b8-546e-46ca-989c-a29961c11730
 md"""# XBT transect
 
-For more information, [see this page](https://www-hrx.ucsd.edu/index.html).
+For more information, see [this page](https://www-hrx.ucsd.edu/index.html) and [this page](https://www.aoml.noaa.gov/phod/hdenxbt/index.php).
 
-_Data were made available by the Scripps High Resolution XBT program (www-hrx.ucsd.edu)_
+### Acknowledgments
+
+- Scripps : _Data were made available by the Scripps High Resolution XBT program (www-hrx.ucsd.edu)_
+- NOAA : _The XBT data are made freely available on the Atlantic Oceanographic and Meteorological Laboratory and are funded by the NOAA Office of Climate Observations._
 """
 
 # ╔═╡ 0b9d4b00-2fdc-4a13-aa90-239e16a87469
 TableOfContents()
 
+# ╔═╡ 057ef2f7-fc21-494f-acc8-33befb9914f1
+@bind source Select(["SIO","AOML"])
+
 # ╔═╡ e51b6b37-2448-42eb-b33b-6e9ee6524acd
-@bind transect Select(XBT.list_of_transects)
+begin
+	list1=XBT.list_transects(source)
+	@bind transect Select(list1)
+end
 
 # ╔═╡ 0b69a4c8-3aba-4086-9deb-377307fc8fcc
 @bind cr NumberField(1:3) #length(cruises))
@@ -50,7 +59,7 @@ _Data gets downloaded if needed._
 """
 
 # ╔═╡ 8821d099-b91b-4677-9425-b94d6d1d38fa
-xbt=read(XBTtransect(),transect=transect,cr=cr)
+xbt=read(XBTtransect(),source=source,transect=transect,cr=cr)
 
 # ╔═╡ 5c0f77e2-f11d-4f21-9a87-ce4aee0a2f2b
 plot(xbt,pol=pol)
@@ -581,9 +590,9 @@ version = "0.8.5"
 
 [[deps.Fontconfig_jll]]
 deps = ["Artifacts", "Bzip2_jll", "Expat_jll", "FreeType2_jll", "JLLWrappers", "Libdl", "Libuuid_jll", "Zlib_jll"]
-git-tree-sha1 = "db16beca600632c95fc8aca29890d83788dd8b23"
+git-tree-sha1 = "21fac3c77d7b5a9fc03b0ec503aa1a6392c34d2b"
 uuid = "a3f928ae-7b40-5064-980b-68af3947d34b"
-version = "2.13.96+0"
+version = "2.15.0+0"
 
 [[deps.Format]]
 git-tree-sha1 = "9c68794ef81b08086aeb32eeaf33531668d5f5fc"
@@ -720,9 +729,9 @@ version = "1.10.13"
 
 [[deps.HarfBuzz_jll]]
 deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "Graphite2_jll", "JLLWrappers", "Libdl", "Libffi_jll"]
-git-tree-sha1 = "401e4f3f30f43af2c8478fc008da50096ea5240f"
+git-tree-sha1 = "55c53be97790242c29031e5cd45e8ac296dadda3"
 uuid = "2e76f6c2-a576-52d4-95c1-20adfe4de566"
-version = "8.3.1+0"
+version = "8.5.0+0"
 
 [[deps.Hwloc_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -1278,9 +1287,9 @@ version = "0.5.5"
 
 [[deps.OceanRobots]]
 deps = ["ArgoData", "CFTime", "CSV", "CodecZlib", "DataFrames", "Dataverse", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "Interpolations", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "TableScraper", "URIs"]
-git-tree-sha1 = "d3a9817a842bec9248f63a69ba05a7c4b8636f3e"
+git-tree-sha1 = "e4f493bc6f8ffc10e64021044aca8476267445b1"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
-version = "0.2.11"
+version = "0.2.13"
 weakdeps = ["Makie"]
 
     [deps.OceanRobots.extensions]
@@ -2092,6 +2101,7 @@ version = "3.6.0+0"
 # ╔═╡ Cell order:
 # ╟─7e8b02b8-546e-46ca-989c-a29961c11730
 # ╟─0b9d4b00-2fdc-4a13-aa90-239e16a87469
+# ╟─057ef2f7-fc21-494f-acc8-33befb9914f1
 # ╟─e51b6b37-2448-42eb-b33b-6e9ee6524acd
 # ╟─0b69a4c8-3aba-4086-9deb-377307fc8fcc
 # ╟─5c0f77e2-f11d-4f21-9a87-ce4aee0a2f2b
