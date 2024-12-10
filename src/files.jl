@@ -1079,15 +1079,14 @@ _Data were made available by the Scripps High Resolution XBT program (www-hrx.uc
 """
 
 """
-    list_transects(; group="AOML")
+    list_transects(; group="SIO")
 
 known groups : AOML, SIO    
 
 ```
 using OceanRobots
-OceanRobots.list_transects(:SIO)
+OceanRobots.list_transects("SIO")
 ```
-read_NOAA_csv(path)
 """
 function list_transects(group="SIO")
     if group=="AOML"

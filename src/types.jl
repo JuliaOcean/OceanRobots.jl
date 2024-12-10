@@ -89,6 +89,7 @@ Get list of observing platforms.
 ```
 using OceanRobots
 OceanRobots.query(ShipCruise)
+OceanRobots.query(XBTtransect,"AOML")
 ```
 
 #not treated yet : Gliders, CloudDrift
