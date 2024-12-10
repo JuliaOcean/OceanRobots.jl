@@ -1067,7 +1067,7 @@ end
 
 module XBT
 
-using TableScraper, HTTP, Downloads, CodecZlib, Dates
+using TableScraper, HTTP, Downloads, CodecZlib, Dates, Glob, DataFrames, CSV, Dataverse
 import OceanRobots: XBTtransect
 import Base: read
 
@@ -1078,12 +1078,42 @@ For more information, [see this page](https://www-hrx.ucsd.edu/index.html).
 _Data were made available by the Scripps High Resolution XBT program (www-hrx.ucsd.edu)_
 """
 
-dep = -(5:10:895) # Depth (m), same for all profiles
+"""
+    list_transects(; group="AOML")
 
-list_of_transects=[
+known groups : AOML, SIO    
+
+```
+using OceanRobots
+OceanRobots.list_transects(:SIO)
+```
+read_NOAA_csv(path)
+"""
+function list_transects(group="SIO")
+    if group=="AOML"
+        list_of_transects_AOML
+    elseif group=="SIO"
+        list_of_transects_SIO
+    else
+        @warn "unknown group"
+        []
+    end
+end
+
+list_of_transects_SIO=[
 	"PX05", "PX06", "PX30", "PX34", "PX37", "PX37-South", "PX38", "PX40", 
 	"PX06-Loop", "PX08", "PX10", "PX25", "PX44", "PX50", "PX81", 
 	"AX22", "IX15", "IX28"]
+
+list_of_transects=list_of_transects_SIO #alias, deprecated
+
+list_of_transects_AOML=[
+    "AX01","AX02","AX04","AX07","AX08","AX10","AX18","AX20","AX25","AX32","AX90","AX97",
+    "AXCOAST","AXWBTS","MX01","MX02","MX04"]
+    
+### SIO transects
+
+dep = -(5:10:895) # Depth (m), same for all profiles
 
 function get_url_to_download(url1)
     r = HTTP.get(url1)
@@ -1182,7 +1212,7 @@ function list_of_cruises(transect="PX05")
     end
     end
 
-    cruises,years,months,url_base
+    DataFrame("cruise" => cruises, "year" => years, "month" => months, "url" => .*(.*(url_base,cruises),".html"))
 end
 
 """
@@ -1190,17 +1220,135 @@ end
 
 ```
 using OceanRobots
-read(XBTtransect(),transect="PX05",cruise="0910")
+read(XBTtransect(),source="SIO",transect="PX05",cruise="0910")
 ```
 """
-function read(x::XBTtransect;transect="PX05",cr=1,cruise="")
-    cruises,years,months,url_base=list_of_cruises(transect)
-    CR=(isempty(cruise) ? cruises[cr] : cruise)
-    url1=url_base*CR*".html"
-    url2=get_url_to_download(url1)
-    path2=download_file_if_needed(url2)
-    T_all,meta_all=read_data(path2)
-    XBTtransect(transect,[T_all,meta_all,CR],path2)
+function read(x::XBTtransect;source="SIO",transect="PX05",cr=1,cruise="")
+    if source=="SIO"
+        cruises=list_of_cruises(transect)
+        CR=(isempty(cruise) ? cr : findall(cruises.cruise.=="0910")[1])
+        url1=cruises.url[CR]
+        url2=get_url_to_download(url1)
+        path2=download_file_if_needed(url2)
+        T_all,meta_all=read_data(path2)
+        XBTtransect(source,transect,[T_all,meta_all,cruises.cruise[CR]],path2)
+    elseif source=="AOML"
+        list1=XBT.list_files_on_server(transect)
+#       list2=XBT.get_url_to_transect(ax)
+        CR=(isempty(cruise) ? cr : findall(list1.==cruise)[1])
+        files=XBT.download_file_if_needed_AOML(transect,list1[CR])
+        path=dirname(files[1])
+        (data,meta)=XBT.read_NOAA_XBT(path)
+        XBTtransect(source,string(transect),[data,meta,list1[CR]],path)
+    else
+        @warn "unknown source"
+    end
+end
+
+### AOML transects
+
+"""
+    read_NOAA_XBT(path)
+
+```
+using OceanRobots
+files=XBT.download_file_if_needed_AOML(8,"ax80102_qc.tgz")
+(data,meta)=XBT.read_NOAA_XBT(dirname(files[1]))
+```
+
+List of variables:
+
+- "te" is for in situ temperature
+- "th" is for potential temperature
+- “sa” for salinity (climatology from WOA)
+- “ht” for dynamic height reference to sea surface
+- “de” for depth
+- “ox” for oxygen
+- “Cast” for oxygen
+"""
+function read_NOAA_XBT(path; silencewarnings=true)
+  list=glob("*.???",path)
+  data=DataFrame()
+  meta=DataFrame()
+  for ii in 1:length(list)
+    fil=list[ii]
+    #println(fil)
+    tmp1=CSV.read(fil,DataFrame,header=1,limit=1,delim=' ',ignorerepeated=true, silencewarnings=silencewarnings)
+    #
+    tmp2=tmp1[1,5]
+    t=(size(tmp1,2)==7 ? tmp2*"200"*string(tmp1[1,6]) : tmp2[1:end-3]*"19"*tmp2[end-1:end] )
+    d=Date(t,"mm/dd/yyyy")
+    h=div(tmp1[1,end],100)
+    m=rem(tmp1[1,end],100)
+    t=DateTime(d,Time(h,m,0))
+    #
+    append!(meta,DataFrame("lon"=>tmp1.long,"lat"=>tmp1.lat,"time"=>t,"cast"=>tmp1.Cast))
+    d=CSV.read(fil,DataFrame,header=11,skipto=13,delim=' ',ignorerepeated=true, silencewarnings=silencewarnings)
+    d.lon.=meta.lon[end]
+    d.lat.=meta.lat[end]
+    d.time.=meta.time[end]
+    d.cast.=meta.cast[end]
+    append!(data,d)
+  end
+  (data,meta)
+end
+
+function get_url_to_transect(transect="AX08")
+    ax=parse(Int,transect[3:end])
+    url1="https://www.aoml.noaa.gov/phod/hdenxbt/ax_home.php?ax="*string(ax)
+    r = HTTP.get(url1)
+    h = String(r.body)
+    txt0="<select name=\"cnum\">"
+    txt1="</select></p><br><p>"
+    h1=split(split(h,txt0)[2],txt1)[1]
+    h2=split(h1,"value=")[2:end]
+    [split(split(i,">")[2]," \n")[1] for i in h2]
+#    tmp=split(split(h,"../www-hrx/")[2],".gz")[1]
+end 
+
+function list_files_on_server(transect="AX08")
+    ax=parse(Int,transect[3:end])
+    url1="https://www.aoml.noaa.gov/phod/hdenxbt/ax"*string(ax)*"/"
+    r = HTTP.get(url1)
+    h = String(r.body)
+    #in the html look for "ax*_qc.tgz" etc:
+    txt0="Parent Directory</a></li>\n"
+    txt1="</ul>"
+    h1=split(split(h,txt0)[2],txt1)[1]
+    txt2="<li><a href=\""
+    h2=split(h1,txt2)
+    h2=h2[findall( (!isempty).(h2)  )]
+    h3=[split(i,"\">")[1] for i in h2]
+    h3[findall(occursin.("_qc.tgz",h3).||occursin.("_qc_2.tgz",h3).||occursin.("_qc_3.tgz",h3))]
+end 
+
+
+"""
+    XBT.download_file_if_needed_AOML(transect="AX08",file="ax80102_qc.tgz")
+
+```
+using OceanRobots
+
+list=XBT.list_transects("AOML")
+
+transect="AX08"
+list1=XBT.list_files_on_server(transect)
+list2=XBT.get_url_to_transect(transect)
+
+files=XBT.download_file_if_needed_AOML(transect,"ax80102_qc.tgz")
+path=dirname(files[1])
+(data,meta)=XBT.read_NOAA_XBT(path)
+```
+"""
+function download_file_if_needed_AOML(transect="AX08",file="ax80102_qc.tgz")
+    ax=parse(Int,transect[3:end])
+    url1="https://www.aoml.noaa.gov/phod/hdenxbt/ax"*string(ax)*"/"*file
+	path1=joinpath(tempdir(),file)
+	isfile(path1) ? nothing : Downloads.download(url1,path1)
+    tmp_path=Dataverse.untargz(path1)
+    p=joinpath(tmp_path,"m1","data","xbt","aoml","nodc","ax"*string(ax))
+	p=joinpath(p,readdir(p)[1])
+    glob("*.???",p)
 end
 
 end

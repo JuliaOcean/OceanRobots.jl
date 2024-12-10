@@ -51,7 +51,8 @@ plot(cruise,variable="salinity",colorrange=(33.5,35.0))
 
 ```@example ex1
 using OceanRobots, CairoMakie
-xbt=read(XBTtransect(),transect="PX05",cruise="0910")
+#xbt=read(XBTtransect(),source="SIO",transect="PX05",cruise="0910")
+xbt=read(XBTtransect(),source="AOML",transect="AX08",cr=1)
 fig=plot(xbt,pol=pol)
 ```
 

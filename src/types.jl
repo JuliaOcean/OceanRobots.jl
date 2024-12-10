@@ -72,12 +72,13 @@ end
 ShipCruise()=ShipCruise("unknown",[],tempdir())
 
 struct XBTtransect <: AbstractOceanRobotData
+    source::String
     ID::String
     data::Union{Array,Dataset}
     path::String
 end
 
-XBTtransect()=XBTtransect("unknown",[],tempdir())
+XBTtransect()=XBTtransect("unknown","unknown",[],tempdir())
 
 
 """
@@ -92,7 +93,7 @@ OceanRobots.query(ShipCruise)
 
 #not treated yet : Gliders, CloudDrift
 """
-function query(x::DataType)
+function query(x::DataType,args...;kwargs...)
     if x==ShipCruise
         table=CCHDO.extract_json_table()
         [t.expocode for t in table]
@@ -102,7 +103,7 @@ function query(x::DataType)
         list=GDP.list_files()
         list.ID
     elseif x==XBTtransect
-        XBT.list_of_transects
+        XBT.list_transects(args...;kwargs...)
     elseif x==ArgoFloat
         list=ArgoData.GDAC.files_list()
         list.wmo
