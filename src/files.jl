@@ -1234,7 +1234,7 @@ function read(x::XBTtransect;source="SIO",transect="PX05",cr=1,cruise="")
         XBTtransect(source,transect,[T_all,meta_all,cruises.cruise[CR]],path2)
     elseif source=="AOML"
         list1=XBT.list_files_on_server(transect)
-#       list2=XBT.get_url_to_transect(ax)
+#       list2=XBT.get_url_to_transect(transect)
         CR=(isempty(cruise) ? cr : findall(list1.==cruise)[1])
         files=XBT.download_file_if_needed_AOML(transect,list1[CR])
         path=dirname(files[1])
@@ -1272,11 +1272,16 @@ function read_NOAA_XBT(path; silencewarnings=true)
   meta=DataFrame()
   for ii in 1:length(list)
     fil=list[ii]
-    #println(fil)
     tmp1=CSV.read(fil,DataFrame,header=1,limit=1,delim=' ',ignorerepeated=true, silencewarnings=silencewarnings)
     #
     tmp2=tmp1[1,5]
-    t=(size(tmp1,2)==7 ? tmp2*"200"*string(tmp1[1,6]) : tmp2[1:end-3]*"19"*tmp2[end-1:end] )
+    t=(if size(tmp1,2)==7
+        tmp2*"200"*string(tmp1[1,6])
+    else
+        tmp2a=tmp2[end-1:end]
+        tmp2b=parse(Int,tmp2a)
+        tmp2[1:end-2]*(tmp2b<50 ? "19"*tmp2a : "20"*tmp2a)
+    end)
     d=Date(t,"mm/dd/yyyy")
     h=div(tmp1[1,end],100)
     m=rem(tmp1[1,end],100)
@@ -1294,7 +1299,7 @@ function read_NOAA_XBT(path; silencewarnings=true)
 end
 
 function get_url_to_transect(transect="AX08")
-    ax=parse(Int,transect[3:end])
+    ax=name_on_API(transect)
     url1="https://www.aoml.noaa.gov/phod/hdenxbt/ax_home.php?ax="*string(ax)
     r = HTTP.get(url1)
     h = String(r.body)
@@ -1303,12 +1308,11 @@ function get_url_to_transect(transect="AX08")
     h1=split(split(h,txt0)[2],txt1)[1]
     h2=split(h1,"value=")[2:end]
     [split(split(i,">")[2]," \n")[1] for i in h2]
-#    tmp=split(split(h,"../www-hrx/")[2],".gz")[1]
 end 
 
 function list_files_on_server(transect="AX08")
-    ax=parse(Int,transect[3:end])
-    url1="https://www.aoml.noaa.gov/phod/hdenxbt/ax"*string(ax)*"/"
+    ax=name_on_server(transect)
+    url1="https://www.aoml.noaa.gov/phod/hdenxbt/"*ax*"/"
     r = HTTP.get(url1)
     h = String(r.body)
     #in the html look for "ax*_qc.tgz" etc:
@@ -1322,6 +1326,29 @@ function list_files_on_server(transect="AX08")
     h3[findall(occursin.("_qc.tgz",h3).||occursin.("_qc_2.tgz",h3).||occursin.("_qc_3.tgz",h3))]
 end 
 
+function name_on_server(transect)
+    ax=if transect=="AXCOAST"
+        "axcs"
+    elseif transect=="AXWBTS"
+        "axwbts"
+    elseif transect[1:2]=="MX"
+        "mx"*string(parse(Int,transect[3:end]))
+    else
+        "ax"*string(parse(Int,transect[3:end]))
+    end
+end
+
+function name_on_API(transect)
+    ax=if transect=="AXCOAST"
+        "cs"
+    elseif transect=="AXWBTS"
+        "wbts"
+    elseif transect[1:2]=="MX"
+        "1"*transect[3:end]
+    else
+        transect[3:end]
+    end
+end
 
 """
     XBT.download_file_if_needed_AOML(transect="AX08",file="ax80102_qc.tgz")
@@ -1341,14 +1368,20 @@ path=dirname(files[1])
 ```
 """
 function download_file_if_needed_AOML(transect="AX08",file="ax80102_qc.tgz")
-    ax=parse(Int,transect[3:end])
-    url1="https://www.aoml.noaa.gov/phod/hdenxbt/ax"*string(ax)*"/"*file
+    ax=name_on_server(transect)
+    url1="https://www.aoml.noaa.gov/phod/hdenxbt/"*ax*"/"*file
 	path1=joinpath(tempdir(),file)
 	isfile(path1) ? nothing : Downloads.download(url1,path1)
     tmp_path=Dataverse.untargz(path1)
-    p=joinpath(tmp_path,"m1","data","xbt","aoml","nodc","ax"*string(ax))
-	p=joinpath(p,readdir(p)[1])
-    glob("*.???",p)
+
+    p=[tmp_path]
+    f=glob("*.???",p[1])
+    while(isempty(f))
+        p.=joinpath(p[1],readdir(p[1])[1])
+        f=glob("*.???",p[1])
+    end
+
+    glob("*.???",p[1])
 end
 
 end
