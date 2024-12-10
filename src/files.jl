@@ -1134,7 +1134,7 @@ function download_file_if_needed(url2)
 	path2
 end
 
-function read_data(path2)
+function read_SIO_XBT(path2)
 	txt=readlines(path2)
 	
 	nlines=parse(Int,txt[1])
@@ -1230,7 +1230,7 @@ function read(x::XBTtransect;source="SIO",transect="PX05",cr=1,cruise="")
         url1=cruises.url[CR]
         url2=get_url_to_download(url1)
         path2=download_file_if_needed(url2)
-        T_all,meta_all=read_data(path2)
+        T_all,meta_all=read_SIO_XBT(path2)
         XBTtransect(source,transect,[T_all,meta_all,cruises.cruise[CR]],path2)
     elseif source=="AOML"
         list1=XBT.list_files_on_server(transect)
@@ -1238,7 +1238,7 @@ function read(x::XBTtransect;source="SIO",transect="PX05",cr=1,cruise="")
         CR=(isempty(cruise) ? cr : findall(list1.==cruise)[1])
         files=XBT.download_file_if_needed_AOML(transect,list1[CR])
         path=dirname(files[1])
-        (data,meta)=XBT.read_NOAA_XBT(path)
+        (data,meta)=read_NOAA_XBT(path)
         XBTtransect(source,string(transect),[data,meta,list1[CR]],path)
     else
         @warn "unknown source"
