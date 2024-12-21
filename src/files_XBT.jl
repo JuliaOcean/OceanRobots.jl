@@ -348,4 +348,86 @@ function download_all_AOML(path="XBT_AOML")
     end
 end
 
+###
+
+function scan_XBT_AOML(ii=0,jj=0; path="XBT_AOML")
+    list1=glob("*.csv",path)
+    if ii==0
+        list1
+    else
+        list2=CSV.read(list1[ii],DataFrame) #ii
+        list3=groupby(list2,:cruise)
+        if jj==0
+            list3
+        else
+            list3[jj] #jj
+        end
+    end
+end
+
+"""
+    read_XBT_AOML(subfolder::String; path="XBT_AOML")
+
+```
+df0=XBT.valid_XBT_AOML()
+XBT.read_XBT_AOML(df0.subfolder[100])
+```
+"""
+function read_XBT_AOML(subfolder::String; path="XBT_AOML")
+    transect,cruise=split(subfolder,"_")
+    list1=readdir(joinpath(path,subfolder))
+    list=DataFrame("file"=>list1)
+    list.transect.=transect
+    list.cruise.=cruise
+    read_XBT_AOML(list; path=path)    
+end
+    
+"""
+    read_XBT_AOML(subfolder::String; path="XBT_AOML")
+
+```
+XBT.read_XBT_AOML(1,1)
+```
+"""
+function read_XBT_AOML(ii=1,jj=1; path="XBT_AOML")
+    list=scan_XBT_AOML(ii,jj)
+    read_XBT_AOML(list; path=path) 
+end
+
+function read_XBT_AOML(list4::AbstractDataFrame; path="XBT_AOML")    
+    transect=list4[1,:transect]
+    cruise=list4[1,:cruise]
+    subfolder=transect*"_"*string(cruise)
+
+    path2=joinpath(path,subfolder)
+    T_all,meta_all=read_NOAA_XBT(path2)
+    XBTtransect("AOML",transect,[T_all,meta_all,subfolder],path2)
+end
+
+function valid_XBT_AOML(;path="XBT_AOML")
+    list1=scan_XBT_AOML()
+    df=DataFrame()
+    for ii in 1:length(list1)
+        list2=scan_XBT_AOML(ii)
+        for jj in 1:length(list2)
+            list4=scan_XBT_AOML(ii,jj)
+            transect=list4[1,:transect]
+            cruise=list4[1,:cruise]
+            subfolder=transect*"_"*string(cruise)
+            test=try
+                read_XBT_AOML(ii,jj)
+                true
+            catch
+                false
+            end
+            append!(df,DataFrame("transect"=>transect,"cruise"=>cruise,"subfolder"=>subfolder,"test"=>test))
+        end
+    end
+    ok=findall(df.test)
+    no=findall((!).(df.test))
+    println("valid cruises      = "*string(length(ok)))
+    println("unreadable cruises = "*string(length(no)))
+    df[ok,:]
+end
+
 end
