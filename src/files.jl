@@ -860,13 +860,13 @@ function index()
 
     #main table
     oceansites_index=DataFrame(CSV.File(fil; header=false, skipto=9, silencewarnings=true))
-
+    
     #treat lines which seem mis-formatted
-    aa=findall((ismissing).(oceansites_index.Column17))
-    oceansites_index=oceansites_index[aa,:]
+ #   aa=findall((ismissing).(oceansites_index.Column17))
+ #   oceansites_index=oceansites_index[aa,:]
 
-    test=sum([sum((!ismissing).(oceansites_index[:,i])) for i in 17:22])
-    test>0 ? error("unclear lines remain") : oceansites_index=oceansites_index[!,1:16]
+#    test=sum([sum((!ismissing).(oceansites_index[:,i])) for i in 17:22])
+#    test>0 ? error("unclear lines remain") : oceansites_index=oceansites_index[!,1:16]
 
     #column names
     tmp=readlines(fil)[7]
