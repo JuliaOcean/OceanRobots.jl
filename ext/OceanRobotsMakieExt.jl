@@ -218,7 +218,7 @@ note : the list of valid `expocode` values (e.g., "33RR20160208") can be found a
 
 ```
 using OceanRobots, CairoMakie
-cruise=ShipCruise("33RR20160208")
+cruise=read(ShipCruise(),"33RR20160208")
 plot(cruise)
 ```
 

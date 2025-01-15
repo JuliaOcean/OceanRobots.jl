@@ -356,6 +356,13 @@ end
 
 ###
 
+"""
+    scan_XBT_AOML(ii=0,jj=0; path="XBT_AOML")
+
+- if `ii==0` then list all sections
+- if only `ii` is specified, then list of files for section `ii`
+- if `ii` & `jj` are specified, then list files in cruise `jj` of section `ii`
+"""
 function scan_XBT_AOML(ii=0,jj=0; path="XBT_AOML")
     list1=glob("*.csv",path)
     if ii==0
@@ -396,7 +403,7 @@ XBT.read_XBT_AOML(1,1)
 ```
 """
 function read_XBT_AOML(ii=1,jj=1; path="XBT_AOML")
-    list=scan_XBT_AOML(ii,jj)
+    list=scan_XBT_AOML(ii,jj,path=path)
     read_XBT_AOML(list; path=path) 
 end
 
@@ -411,17 +418,17 @@ function read_XBT_AOML(list4::AbstractDataFrame; path="XBT_AOML")
 end
 
 function valid_XBT_AOML(;path="XBT_AOML")
-    list1=scan_XBT_AOML()
+    list1=scan_XBT_AOML(path=path)
     df=DataFrame()
     for ii in 1:length(list1)
-        list2=scan_XBT_AOML(ii)
+        list2=scan_XBT_AOML(ii,path=path)
         for jj in 1:length(list2)
-            list4=scan_XBT_AOML(ii,jj)
+            list4=scan_XBT_AOML(ii,jj,path=path)
             transect=list4[1,:transect]
             cruise=list4[1,:cruise]
             subfolder=transect*"_"*string(cruise)
             test=try
-                read_XBT_AOML(ii,jj)
+                read_XBT_AOML(ii,jj,path=path)
                 true
             catch
                 false
