@@ -428,7 +428,7 @@ function valid_XBT_AOML(;path="XBT_AOML")
             cruise=list4[1,:cruise]
             subfolder=transect*"_"*string(cruise)
             test=try
-                read_XBT_AOML(ii,jj)
+                read_XBT_AOML(ii,jj,path=path)
                 true
             catch
                 false
