@@ -325,9 +325,15 @@ end
 
 ###
 
-function download_all_AOML(path="XBT_AOML")
+"""
+    download_all_AOML(;path="XBT_AOML",quick_test=false)
+
+Download XBT data files from AOML site.
+"""
+function download_all_AOML(;path="XBT_AOML",quick_test=false)
     !ispath(path) ? mkdir(path) : nothing
     lst_AOML=query(XBTtransect,"AOML")
+    lst_AOML=(quick_test ? lst_AOML[1:2] : nothing)
     for transect in lst_AOML
         lst_AOML_files=DataFrame("transect"=>String[],"cruise"=>Int[],"file"=>String[])
         println(transect)

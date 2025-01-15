@@ -134,4 +134,12 @@ using Test
     xbt=read(XBTtransect(),source="AOML",transect="AX08",cr=1)
     fig=plot(xbt)
     @test isa(fig,Figure)
+
+    ##
+
+    path0=tempname()
+    mkdir(path0)
+    XBT.download_all_AOML(path=path0,quick_test=true)
+    @test isfile(joinpath(path0,"list_AX01.csv"))
+
 end
