@@ -142,4 +142,8 @@ using Test
     XBT.download_all_AOML(path=path0,quick_test=true)
     @test isfile(joinpath(path0,"list_AX01.csv"))
 
+    df0=XBT.valid_XBT_AOML(path=path0)
+    xbt=XBT.read_XBT_AOML(df0.subfolder[1])
+    @test isa(xbt,XBTtransect)
+    
 end
