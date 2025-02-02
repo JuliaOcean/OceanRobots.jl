@@ -1,7 +1,7 @@
 name = "OceanRobots"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
 authors = ["gaelforget <gforget@mit.edu>"]
-version = "0.2.14"
+version = "0.2.15"
 
 [deps]
 ArgoData = "9eb831cf-c491-48dc-bed4-6aca718df73c"
@@ -31,7 +31,7 @@ Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 OceanRobotsMakieExt = ["Makie"]
 
 [compat]
-ArgoData = "0.1"
+ArgoData = "0.2"
 CFTime = "0.1"
 CSV = "0.10"
 CodecZlib = "0.7"

@@ -3,6 +3,29 @@ using DataFrames, NCDatasets
 
 abstract type AbstractOceanRobotData <: Any end
 
+function Base.show(io::IO, z::AbstractOceanRobotData)
+    zn=fieldnames(typeof(z))
+    printstyled(io, " $(typeof(z)) \n",color=:normal)
+    in(:ID,zn) ? printstyled(io, "  ID        = ",color=:normal) : nothing
+    in(:ID,zn) ? printstyled(io, "$(z.ID)\n",color=:magenta) : nothing
+    if in(:data,zn)
+        printstyled(io, "  data      = ",color=:normal)
+        tmp=(isa(z.data,NamedTuple) ? keys(z.data) : typeof.(z.data))
+        printstyled(io, "$(tmp)\n",color=:magenta)
+    end
+    in(:file,zn) ? printstyled(io, "  file      = ",color=:normal) : nothing
+    in(:file,zn) ? printstyled(io, "$(z.file)\n",color=:magenta) : nothing
+    in(:source,zn) ? printstyled(io, "  source      = ",color=:normal) : nothing
+    in(:source,zn) ? printstyled(io, "$(z.source)\n",color=:magenta) : nothing
+    in(:format,zn) ? printstyled(io, "  format      = ",color=:normal) : nothing
+    in(:format,zn) ? printstyled(io, "$(z.format)\n",color=:magenta) : nothing
+    in(:units,zn) ? printstyled(io, "  units      = ",color=:normal) : nothing
+    in(:units,zn) ? printstyled(io, "$(z.units)\n",color=:magenta) : nothing
+    in(:path,zn) ? printstyled(io, "  path      = ",color=:normal) : nothing
+    in(:path,zn) ? printstyled(io, "$(z.path)\n",color=:magenta) : nothing
+    return
+end  
+
 struct NOAAbuoy <: AbstractOceanRobotData
     ID::Union{Int64,String}
     data::DataFrame
@@ -73,13 +96,13 @@ ShipCruise()=ShipCruise("unknown",[],tempdir())
 
 struct XBTtransect <: AbstractOceanRobotData
     source::String
+    format::String
     ID::String
     data::Union{Array,Dataset}
     path::String
 end
 
-XBTtransect()=XBTtransect("unknown","unknown",[],tempdir())
-
+XBTtransect()=XBTtransect("unknown","unknown","unknown",[],tempdir())
 
 """
     query(x::DataType)
