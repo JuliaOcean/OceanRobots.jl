@@ -164,7 +164,7 @@ function read(x::XBTtransect;source="SIO",transect="PX05",cr=1,cruise="")
         url2=get_url_to_download(url1)
         path2=download_file_if_needed(url2)
         T_all,meta_all=read_SIO_XBT(path2)
-        XBTtransect(source,transect,[T_all,meta_all,cruises.cruise[CR]],path2)
+        XBTtransect(source,source,transect,[T_all,meta_all,cruises.cruise[CR]],path2)
     elseif source=="AOML"
         list1=XBT.list_files_on_server(transect)
 #       list2=XBT.get_url_to_transect(transect)
@@ -173,7 +173,7 @@ function read(x::XBTtransect;source="SIO",transect="PX05",cr=1,cruise="")
         if !isempty(files)
             path=dirname(files[1])
             (data,meta)=read_NOAA_XBT(path)
-            XBTtransect(source,string(transect),[data,meta,list1[CR]],path)
+            XBTtransect(source,source,string(transect),[data,meta,list1[CR]],path)
         else
             XBTtransect()
         end
@@ -414,7 +414,7 @@ function read_XBT_AOML(list4::AbstractDataFrame; path="XBT_AOML")
 
     path2=joinpath(path,subfolder)
     T_all,meta_all=read_NOAA_XBT(path2)
-    XBTtransect("AOML",transect,[T_all,meta_all,subfolder],path2)
+    XBTtransect("AOML","AOML",transect,[T_all,meta_all,subfolder],path2)
 end
 
 function valid_XBT_AOML(;path="XBT_AOML")

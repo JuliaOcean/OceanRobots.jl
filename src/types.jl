@@ -73,13 +73,28 @@ ShipCruise()=ShipCruise("unknown",[],tempdir())
 
 struct XBTtransect <: AbstractOceanRobotData
     source::String
+    format::String
     ID::String
     data::Union{Array,Dataset}
     path::String
 end
 
-XBTtransect()=XBTtransect("unknown","unknown",[],tempdir())
+XBTtransect()=XBTtransect("unknown","unknown","unknown",[],tempdir())
 
+function Base.show(io::IO, z::XBTtransect)
+    printstyled(io, " XBTtransect \n",color=:normal)
+    printstyled(io, "  source    = ",color=:normal)
+    printstyled(io, "$(z.source)\n",color=:magenta)
+    printstyled(io, "  format    = ",color=:normal)
+    printstyled(io, "$(z.format)\n",color=:magenta)
+    printstyled(io, "  ID        = ",color=:normal)
+    printstyled(io, "$(z.ID)\n",color=:magenta)
+    printstyled(io, "  data      = ",color=:normal)
+    printstyled(io, "$(typeof.(z.data))\n",color=:magenta)
+    printstyled(io, "  path      = ",color=:normal)
+    printstyled(io, "$(z.path)\n",color=:magenta)
+    return
+end  
 
 """
     query(x::DataType)

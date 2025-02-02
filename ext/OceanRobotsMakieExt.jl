@@ -345,9 +345,9 @@ plot(xbt)
 ```
 """
 function plot(x::XBTtransect;pol=Any[])	
-	if x.source=="AOML"
+	if x.format=="AOML"
         plot_XBT_AOML(x,pol=pol)
-    elseif x.source=="SIO"
+    elseif x.format=="SIO"
         plot_XBT_SIO(x,pol=pol)
     else
         @warn "unknown source"

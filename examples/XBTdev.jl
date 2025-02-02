@@ -30,7 +30,7 @@ function to_standard_depth(xbt2)
     lon,lat,tim=[[df[1,val] for df in gdf] for val in (:lon,:lat,:time)]
     meta_all=[lon[:] lat[:] tim[:] 1:length(tim)]
     #[arr,meta_all,xbt2.data[3]]
-    XBTtransect("SIO",xbt2.ID,[arr,meta_all,xbt2.data[3]],xbt2.path)
+    XBTtransect("AOML","SIO",xbt2.ID,[arr,meta_all,xbt2.data[3]],xbt2.path)
 end
 
 xbt2_std_depth=to_standard_depth(xbt2)
