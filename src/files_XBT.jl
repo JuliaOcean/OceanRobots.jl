@@ -471,12 +471,12 @@ end
 
 function read_XBT_AOML(list4::AbstractDataFrame; path="XBT_AOML")    
     transect=list4[1,:transect]
-    cruise=list4[1,:cruise]
-    subfolder=transect*"_"*string(cruise)
+    cruise=string(list4[1,:cruise])
+    subfolder=transect*"_"*cruise
 
     path2=joinpath(path,subfolder)
     T_all,meta_all=read_NOAA_XBT(path2)
-    XBTtransect("AOML","AOML",cruise,transect,path2,[T_all,meta_all,subfolder])
+    XBTtransect("AOML","AOML",subfolder,transect,path2,[T_all,meta_all,subfolder])
 end
 
 function valid_XBT_AOML(;path="XBT_AOML")
@@ -487,15 +487,15 @@ function valid_XBT_AOML(;path="XBT_AOML")
         for jj in 1:length(list2)
             list4=scan_XBT_AOML(ii,jj,path=path)
             transect=list4[1,:transect]
-            cruise=list4[1,:cruise]
-            subfolder=transect*"_"*string(cruise)
+            cruise=string(list4[1,:cruise])
+            subfolder=transect*"_"*cruise
             test=try
                 read_XBT_AOML(ii,jj,path=path)
                 true
             catch
                 false
             end
-            append!(df,DataFrame("transect"=>transect,"cruise"=>cruise,"subfolder"=>subfolder,"test"=>test))
+            append!(df,DataFrame("transect"=>transect,"cruise"=>subfolder,"test"=>test))
         end
     end
     ok=findall(df.test)
