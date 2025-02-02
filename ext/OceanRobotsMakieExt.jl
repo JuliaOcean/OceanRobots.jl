@@ -399,17 +399,17 @@ function plot_XBT_AOML(x::XBTtransect;pol=Any[])
 end
 
 function plot_XBT_IMOS(x::XBTtransect;pol=Any[])	
-	transect=x.ID
-	transect_year=x.data[2].transect[1]
+	ID=x.ID
+#	transect_year=x.data[2].cruise[1]
 	d=x.data[1]
 	m=x.data[2]
 
 	fig=Figure()
-	ax=Axis(fig[1,1],title=transect_year ,ylabel="depth")
+	ax=Axis(fig[1,1],title=ID ,ylabel="depth")
 	hm=scatter!(d.time,-d.depth,color=d.temp)
 	Colorbar(fig[1,2],hm)
 
-	ax=Axis(fig[2,1:2],title=transect_year)
+	ax=Axis(fig[2,1:2],title=ID)
 	isempty(pol) ? nothing : lines!(pol;color=:black, linewidth = 0.5)
 	scatter!(m.lon,m.lat,color=:red)
 	xlims!(-180,180); ylims!(-90,90)
