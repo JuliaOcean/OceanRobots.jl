@@ -349,6 +349,8 @@ function plot(x::XBTtransect;pol=Any[])
         plot_XBT_AOML(x,pol=pol)
     elseif x.format=="SIO"
         plot_XBT_SIO(x,pol=pol)
+    elseif x.format=="IMOS"
+        plot_XBT_IMOS(x,pol=pol)
     else
         @warn "unknown source"
         Figure()
@@ -389,6 +391,25 @@ function plot_XBT_AOML(x::XBTtransect;pol=Any[])
 	Colorbar(fig[1,2],hm)
 
 	ax=Axis(fig[2,1:2],title=transect*" -- cruise "*CR)
+	isempty(pol) ? nothing : lines!(pol;color=:black, linewidth = 0.5)
+	scatter!(m.lon,m.lat,color=:red)
+	xlims!(-180,180); ylims!(-90,90)
+
+	fig
+end
+
+function plot_XBT_IMOS(x::XBTtransect;pol=Any[])	
+	transect=x.ID
+	transect_year=x.data[2].transect[1]
+	d=x.data[1]
+	m=x.data[2]
+
+	fig=Figure()
+	ax=Axis(fig[1,1],title=transect_year ,ylabel="depth")
+	hm=scatter!(d.time,-d.depth,color=d.temp)
+	Colorbar(fig[1,2],hm)
+
+	ax=Axis(fig[2,1:2],title=transect_year)
 	isempty(pol) ? nothing : lines!(pol;color=:black, linewidth = 0.5)
 	scatter!(m.lon,m.lat,color=:red)
 	xlims!(-180,180); ylims!(-90,90)

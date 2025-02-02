@@ -538,7 +538,8 @@ function read_IMOS_XBT(df)
 #        println(f)
         ds=Dataset(f)
         (lo,la,tim)=(ds["LONGITUDE"][1],ds["LATITUDE"][1],ds["TIME"][1])
-        append!(meta,DataFrame("lon"=>lo,"lat"=>la,"time"=>tim))
+        cruise=split(f,"/")[end-1]
+        append!(meta,DataFrame("lon"=>lo,"lat"=>la,"time"=>tim,"cruise"=>cruise))
         temp=ds["TEMP"][:]
         dep=ds["DEPTH"][:]
         ii=setdiff(1:length(dep),findall(temp.==temp[end]))
