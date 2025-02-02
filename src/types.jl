@@ -98,11 +98,12 @@ struct XBTtransect <: AbstractOceanRobotData
     source::String
     format::String
     ID::String
-    data::Union{Array,Dataset}
+    transect::String
     path::String
+    data::Union{Array,Dataset}
 end
 
-XBTtransect()=XBTtransect("unknown","unknown","unknown",[],tempdir())
+XBTtransect()=XBTtransect("unknown","unknown","unknown","unknown",tempdir(),[])
 
 """
     query(x::DataType)
