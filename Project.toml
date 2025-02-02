@@ -31,7 +31,7 @@ Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 OceanRobotsMakieExt = ["Makie"]
 
 [compat]
-ArgoData = "0.1"
+ArgoData = "0.2"
 CFTime = "0.1"
 CSV = "0.10"
 CodecZlib = "0.7"
