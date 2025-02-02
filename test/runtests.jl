@@ -118,7 +118,7 @@ using Test
 
     ##
 
-    xbt_IMOS=read(XBTtransect(),source="IMOS",transect="IX21",cruise="2006")
+    xbt=read(XBTtransect(),source="IMOS",transect="IX21",cruise="2006")
     fig=plot(xbt)
     @test isa(fig,Figure)
 
