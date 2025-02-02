@@ -135,6 +135,10 @@ using Test
     fig=plot(xbt)
     @test isa(fig,Figure)
 
+    xbt2=XBT.to_standard_depth(xbt)
+    show(xbt2)
+    @test isa(xbt2,XBTtransect)
+
     ##
 
     path0=tempname()

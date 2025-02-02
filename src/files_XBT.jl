@@ -1,7 +1,8 @@
 
 module XBT
 
-using TableScraper, HTTP, Downloads, CodecZlib, Dates, Glob, DataFrames, CSV, Dataverse
+using TableScraper, HTTP, Downloads, CodecZlib, Dates, Glob
+using DataFrames, CSV, Dataverse, Interpolations
 import OceanRobots: XBTtransect, query
 import Base: read
 
@@ -441,6 +442,26 @@ function valid_XBT_AOML(;path="XBT_AOML")
     println("valid cruises      = "*string(length(ok)))
     println("unreadable cruises = "*string(length(no)))
     df[ok,:]
+end
+
+## interpolate to standard depth (AOML format -> SIO format)
+
+function to_standard_depth(xbt2)
+    xbt2.source=="AOML" ? nothing : error("option not available")
+    zz=-XBT.dep
+    nz=length(zz)
+    gdf=groupby(xbt2.data[1],:time) #group by profile
+    np=length(gdf)
+    arr=zeros(np,nz)
+    for pp in 1:np
+        x,y=(gdf[pp][:,:pr],gdf[pp][:,:te])
+        interp_linear = linear_interpolation(x,y,extrapolation_bc=NaN)
+        arr[pp,:].=interp_linear(zz)
+    end
+    lon,lat,tim=[[df[1,val] for df in gdf] for val in (:lon,:lat,:time)]
+    meta_all=[lon[:] lat[:] tim[:] 1:length(tim)]
+    #[arr,meta_all,xbt2.data[3]]
+    XBTtransect("AOML","SIO",xbt2.ID,[arr,meta_all,xbt2.data[3]],xbt2.path)
 end
 
 end
