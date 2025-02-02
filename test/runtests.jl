@@ -118,6 +118,10 @@ using Test
 
     ##
 
+    xbt_IMOS=read(XBTtransect(),source="IMOS",transect="IX21",cruise="2006")
+    fig=plot(xbt)
+    @test isa(fig,Figure)
+
     list=OceanRobots.query(XBTtransect,"SIO")
     cruises=XBT.list_of_cruises("PX05")
     
