@@ -2,7 +2,6 @@
 if !isdefined(Main,:xbt1)
     using OceanRobots, DataFrames, Interpolations, CairoMakie
     xbt1=read(XBTtransect(),source="SIO",transect="PX05",cr=1)
-    xbt2=read(XBTtransect(),source="AOML",transect="AX01",cr=1)
 
     begin
         using MeshArrays, Shapefile, DataDeps
@@ -10,6 +9,11 @@ if !isdefined(Main,:xbt1)
         pol=MeshArrays.read_polygons(pol_file)
     end
 end
+
+xbt2=read(XBTtransect(),source="AOML",transect="AX01",cr=2)
+
+#fix : eliminate outliers in "AX01",cr=1
+#a=xbt2.data[1][:,:te]; a[a.>20].=NaN; xbt2.data[1][:,:te].=a;
 
 function to_standard_depth(xbt2)
     xbt2.source=="AOML" ? nothing : error("option not available")
