@@ -29,7 +29,7 @@ function list_transects(group="SIO")
     elseif group=="SIO"
         list_of_transects_SIO()
     elseif group=="IMOS"
-        list_of_transects_IMOS()[1]
+        list_of_transects_IMOS().transect
     else
         @warn "unknown group"
         []
@@ -179,7 +179,7 @@ function list_of_cruises_SIO(transect="PX05")
     DataFrame("cruise" => cruises, "year" => years, "month" => months, "url" => .*(.*(url_base,cruises),".html"))
 end
 
-list_of_cruises_AOML(transect) = DataFrame()
+list_of_cruises_AOML(transect) = list_files_on_server(transect)
 
 function list_of_cruises_IMOS(transect)
     list_files_path=joinpath(tempdir(),"files_"*transect*".csv")
@@ -210,8 +210,8 @@ read(XBTtransect(),source="SIO",transect="PX05",cruise="0910")
 ```
 """
 function read(x::XBTtransect;source="SIO",transect="PX05",cr=1,cruise="")
+    cruises=list_of_cruises(transect,source=source)
     if source=="SIO"
-        cruises=list_of_cruises(transect,source=source)
         CR=(isempty(cruise) ? cr : findall(cruises.cruise.=="0910")[1])
         url1=cruises.url[CR]
         url2=get_url_to_download(url1)
@@ -219,20 +219,18 @@ function read(x::XBTtransect;source="SIO",transect="PX05",cr=1,cruise="")
         T_all,meta_all=read_SIO_XBT(path2)
         XBTtransect(source,source,transect,transect,path2,[T_all,meta_all,cruises.cruise[CR]])
     elseif source=="AOML"
-        list1=XBT.list_files_on_server(transect)
 #       list2=XBT.get_url_to_transect(transect)
-        CR=(isempty(cruise) ? cr : findall(list1.==cruise)[1])
-        files=XBT.download_file_if_needed_AOML(transect,list1[CR])
+        CR=(isempty(cruise) ? cr : findall(cruises.==cruise)[1])
+        files=XBT.download_file_if_needed_AOML(transect,cruises[CR])
         if !isempty(files)
             path=dirname(files[1])
             (data,meta)=read_NOAA_XBT(path)
             tr=string(transect)
-            XBTtransect(source,source,tr,tr,path,[data,meta,list1[CR]])
+            XBTtransect(source,source,tr,tr,path,[data,meta,cruises[CR]])
         else
             XBTtransect()
         end
     elseif source=="IMOS"
-        cruises=list_of_cruises(transect; source=source)
         cr=transect*"_"*cruise
         CR=findall([a.cruise==cr for a in keys(cruises)])[1]
         df=DataFrame(cruises[CR])
@@ -399,9 +397,9 @@ function download_all_AOML(;path="XBT_AOML",quick_test=false)
     for transect in lst_AOML
         lst_AOML_files=DataFrame("transect"=>String[],"cruise"=>Int[],"file"=>String[])
         println(transect)
-        df=XBT.list_files_on_server(transect)
+        df=list_files_on_server(transect)
         for cr in 1:size(df,1)
-            files=XBT.download_file_if_needed_AOML(transect,df[cr])
+            files=download_file_if_needed_AOML(transect,df[cr])
 
             df1=DataFrame("transect"=>fill(transect,length(files)),
                 "cruise"=>fill(cr,length(files)),"file"=>[basename(f) for f in files])
