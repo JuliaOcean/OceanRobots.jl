@@ -24,6 +24,7 @@ begin
 	using MeshArrays, Shapefile, DataDeps
 	pol_file=demo.download_polygons("ne_110m_admin_0_countries.shp")
 	pol=MeshArrays.read_polygons(pol_file)
+	"Done with country polygons"
 end
 
 # ╔═╡ 7e8b02b8-546e-46ca-989c-a29961c11730
@@ -33,15 +34,19 @@ For more information, see [this page](https://www-hrx.ucsd.edu/index.html) and [
 
 ### Acknowledgments
 
-- Scripps : _Data were made available by the Scripps High Resolution XBT program (www-hrx.ucsd.edu)_
-- NOAA : _The XBT data are made freely available on the Atlantic Oceanographic and Meteorological Laboratory and are funded by the NOAA Office of Climate Observations._
+- Scripps : _Data were made available by the Scripps High Resolution XBT program (<www-hrx.ucsd.edu>)_
+- NOAA : _The XBT data are made freely available on the Atlantic Oceanographic and Meteorological Laboratory and are funded by the NOAA Office of Climate Observations_ (<https://www.aoml.noaa.gov/phod/hdenxbt/index.php>).
+- Australia’s Integrated Marine Observing System (IMOS) : <https://portal.aodn.org.au>
 """
 
 # ╔═╡ 0b9d4b00-2fdc-4a13-aa90-239e16a87469
 TableOfContents()
 
+# ╔═╡ adb5cae7-bec7-49a6-8448-daaaf2a3ceea
+md"""## Plot Data"""
+
 # ╔═╡ 057ef2f7-fc21-494f-acc8-33befb9914f1
-@bind source Select(["SIO","AOML"])
+@bind source Select(["SIO","AOML","IMOS"])
 
 # ╔═╡ e51b6b37-2448-42eb-b33b-6e9ee6524acd
 begin
@@ -50,7 +55,13 @@ begin
 end
 
 # ╔═╡ 0b69a4c8-3aba-4086-9deb-377307fc8fcc
-@bind cr NumberField(1:3) #length(cruises))
+if source!=="IMOS"
+	@bind cr NumberField(1:3) #length(cruises))
+else
+	x=XBT.list_of_cruises(transect, source=source)
+	years = [y.year[1] for y in x]
+	@bind cr Select(years)
+end
 
 # ╔═╡ 66d64a82-0e69-4089-96e3-645e54e52cfb
 md"""## Read data
@@ -59,7 +70,11 @@ _Data gets downloaded if needed._
 """
 
 # ╔═╡ 8821d099-b91b-4677-9425-b94d6d1d38fa
-xbt=read(XBTtransect(),source=source,transect=transect,cr=cr)
+if source!=="IMOS"
+	xbt=read(XBTtransect(),source=source,transect=transect,cr=cr)
+else
+	xbt=read(XBTtransect(),source=source,transect=transect,cruise=string(cr))
+end
 
 # ╔═╡ 5c0f77e2-f11d-4f21-9a87-ce4aee0a2f2b
 plot(xbt,pol=pol)
@@ -1278,9 +1293,9 @@ version = "0.5.5"
 
 [[deps.OceanRobots]]
 deps = ["ArgoData", "CFTime", "CSV", "CodecZlib", "DataFrames", "Dataverse", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "Interpolations", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "TableScraper", "URIs"]
-git-tree-sha1 = "a69e8bdeea3892d4133f6a46c1da9b3e383c66a0"
+git-tree-sha1 = "f4ffd07eeb6ee32e49ba77813c43d8eb3e40b2b7"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
-version = "0.2.15"
+version = "0.2.16"
 weakdeps = ["Makie"]
 
     [deps.OceanRobots.extensions]
@@ -2092,14 +2107,15 @@ version = "3.6.0+0"
 # ╔═╡ Cell order:
 # ╟─7e8b02b8-546e-46ca-989c-a29961c11730
 # ╟─0b9d4b00-2fdc-4a13-aa90-239e16a87469
+# ╟─adb5cae7-bec7-49a6-8448-daaaf2a3ceea
 # ╟─057ef2f7-fc21-494f-acc8-33befb9914f1
 # ╟─e51b6b37-2448-42eb-b33b-6e9ee6524acd
 # ╟─0b69a4c8-3aba-4086-9deb-377307fc8fcc
 # ╟─5c0f77e2-f11d-4f21-9a87-ce4aee0a2f2b
 # ╟─66d64a82-0e69-4089-96e3-645e54e52cfb
-# ╠═8821d099-b91b-4677-9425-b94d6d1d38fa
+# ╟─8821d099-b91b-4677-9425-b94d6d1d38fa
 # ╟─c796c837-09a4-41b3-93e8-60e76f9adc16
 # ╠═e7f710ec-e429-4b93-b687-1e6d4678bbe3
-# ╠═58bffbe1-dd21-4551-95ff-d8727d010c58
+# ╟─58bffbe1-dd21-4551-95ff-d8727d010c58
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
