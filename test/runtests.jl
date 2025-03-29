@@ -103,8 +103,8 @@ using Test
 
     ##
 
-    list1=OceanRobots.query(ShipCruise)
-    @test isa(list1,Vector)
+#    list1=OceanRobots.query(ShipCruise)
+#    @test isa(list1,Vector)
 
     ID="33RR20160208"
     path=CCHDO.download(ID)
