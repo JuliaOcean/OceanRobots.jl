@@ -5,11 +5,7 @@
     - The version found in the `src` folder is the underlying code of the notebooks (`.jl` files).
     - To run the notebooks interactively see [How-To](@ref) section.
 
-## Included Notebooks
-
-Overview of Observing Systems :
-
-- [OceanOPS.html](OceanOPS.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/OceanOPS.jl)) : global fleet of ocean observing systems
+## Dataset Notebooks
 
 Ship-based Observatories : 
 
@@ -29,9 +25,11 @@ Moored Observatories :
 - [Buoy\_NWP\_NOAA\_monthly.html](Buoy_NWP_NOAA_monthly.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/Buoy_NWP_NOAA_monthly.jl)) : NOAA [station](https://www.ndbc.noaa.gov/) data (monthly means) 
 - [Mooring\_WHOTS.html](Mooring_WHOTS.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/Mooring_WHOTS.jl)) : WHOTS [mooring](http://www.soest.hawaii.edu/whots/wh_data.html) data
 
-## Other toolboxes
+## External APIs
 
+- [OceanOPS.html](OceanOPS.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/OceanOPS.jl)) : global fleet of ocean observing systems
 - [Roce\_interop.jl](Roce_interop.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/Roce_interop.jl)) : [R-oce toolbox](https://dankelley.github.io/oce/).
+- [Argo\_argopy.html](https://euroargodev.github.io/ArgoData.jl/dev/Argo_argopy.html) (➭ [code link](https://raw.githubusercontent.com/euroargodev/ArgoData.jl/refs/heads/master/examples/Argo_argopy.jl)) : [argopy python toolbox](https://github.com/euroargodev/argopy#readme).
 	
 ## More Notebooks
 
