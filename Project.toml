@@ -32,7 +32,7 @@ OceanRobotsMakieExt = ["Makie"]
 
 [compat]
 ArgoData = "0.2"
-CFTime = "0.1"
+CFTime = "0.1, 0.2"
 CSV = "0.10"
 CodecZlib = "0.7"
 DataFrames = "1"
