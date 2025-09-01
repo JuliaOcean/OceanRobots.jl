@@ -276,6 +276,11 @@ rng(x;mini=NaN,maxi=NaN,pad=0.1) = begin
 	(xlm[1],xlm[2])
 end
 
+function convert_time(tim)
+	y1=Dates.year(tim[1])
+	y1.+(tim.-Dates.DateTime(y1))./Dates.Millisecond(1)/1000/86400/365.25
+end
+
 function plot_glider(df,gdf,ID;size=(900,600),pol=Any[])
 	f=Figure(size=size)
 #	xlims=rng(df.lon,mini=-180,maxi=180)
@@ -288,6 +293,7 @@ function plot_glider(df,gdf,ID;size=(900,600),pol=Any[])
 	!isempty(pol) ? [lines!(a_traj,l1,color = :black, linewidth = 0.5) for l1 in pol] : nothing
 
 	tim=DateTime.(gdf[ID].time[:])
+	tim=convert_time(tim) #this should not be needed (?)
 
 	a_uv=Axis(f[1,2],title="Velocity (m/s, depth mean)")
 	p=lines!(a_uv,tim,gdf[ID].u[:])
@@ -363,11 +369,12 @@ function plot_XBT_SIO(x::XBTtransect;pol=Any[])
 	meta_all=x.data[2]
 	CR=x.data[3]
 	dep=XBT.dep
+	tim=convert_time(meta_all[:,3])
 
 	fig=Figure()
 	
 	ax=Axis(fig[1,1],title=transect*" -- cruise "*CR,ylabel="depth")
-	hm=heatmap!(meta_all[:,3],dep,T_all)
+	hm=heatmap!(tim,dep,T_all)
 	Colorbar(fig[1,2],hm)
 
 	ax=Axis(fig[2,1:2],title=transect*" -- cruise "*CR)
