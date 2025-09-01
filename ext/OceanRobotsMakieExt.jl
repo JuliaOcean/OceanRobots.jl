@@ -369,11 +369,12 @@ function plot_XBT_SIO(x::XBTtransect;pol=Any[])
 	meta_all=x.data[2]
 	CR=x.data[3]
 	dep=XBT.dep
+	tim=convert_time(meta_all[:,3])
 
 	fig=Figure()
 	
 	ax=Axis(fig[1,1],title=transect*" -- cruise "*CR,ylabel="depth")
-	hm=heatmap!(meta_all[:,3],dep,T_all)
+	hm=heatmap!(tim,dep,T_all)
 	Colorbar(fig[1,2],hm)
 
 	ax=Axis(fig[2,1:2],title=transect*" -- cruise "*CR)
