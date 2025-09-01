@@ -1512,9 +1512,9 @@ version = "0.5.5"
 
 [[deps.OceanRobots]]
 deps = ["ArgoData", "CFTime", "CSV", "CodecZlib", "DataFrames", "Dataverse", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "Interpolations", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "TableScraper", "URIs"]
-git-tree-sha1 = "8cb97a81249ef735019f2e2f37c5b46107ebb732"
+git-tree-sha1 = "d23e1293383925d7d9c079ef51183f4c1cdc2904"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
-version = "0.2.18"
+version = "0.2.19"
 weakdeps = ["Makie"]
 
     [deps.OceanRobots.extensions]
