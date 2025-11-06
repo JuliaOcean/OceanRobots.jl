@@ -32,7 +32,7 @@ run(`$(git()) clone $(url)`)
 ```@example 1
 using Pkg; Pkg.add("Pluto"); using Pluto
 
-notebook="MITgcm.jl/examples/Float_Argo.jl"
+notebook="examples/Float_Argo.jl"
 import OceanRobots; path=dirname(dirname(pathof(OceanRobots))) #hide
 notebook=joinpath(path,"examples","Float_Argo.jl") #hide
 Pluto.activate_notebook_environment(notebook)
