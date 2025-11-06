@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.19
+# v0.20.20
 
 using Markdown
 using InteractiveUtils
@@ -8,17 +8,23 @@ using InteractiveUtils
 begin
 	using CairoMakie, Glob
 	using CSV, DataFrames
-	import Shapefile
+	import Shapefile, Dataverse
 	import GeometryOps as GO, GeoInterface as GI
 	import PlutoUI
+	"Done loading Julia packages"
 end
 
 # ╔═╡ eadd3d1f-29dc-403b-b3ab-710e750610b6
 md"""# Continuous Plankton Recorder
 
-- [CPR-BEAMS](https://website.whoi.edu/cpr-beams/)
+This notebook is based on examples provided by @PierreHelaouet at the 2025 CPR-BEAMS workshop (in Matlab/Octave).
+
+- [CPR-BEAMS project](https://website.whoi.edu/cpr-beams/)
 - [CPR data url](https://dassh.ac.uk/downloads/mba_rdm/CPR_DataRequest_CPRBeam_Workshop.zip)
-- [Polygon Data](https://marineregions.org/downloads.php) : `GOaS_v1_20211214/goas_v01.shp`
+- [Polygon Data](https://marineregions.org/downloads.php) : See `GOaS_v1_20211214/goas_v01.shp`
+
+!!! note
+    if you use this data please cite https://doi.mba.ac.uk/data/3567/ and adequate peer-reviewed publications.
 """
 
 # ╔═╡ ce10938d-5bad-47d0-a4cf-cec1a294bca6
@@ -27,14 +33,31 @@ PlutoUI.TableOfContents()
 # ╔═╡ e19df1d2-8e3e-4797-b8ac-8025dc87c46b
 md"""## Read Data"""
 
-# ╔═╡ ee5f6fd6-a789-4d13-b5f2-766ef6a7f6bc
-path_to_data="../data_codes/CPRBeam_DataExtract/"
-
 # ╔═╡ 643259db-28db-4349-a0e6-e63466b03efd
 md"""## Plot Data"""
 
 # ╔═╡ c0790af4-4836-4065-8114-34a6c25391e8
 md"""## Packages and Functions"""
+
+# ╔═╡ 2187f884-9f68-45ae-b896-8f583a29bc27
+"""
+	download_cpr_data(path_to_data)
+
+Download CPR data to a temporary folder.
+"""
+function download_cpr_data(path_to_data)
+	url="https://dassh.ac.uk/downloads/mba_rdm/CPR_DataRequest_CPRBeam_Workshop.zip"
+    isdir(path_to_data) ? nothing : mkdir(path_to_data)
+	download(url,joinpath(path_to_data,"CPRBeam_DataExtract.zip"))
+    Dataverse.unzip(joinpath(path_to_data,"CPRBeam_DataExtract.zip"))
+	path_to_data
+end
+
+# ╔═╡ ee5f6fd6-a789-4d13-b5f2-766ef6a7f6bc
+begin
+    path_to_data=joinpath(tempdir(),"CPRBeam_DataExtract")
+    ispath(path_to_data) ? path_to_data : download_cpr_data(path_to_data)
+end
 
 # ╔═╡ 4c86d37b-9ae2-430a-8e7c-a4acc3e0b151
 """
@@ -96,7 +119,6 @@ function read_polygon(fil; p=1,k=1)
     table = Shapefile.Table(fil)
     names = [t.name for t in table]
     geoms = Shapefile.shapes(table)
-    println(names)
 
     coords=GI.coordinates(geoms[p])
     line=GI.LineString(coords[k][1])
@@ -108,22 +130,27 @@ end
 # ╔═╡ 44456d92-bf45-43fd-9555-7b6d2829be04
 begin
 	fil = joinpath(path_to_data,"GOaS_v1_20211214","goas_v01.shp")
-	
-	NorthAtl,names=read_polygon(fil,p=9,k=1)
-	#NorthPac1,names=read_polygon(fil,4,1)
-	#NorthPac2,names=read_polygon(fil,4,2)
-	#poly(NorthPac1); poly!(NorthPac2); current_figure()
-		
-	#this complicated geometry takes a while, hence the subsetting
-	npp=1000
-	is_in_NorthAtl=[GO.within(p,NorthAtl) for p in points[1:npp:np]];
+	if isfile(fil)
+        NorthAtl,names=read_polygon(fil,p=9,k=1)
+        #NorthPac1,names=read_polygon(fil,4,1)
+        #NorthPac2,names=read_polygon(fil,4,2)
+        #poly(NorthPac1); poly!(NorthPac2); current_figure()
+            
+        #this complicated geometry takes a while, hence the subsetting
+        npp=1000
+        is_in_NorthAtl=[GO.within(p,NorthAtl) for p in points[1:npp:np]]
+		println(names)
+    else
+        NorthAtl=missing
+        println("polygon data not found")
+    end
 end
 
 # ╔═╡ e450cb01-cd62-44a4-88b8-5ae2376ec8aa
-function plot_subset(data,ii; mask=NorthAtl,name="North Atlantic")
+function plot_subset(data,ii; mask=missing,name="")
     fig,ax,_=scatter(data.Longitude,data.Latitude,color=data.Year)
     scatter!(ax,data.Longitude[ii],data.Latitude[ii],color=:red)
-    lines!(ax,NorthAtl,color=:black)
+    ismissing(mask) ? nothing : lines!(ax,NorthAtl,color=:black)
     ax.title=name
     fig
 end
@@ -135,7 +162,7 @@ begin
 	pol=GI.Polygon(line)
 	is_in_pol=[GO.within(p,pol) for p in points[1:np]];
 	ii=findall(is_in_pol)
-	plot_subset(data,ii)
+    ismissing(NorthAtl) ? plot_subset(data,ii) : plot_subset(data,ii,mask=NorthAtl,name="North Atlantic (contour)")
 end
 
 # ╔═╡ dd8cb198-abae-4e33-9277-e8123624dd66
@@ -164,6 +191,7 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Dataverse = "9c0b9be8-e31e-490f-90fe-77697562404d"
 GeoInterface = "cf35fbd7-0cd7-5166-be24-54bfbe79505f"
 GeometryOps = "3251bfac-6a57-4b6d-aa61-ac1fef2975ab"
 Glob = "c27321d9-0574-5035-807b-f59d2c89b15c"
@@ -174,6 +202,7 @@ Shapefile = "8e980c4a-a4fe-5da2-b3a7-4b4b0353a2f4"
 CSV = "~0.10.15"
 CairoMakie = "~0.15.6"
 DataFrames = "~1.8.1"
+Dataverse = "~0.1.4"
 GeoInterface = "~1.6.0"
 GeometryOps = "~0.1.30"
 Glob = "~1.3.1"
@@ -187,7 +216,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.11.6"
 manifest_format = "2.0"
-project_hash = "24645a3a96d7549c20e1fffd9d8b89fe31221234"
+project_hash = "0d06c6b225abbdacdcb283bf58c9136eb0adce6e"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -394,6 +423,12 @@ git-tree-sha1 = "cb1299fee09da21e65ec88c1ff3a259f8d0b5802"
 uuid = "95dc2771-c249-4cd0-9c9f-1f3b4330693c"
 version = "0.1.4"
 
+[[deps.Conda]]
+deps = ["Downloads", "JSON", "VersionParsing"]
+git-tree-sha1 = "8f06b0cfa4c514c7b9546756dbae91fcfbc92dc9"
+uuid = "8f4d0f93-b110-5947-807f-2305c1781a2d"
+version = "1.10.3"
+
 [[deps.ConstructionBase]]
 git-tree-sha1 = "b4b092499347b18a015186eae3042f72267106cb"
 uuid = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
@@ -448,6 +483,12 @@ version = "0.19.2"
 git-tree-sha1 = "bfc1187b79289637fa0ef6d4436ebdfe6905cbd6"
 uuid = "e2d170a0-9d28-54be-80f0-106bbe20a464"
 version = "1.0.0"
+
+[[deps.Dataverse]]
+deps = ["CSV", "Conda", "DataFrames", "Downloads", "PyCall"]
+git-tree-sha1 = "aa437536f4505a3abe303a6db983349f617ce82f"
+uuid = "9c0b9be8-e31e-490f-90fe-77697562404d"
+version = "0.1.4"
 
 [[deps.Dates]]
 deps = ["Printf"]
@@ -1334,6 +1375,12 @@ git-tree-sha1 = "1d36ef11a9aaf1e8b74dacc6a731dd1de8fd493d"
 uuid = "43287f4e-b6f4-7ad1-bb20-aadabca52c3d"
 version = "1.3.0"
 
+[[deps.PyCall]]
+deps = ["Conda", "Dates", "Libdl", "LinearAlgebra", "MacroTools", "Serialization", "VersionParsing"]
+git-tree-sha1 = "9816a3826b0ebf49ab4926e2b18842ad8b5c8f04"
+uuid = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
+version = "1.96.4"
+
 [[deps.QOI]]
 deps = ["ColorTypes", "FileIO", "FixedPointNumbers"]
 git-tree-sha1 = "8b3fc30bc0390abdce15f8822c889f669baed73d"
@@ -1730,6 +1777,11 @@ version = "1.25.1"
     Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
     Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
+[[deps.VersionParsing]]
+git-tree-sha1 = "58d6e80b4ee071f5efd07fda82cb9fbe17200868"
+uuid = "81def892-9a0e-5fdd-b105-ffc91e053289"
+version = "1.3.0"
+
 [[deps.WeakRefStrings]]
 deps = ["DataAPI", "InlineStrings", "Parsers"]
 git-tree-sha1 = "b1be2855ed9ed8eac54e5caff2afcdb442d52c23"
@@ -1902,11 +1954,12 @@ version = "4.1.0+0"
 # ╟─49439775-c3ac-4e64-a474-a837cbcfda56
 # ╟─1257cc5c-2946-4bb0-a57f-94b51b9caf68
 # ╟─643259db-28db-4349-a0e6-e63466b03efd
+# ╟─3137001d-c6f1-4fed-88b8-1d105b7079d8
 # ╟─198e675a-2aef-459e-b1e6-7174cb443389
-# ╠═3137001d-c6f1-4fed-88b8-1d105b7079d8
 # ╟─44456d92-bf45-43fd-9555-7b6d2829be04
 # ╟─c0790af4-4836-4065-8114-34a6c25391e8
-# ╠═967e3d86-ba48-11f0-30a2-05f62d439a4d
+# ╟─967e3d86-ba48-11f0-30a2-05f62d439a4d
+# ╟─2187f884-9f68-45ae-b896-8f583a29bc27
 # ╟─4c86d37b-9ae2-430a-8e7c-a4acc3e0b151
 # ╟─baf0fb54-7470-43ec-99ce-3f5c0715adc6
 # ╟─e450cb01-cd62-44a4-88b8-5ae2376ec8aa
