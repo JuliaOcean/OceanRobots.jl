@@ -37,6 +37,7 @@ md"""## Read Data"""
 begin
     path_to_data=joinpath(tempdir(),"CPRBeam_DataExtract")
     ispath(path_to_data) ? path_to_data : download_cpr_data(path_to_data)
+    readdir(path_to_data)
 end
 
 # ╔═╡ 49439775-c3ac-4e64-a474-a837cbcfda56
