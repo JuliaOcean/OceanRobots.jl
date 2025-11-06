@@ -108,9 +108,9 @@ function read_cpr(path_to_data::String)
     t=types[1]
     f=joinpath(path_to_data,"CPR_CPRBeam_Data_"*t*"_14102025.csv")
     data=CSV.read(f,DataFrame)
-    f=joinpath(path_to_data,"CPR_CPRBeam_list_"*t*"_14102025.csv")
+    f=joinpath(path_to_data,"CPR_CPRBeam_List_"*t*"_14102025.csv")
     meta=CSV.read(f,DataFrame)
-    f=joinpath(path_to_data,"CPR_CPRBeam_taxo_"*t*"_14102025.csv")
+    f=joinpath(path_to_data,"CPR_CPRBeam_Taxo_"*t*"_14102025.csv")
     taxa=CSV.read(f,DataFrame)
 
     data,meta,taxa
