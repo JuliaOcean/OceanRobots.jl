@@ -154,24 +154,6 @@ f1,f2=plot_checks(data);
 fig_check
 
 # ╔═╡ baf0fb54-7470-43ec-99ce-3f5c0715adc6
-"""
-    read_polygon()
-
-- read in shapefile and convert to polygon (outer one)
-- use to test whether a point is within polygon
-
-```
-#fil = joinpath(dirname(pathof(Shapefile)),"..","test","shapelib_testcases","test.shp")
-fil = joinpath(path_to_data,"GOaS_v1_20211214","goas_v01.shp")
-
-pol,names=read_polygon(fil)
-point = GI.Point((-45.6,-60.6))
-
-poly(pol); scatter!(point,color=:red); current_figure()
-
-GO.within(point,pol)
-```
-"""
 function read_polygon(fil; p=1,k=1)
     table = Shapefile.Table(fil)
     names = [t.name for t in table]
@@ -181,31 +163,45 @@ function read_polygon(fil; p=1,k=1)
     line=GI.LineString(coords[k][1])
     pol=GI.Polygon(line)
 
-    pol,names
+    pol,names[p]
 end
 
 # ╔═╡ 44456d92-bf45-43fd-9555-7b6d2829be04
-function set_polygon(path_to_data::String)
+"""
+    set_polygon()
+
+- read in shapefile and convert to polygon (outer one)
+- or define a simple polygon
+- use to test whether a point is within polygon
+
+```
+pol,name=set_polygon()
+point = GI.Point((-75,41))
+
+poly(pol); scatter!(point,color=:red); fig=current_figure()
+GO.within(point,pol)
+```
+"""
+function set_polygon(path_to_data="")
 	fil = joinpath(path_to_data,"GOaS_v1_20211214","goas_v01.shp")
 	if isfile(fil)
-        NorthAtl,names=read_polygon(fil,p=9,k=1)
+        NorthAtl,name=read_polygon(fil,p=9,k=1)
 		NorthAtl=GO.simplify(NorthAtl,number=1000) #simplification is important for performance
 		
         #NorthPac1,names=read_polygon(fil,4,1)
         #NorthPac2,names=read_polygon(fil,4,2)
         #poly(NorthPac1); poly!(NorthPac2); current_figure()
-            
-		println(names)
-    else
+	else
 		line=GI.LineString([(-76,40),(-31,40),(-31,50),(-76,50)])
 		NorthAtl=GI.Polygon(line)
-        println("NorthAtlBox")
+		name="NorthAtlBox"
     end
-	NorthAtl
+	println(name)
+	NorthAtl,name
 end
 
 # ╔═╡ bd49828f-adb3-42b5-9112-edbde5133673
-NorthAtl=set_polygon(path_to_data)
+NorthAtl,name=set_polygon(path_to_data)
 
 # ╔═╡ e450cb01-cd62-44a4-88b8-5ae2376ec8aa
 function plot_subset(data,ii; mask=missing,name="",mksize=2)
@@ -222,7 +218,7 @@ begin
 	is_in_pol=(!).(is_in_pol)
 	
 	ii=findall(is_in_pol)
-    ismissing(NorthAtl) ? plot_subset(data,ii) : plot_subset(data,ii,mask=NorthAtl,name="North Atlantic (contour)")
+    plot_subset(data,ii,mask=NorthAtl,name="$(name) (contour)")
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
