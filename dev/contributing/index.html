@@ -16,34 +16,34 @@ include(notebook)</code></pre><pre class="documenter-example-output"><code class
 
 
 ┌ Warning: The active manifest file has dependencies that were resolved with a different julia version (1.12.1). Unexpected behavior may occur.
-└ @ /tmp/jl_IUmFYL/Float_Argo.jl/Manifest.toml:0
+└ @ /tmp/jl_DVL0lU/Float_Argo.jl/Manifest.toml:0
 ┌ Warning: The project dependencies or compat requirements have changed since the manifest was last resolved.
 │ It is recommended to `Pkg.resolve()` or consider `Pkg.update()` if necessary.
 └ @ Pkg.API /opt/hostedtoolcache/julia/1.11.7/x64/share/julia/stdlib/v1.11/Pkg/src/API.jl:1206
-   Installed JLD2 ──────────── v0.5.15
+   Installed Hyperscript ───── v0.0.5
    Installed IOCapture ─────── v1.0.0
    Installed PlutoUI ───────── v0.7.73
-   Installed PrecompileTools ─ v1.3.3
    Installed DataStructures ── v0.19.3
-   Installed Hyperscript ───── v0.0.5
+   Installed JLD2 ──────────── v0.5.15
+   Installed PrecompileTools ─ v1.3.3
    Installed OceanRobots ───── v0.2.19
 Precompiling project...
-   1114.3 ms  ✓ IOCapture
-    999.9 ms  ✓ Hyperscript
+   1054.0 ms  ✓ IOCapture
+    940.4 ms  ✓ Hyperscript
            ✗ PrecompileTools
-   1803.4 ms  ✓ DataStructures
+   1800.9 ms  ✓ DataStructures
            ✗ JLD2
            ✗ PlutoUI
            ✗ OceanRobots
            ✗ OceanRobots → OceanRobotsMakieExt
-  3 dependencies successfully precompiled in 26 seconds. 414 already precompiled.
+  3 dependencies successfully precompiled in 25 seconds. 414 already precompiled.
   2 dependencies precompiled but different versions are currently loaded. Restart julia to access the new versions. Otherwise, loading dependents of these packages may trigger further precompilation to work with the unexpected versions.
 
 The following 3 direct dependencies failed to precompile:
 
 OceanRobots
 
-Failed to precompile OceanRobots [0b51df41-3294-4961-8d23-db645e32016d] to &quot;/home/runner/.julia/compiled/v1.11/OceanRobots/jl_8ZKnEk&quot;.
+Failed to precompile OceanRobots [0b51df41-3294-4961-8d23-db645e32016d] to &quot;/home/runner/.julia/compiled/v1.11/OceanRobots/jl_xKNWs8&quot;.
 ERROR: LoadError: UndefVarError: `StaticData` not defined in `Base`
 Stacktrace:
  [1] getproperty(x::Module, f::Symbol)
@@ -65,7 +65,7 @@ Stacktrace:
 in expression starting at /home/runner/.julia/packages/PrecompileTools/gn08A/src/invalidations.jl:15
 in expression starting at /home/runner/.julia/packages/PrecompileTools/gn08A/src/PrecompileTools.jl:1
 in expression starting at stdin:6
-ERROR: LoadError: Failed to precompile PrecompileTools [aea7be01-6a6a-4083-8856-8a6e6704d82a] to &quot;/home/runner/.julia/compiled/v1.11/PrecompileTools/jl_suZFut&quot;.
+ERROR: LoadError: Failed to precompile PrecompileTools [aea7be01-6a6a-4083-8856-8a6e6704d82a] to &quot;/home/runner/.julia/compiled/v1.11/PrecompileTools/jl_EOxCG2&quot;.
 Stacktrace:
   [1] error(s::String)
     @ Base ./error.jl:35
@@ -124,7 +124,7 @@ Stacktrace:
 in expression starting at /home/runner/.julia/packages/StringManipulation/inTre/src/precompilation.jl:7
 in expression starting at /home/runner/.julia/packages/StringManipulation/inTre/src/StringManipulation.jl:1
 in expression starting at stdin:6
-ERROR: LoadError: Failed to precompile StringManipulation [892a3eda-7b42-436c-8928-eab12a02cf0e] to &quot;/home/runner/.julia/compiled/v1.11/StringManipulation/jl_L4Ft7m&quot;.
+ERROR: LoadError: Failed to precompile StringManipulation [892a3eda-7b42-436c-8928-eab12a02cf0e] to &quot;/home/runner/.julia/compiled/v1.11/StringManipulation/jl_bPycXU&quot;.
 Stacktrace:
   [1] error(s::String)
     @ Base ./error.jl:35
@@ -176,7 +176,7 @@ Stacktrace:
     @ stdin:6
 in expression starting at /home/runner/.julia/packages/PrettyTables/SEngz/src/PrettyTables.jl:1
 in expression starting at stdin:6
-ERROR: LoadError: Failed to precompile PrettyTables [08abe8d2-0d0c-5749-adfa-8a2ac140af0d] to &quot;/home/runner/.julia/compiled/v1.11/PrettyTables/jl_QkoTli&quot;.
+ERROR: LoadError: Failed to precompile PrettyTables [08abe8d2-0d0c-5749-adfa-8a2ac140af0d] to &quot;/home/runner/.julia/compiled/v1.11/PrettyTables/jl_XBDy3n&quot;.
 Stacktrace:
   [1] error(s::String)
     @ Base ./error.jl:35
@@ -228,7 +228,7 @@ Stacktrace:
     @ stdin:6
 in expression starting at /home/runner/.julia/packages/DataFrames/b4w9K/src/DataFrames.jl:1
 in expression starting at stdin:6
-ERROR: LoadError: Failed to precompile DataFrames [a93c6f00-e57d-5684-b7b6-d8193f3e46c0] to &quot;/home/runner/.julia/compiled/v1.11/DataFrames/jl_kIpS5M&quot;.
+ERROR: LoadError: Failed to precompile DataFrames [a93c6f00-e57d-5684-b7b6-d8193f3e46c0] to &quot;/home/runner/.julia/compiled/v1.11/DataFrames/jl_N6EIiW&quot;.
 Stacktrace:
   [1] error(s::String)
     @ Base ./error.jl:35
@@ -289,7 +289,7 @@ in expression starting at /home/runner/.julia/packages/OceanRobots/WJARy/src/Oce
 in expression starting at stdin:6
 OceanRobotsMakieExt
 
-Failed to precompile OceanRobotsMakieExt [c08b1b8f-6cad-5729-9e1e-c8ed0f7999bc] to &quot;/home/runner/.julia/compiled/v1.11/OceanRobotsMakieExt/jl_0ENDnE&quot;.
+Failed to precompile OceanRobotsMakieExt [c08b1b8f-6cad-5729-9e1e-c8ed0f7999bc] to &quot;/home/runner/.julia/compiled/v1.11/OceanRobotsMakieExt/jl_einsEs&quot;.
 ERROR: LoadError: UndefVarError: `StaticData` not defined in `Base`
 Stacktrace:
  [1] getproperty(x::Module, f::Symbol)
@@ -311,7 +311,7 @@ Stacktrace:
 in expression starting at /home/runner/.julia/packages/PrecompileTools/gn08A/src/invalidations.jl:15
 in expression starting at /home/runner/.julia/packages/PrecompileTools/gn08A/src/PrecompileTools.jl:1
 in expression starting at stdin:6
-ERROR: LoadError: Failed to precompile PrecompileTools [aea7be01-6a6a-4083-8856-8a6e6704d82a] to &quot;/home/runner/.julia/compiled/v1.11/PrecompileTools/jl_tqgTJr&quot;.
+ERROR: LoadError: Failed to precompile PrecompileTools [aea7be01-6a6a-4083-8856-8a6e6704d82a] to &quot;/home/runner/.julia/compiled/v1.11/PrecompileTools/jl_6fnmmD&quot;.
 Stacktrace:
   [1] error(s::String)
     @ Base ./error.jl:35
@@ -370,7 +370,7 @@ Stacktrace:
 in expression starting at /home/runner/.julia/packages/StringManipulation/inTre/src/precompilation.jl:7
 in expression starting at /home/runner/.julia/packages/StringManipulation/inTre/src/StringManipulation.jl:1
 in expression starting at stdin:6
-ERROR: LoadError: Failed to precompile StringManipulation [892a3eda-7b42-436c-8928-eab12a02cf0e] to &quot;/home/runner/.julia/compiled/v1.11/StringManipulation/jl_eJK4mv&quot;.
+ERROR: LoadError: Failed to precompile StringManipulation [892a3eda-7b42-436c-8928-eab12a02cf0e] to &quot;/home/runner/.julia/compiled/v1.11/StringManipulation/jl_HxcJSl&quot;.
 Stacktrace:
   [1] error(s::String)
     @ Base ./error.jl:35
@@ -422,7 +422,7 @@ Stacktrace:
     @ stdin:6
 in expression starting at /home/runner/.julia/packages/PrettyTables/SEngz/src/PrettyTables.jl:1
 in expression starting at stdin:6
-ERROR: LoadError: Failed to precompile PrettyTables [08abe8d2-0d0c-5749-adfa-8a2ac140af0d] to &quot;/home/runner/.julia/compiled/v1.11/PrettyTables/jl_pOlD3m&quot;.
+ERROR: LoadError: Failed to precompile PrettyTables [08abe8d2-0d0c-5749-adfa-8a2ac140af0d] to &quot;/home/runner/.julia/compiled/v1.11/PrettyTables/jl_yGAGzD&quot;.
 Stacktrace:
   [1] error(s::String)
     @ Base ./error.jl:35
@@ -474,7 +474,7 @@ Stacktrace:
     @ stdin:6
 in expression starting at /home/runner/.julia/packages/DataFrames/b4w9K/src/DataFrames.jl:1
 in expression starting at stdin:6
-ERROR: LoadError: Failed to precompile DataFrames [a93c6f00-e57d-5684-b7b6-d8193f3e46c0] to &quot;/home/runner/.julia/compiled/v1.11/DataFrames/jl_MJLqSz&quot;.
+ERROR: LoadError: Failed to precompile DataFrames [a93c6f00-e57d-5684-b7b6-d8193f3e46c0] to &quot;/home/runner/.julia/compiled/v1.11/DataFrames/jl_Tz15ix&quot;.
 Stacktrace:
   [1] error(s::String)
     @ Base ./error.jl:35
@@ -533,7 +533,7 @@ Stacktrace:
 in expression starting at /home/runner/.julia/packages/OceanRobots/WJARy/src/types.jl:2
 in expression starting at /home/runner/.julia/packages/OceanRobots/WJARy/src/OceanRobots.jl:1
 in expression starting at stdin:6
-ERROR: LoadError: Failed to precompile OceanRobots [0b51df41-3294-4961-8d23-db645e32016d] to &quot;/home/runner/.julia/compiled/v1.11/OceanRobots/jl_eiPaFe&quot;.
+ERROR: LoadError: Failed to precompile OceanRobots [0b51df41-3294-4961-8d23-db645e32016d] to &quot;/home/runner/.julia/compiled/v1.11/OceanRobots/jl_II2LC3&quot;.
 Stacktrace:
   [1] error(s::String)
     @ Base ./error.jl:35
@@ -588,7 +588,7 @@ in expression starting at stdin:6
 
 PlutoUI
 
-Failed to precompile PlutoUI [7f904dfe-b85e-4ff6-b463-dae2292396a8] to &quot;/home/runner/.julia/compiled/v1.11/PlutoUI/jl_sFBdoR&quot;.
+Failed to precompile PlutoUI [7f904dfe-b85e-4ff6-b463-dae2292396a8] to &quot;/home/runner/.julia/compiled/v1.11/PlutoUI/jl_h38cGE&quot;.
 ERROR: LoadError: ArgumentError: Package MbedTLS_jll [c8ffd9c3-330d-5841-b78e-0817d7145fa1] is required but does not seem to be installed:
  - Run `Pkg.instantiate()` to install all recorded dependencies.
 
@@ -623,7 +623,7 @@ Stacktrace:
     @ stdin:6
 in expression starting at /opt/hostedtoolcache/julia/1.11.7/x64/share/julia/stdlib/v1.11/LibGit2_jll/src/LibGit2_jll.jl:5
 in expression starting at stdin:6
-ERROR: LoadError: Failed to precompile LibGit2_jll [e37daf67-58a4-590a-8e99-b0245dd2ffc5] to &quot;/home/runner/.julia/compiled/v1.11/LibGit2_jll/jl_mS7vAs&quot;.
+ERROR: LoadError: Failed to precompile LibGit2_jll [e37daf67-58a4-590a-8e99-b0245dd2ffc5] to &quot;/home/runner/.julia/compiled/v1.11/LibGit2_jll/jl_PBFVjA&quot;.
 Stacktrace:
   [1] error(s::String)
     @ Base ./error.jl:35
@@ -675,7 +675,7 @@ Stacktrace:
     @ stdin:6
 in expression starting at /opt/hostedtoolcache/julia/1.11.7/x64/share/julia/stdlib/v1.11/LibGit2/src/LibGit2.jl:3
 in expression starting at stdin:6
-ERROR: LoadError: Failed to precompile LibGit2 [76f85450-5226-5b5a-8eaa-529ad045b433] to &quot;/home/runner/.julia/compiled/v1.11/LibGit2/jl_1URfsN&quot;.
+ERROR: LoadError: Failed to precompile LibGit2 [76f85450-5226-5b5a-8eaa-529ad045b433] to &quot;/home/runner/.julia/compiled/v1.11/LibGit2/jl_3ZlmbN&quot;.
 Stacktrace:
   [1] error(s::String)
     @ Base ./error.jl:35
@@ -734,7 +734,7 @@ Stacktrace:
 in expression starting at /opt/hostedtoolcache/julia/1.11.7/x64/share/julia/stdlib/v1.11/Pkg/src/GitTools.jl:3
 in expression starting at /opt/hostedtoolcache/julia/1.11.7/x64/share/julia/stdlib/v1.11/Pkg/src/Pkg.jl:3
 in expression starting at stdin:6
-ERROR: LoadError: Failed to precompile Pkg [44cfe95a-1eb2-52ea-b672-e2afdf69b78f] to &quot;/home/runner/.julia/compiled/v1.11/Pkg/jl_UXLRrR&quot;.
+ERROR: LoadError: Failed to precompile Pkg [44cfe95a-1eb2-52ea-b672-e2afdf69b78f] to &quot;/home/runner/.julia/compiled/v1.11/Pkg/jl_yqGVKk&quot;.
 Stacktrace:
   [1] error(s::String)
     @ Base ./error.jl:35
@@ -786,7 +786,7 @@ Stacktrace:
     @ stdin:6
 in expression starting at /home/runner/.julia/packages/AbstractPlutoDingetjes/fhNFA/src/AbstractPlutoDingetjes.jl:2
 in expression starting at stdin:6
-ERROR: LoadError: Failed to precompile AbstractPlutoDingetjes [6e696c72-6542-2067-7265-42206c756150] to &quot;/home/runner/.julia/compiled/v1.11/AbstractPlutoDingetjes/jl_Vjin1x&quot;.
+ERROR: LoadError: Failed to precompile AbstractPlutoDingetjes [6e696c72-6542-2067-7265-42206c756150] to &quot;/home/runner/.julia/compiled/v1.11/AbstractPlutoDingetjes/jl_Yxd3pJ&quot;.
 Stacktrace:
   [1] error(s::String)
     @ Base ./error.jl:35
@@ -847,17 +847,17 @@ in expression starting at /home/runner/.julia/packages/PlutoUI/hVVnF/src/PlutoUI
 in expression starting at stdin:6Precompiling PlutoUI...
            ✗ PrecompileTools
 Info Given PlutoUI was explicitly requested, output will be shown live 
-┌ Warning: Module AbstractPlutoDingetjes with build ID fafbfcfd-9188-1c58-a687-6a27a1dd5cdf is missing from the cache.
+┌ Warning: Module AbstractPlutoDingetjes with build ID fafbfcfd-2ef8-a4b5-7dd1-eef058f87819 is missing from the cache.
 │ This may mean AbstractPlutoDingetjes [6e696c72-6542-2067-7265-42206c756150] does not support precompilation but is imported by a module that does.
 └ @ Base loading.jl:2541
-    815.6 ms  ? PlutoUI
+    735.9 ms  ? PlutoUI
   0 dependencies successfully precompiled in 2 seconds. 42 already precompiled.
   1 dependencies failed but may be precompilable after restarting julia
   1 dependency had output during precompilation:
 ┌ PlutoUI
 │  [Output was shown above]
 └
-┌ Warning: Module AbstractPlutoDingetjes with build ID fafbfcfd-9188-1c58-a687-6a27a1dd5cdf is missing from the cache.
+┌ Warning: Module AbstractPlutoDingetjes with build ID fafbfcfd-2ef8-a4b5-7dd1-eef058f87819 is missing from the cache.
 │ This may mean AbstractPlutoDingetjes [6e696c72-6542-2067-7265-42206c756150] does not support precompilation but is imported by a module that does.
 └ @ Base loading.jl:2541
 20092×2 DataFrame
@@ -883,4 +883,4 @@ Info Given PlutoUI was explicitly requested, output will be shown live
        20077 rows omitted┌ Warning: specifycing files_list here is deprecated
 └ @ ArgoData ~/.julia/packages/ArgoData/BNZxz/src/data_structures.jl:181
 downloading floats list via ArgoData.jl
-  Activating project at `~/work/OceanRobots.jl/OceanRobots.jl/docs`</code></pre><h2 id="how-to-seek-support"><a class="docs-heading-anchor" href="#how-to-seek-support">How to Seek Support</a><a id="how-to-seek-support-1"></a><a class="docs-heading-anchor-permalink" href="#how-to-seek-support" title="Permalink"></a></h2><p>If something is unclear or proves difficult to use, please seek support by <a href="https://github.com/juliaocean/OceanRobots.jl/issues">opening an issue on the repository</a>.</p><h2 id="how-to-contribute"><a class="docs-heading-anchor" href="#how-to-contribute">How to Contribute</a><a id="how-to-contribute-1"></a><a class="docs-heading-anchor-permalink" href="#how-to-contribute" title="Permalink"></a></h2><p>Thank you for considering contributing to OceanRobots.jl! If you&#39;re interested in contributing we want your help no matter how big or small a contribution you make! </p><h3 id="reporting-bugs"><a class="docs-heading-anchor" href="#reporting-bugs">Reporting Bugs</a><a id="reporting-bugs-1"></a><a class="docs-heading-anchor-permalink" href="#reporting-bugs" title="Permalink"></a></h3><p>If you encounter a bug, please help us fix it by following these steps:</p><ol><li>Ensure the bug is not already reported by checking the <a href="https://github.com/juliaocean/OceanRobots.jl/issues">issue tracker</a>.</li><li>If the bug isn&#39;t reported, open a new issue. Clearly describe the issue, including steps to reproduce it.</li></ol><h3 id="suggesting-enhancements"><a class="docs-heading-anchor" href="#suggesting-enhancements">Suggesting Enhancements</a><a id="suggesting-enhancements-1"></a><a class="docs-heading-anchor-permalink" href="#suggesting-enhancements" title="Permalink"></a></h3><p>If you have ideas for enhancements, new features, or improvements, we&#39;d love to hear them! Follow these steps:</p><ol><li>Check the <a href="https://github.com/juliaocean/OceanRobots.jl/issues">issue tracker</a> to see if your suggestion has been discussed.</li><li>If not, open a new issue, providing a detailed description of your suggestion and the use case it addresses.</li></ol><h3 id="code-contribution"><a class="docs-heading-anchor" href="#code-contribution">Code Contribution</a><a id="code-contribution-1"></a><a class="docs-heading-anchor-permalink" href="#code-contribution" title="Permalink"></a></h3><p>If you&#39;d like to contribute code to the project:</p><ol><li>Fork the repository.</li><li>Clone your fork: <code>git clone https://github.com/juliaocean/OceanRobots.jl</code></li><li>Create a new branch for your changes: <code>git checkout -b feature-branch</code></li><li>Make your changes and commit them with a clear message.</li><li>Push your changes to your fork: <code>git push origin feature-branch</code></li><li>Open a pull request against the <code>master</code> branch of the main repository.</li></ol><h2 id="pull-request-process"><a class="docs-heading-anchor" href="#pull-request-process">Pull Request Process</a><a id="pull-request-process-1"></a><a class="docs-heading-anchor-permalink" href="#pull-request-process" title="Permalink"></a></h2><p>Please ensure your pull request follows these guidelines:</p><ol><li>Adheres to the coding standards.</li><li>Includes relevant tests for new functionality.</li><li>Has a clear commit history and messages.</li><li>References the relevant issue if applicable.</li></ol><p>Please don&#39;t hesistate to get in touch to discuss, or with any questions!</p><h2 id="license"><a class="docs-heading-anchor" href="#license">License</a><a id="license-1"></a><a class="docs-heading-anchor-permalink" href="#license" title="Permalink"></a></h2><p>By contributing to this project, you agree that your contributions will be licensed under the <a href="https://github.com/juliaocean/OceanRobots.jl/blob/master/LICENSE">LICENSE</a> file of this repository.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../examples/">« Notebooks</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.15.0 on <span class="colophon-date" title="Friday 7 November 2025 03:49">Friday 7 November 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  Activating project at `~/work/OceanRobots.jl/OceanRobots.jl/docs`</code></pre><h2 id="how-to-seek-support"><a class="docs-heading-anchor" href="#how-to-seek-support">How to Seek Support</a><a id="how-to-seek-support-1"></a><a class="docs-heading-anchor-permalink" href="#how-to-seek-support" title="Permalink"></a></h2><p>If something is unclear or proves difficult to use, please seek support by <a href="https://github.com/juliaocean/OceanRobots.jl/issues">opening an issue on the repository</a>.</p><h2 id="how-to-contribute"><a class="docs-heading-anchor" href="#how-to-contribute">How to Contribute</a><a id="how-to-contribute-1"></a><a class="docs-heading-anchor-permalink" href="#how-to-contribute" title="Permalink"></a></h2><p>Thank you for considering contributing to OceanRobots.jl! If you&#39;re interested in contributing we want your help no matter how big or small a contribution you make! </p><h3 id="reporting-bugs"><a class="docs-heading-anchor" href="#reporting-bugs">Reporting Bugs</a><a id="reporting-bugs-1"></a><a class="docs-heading-anchor-permalink" href="#reporting-bugs" title="Permalink"></a></h3><p>If you encounter a bug, please help us fix it by following these steps:</p><ol><li>Ensure the bug is not already reported by checking the <a href="https://github.com/juliaocean/OceanRobots.jl/issues">issue tracker</a>.</li><li>If the bug isn&#39;t reported, open a new issue. Clearly describe the issue, including steps to reproduce it.</li></ol><h3 id="suggesting-enhancements"><a class="docs-heading-anchor" href="#suggesting-enhancements">Suggesting Enhancements</a><a id="suggesting-enhancements-1"></a><a class="docs-heading-anchor-permalink" href="#suggesting-enhancements" title="Permalink"></a></h3><p>If you have ideas for enhancements, new features, or improvements, we&#39;d love to hear them! Follow these steps:</p><ol><li>Check the <a href="https://github.com/juliaocean/OceanRobots.jl/issues">issue tracker</a> to see if your suggestion has been discussed.</li><li>If not, open a new issue, providing a detailed description of your suggestion and the use case it addresses.</li></ol><h3 id="code-contribution"><a class="docs-heading-anchor" href="#code-contribution">Code Contribution</a><a id="code-contribution-1"></a><a class="docs-heading-anchor-permalink" href="#code-contribution" title="Permalink"></a></h3><p>If you&#39;d like to contribute code to the project:</p><ol><li>Fork the repository.</li><li>Clone your fork: <code>git clone https://github.com/juliaocean/OceanRobots.jl</code></li><li>Create a new branch for your changes: <code>git checkout -b feature-branch</code></li><li>Make your changes and commit them with a clear message.</li><li>Push your changes to your fork: <code>git push origin feature-branch</code></li><li>Open a pull request against the <code>master</code> branch of the main repository.</li></ol><h2 id="pull-request-process"><a class="docs-heading-anchor" href="#pull-request-process">Pull Request Process</a><a id="pull-request-process-1"></a><a class="docs-heading-anchor-permalink" href="#pull-request-process" title="Permalink"></a></h2><p>Please ensure your pull request follows these guidelines:</p><ol><li>Adheres to the coding standards.</li><li>Includes relevant tests for new functionality.</li><li>Has a clear commit history and messages.</li><li>References the relevant issue if applicable.</li></ol><p>Please don&#39;t hesistate to get in touch to discuss, or with any questions!</p><h2 id="license"><a class="docs-heading-anchor" href="#license">License</a><a id="license-1"></a><a class="docs-heading-anchor-permalink" href="#license" title="Permalink"></a></h2><p>By contributing to this project, you agree that your contributions will be licensed under the <a href="https://github.com/juliaocean/OceanRobots.jl/blob/master/LICENSE">LICENSE</a> file of this repository.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../examples/">« Notebooks</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.15.0 on <span class="colophon-date" title="Friday 7 November 2025 12:36">Friday 7 November 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

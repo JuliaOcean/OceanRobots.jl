@@ -29,10 +29,11 @@ end
 # ╔═╡ eadd3d1f-29dc-403b-b3ab-710e750610b6
 md"""# Continuous Plankton Recorder
 
-This notebook is based on examples provided by @PierreHelaouet at the 2025 CPR-BEAMS workshop (in Matlab/Octave).
-
 !!! note
-    if you use this data please cite <https://doi.mba.ac.uk/data/3567/> and adequate peer-reviewed publications.
+	- This notebook is based on examples provided by @PierreHelaouet at the 2025 CPR-BEAMS workshop (in Matlab/Octave), translated to Julia by @gaelforget.
+    - if you use this data please cite <https://doi.mba.ac.uk/data/3567/> and adequate peer-reviewed publications.
+
+Relevant websites include:
 
 - [CPR-BEAMS project](https://website.whoi.edu/cpr-beams/)
 - [CPR data url](https://dassh.ac.uk/downloads/mba_rdm/CPR_DataRequest_CPRBeam_Workshop.zip)
@@ -184,7 +185,7 @@ function read_polygon(fil; p=1,k=1)
 end
 
 # ╔═╡ 44456d92-bf45-43fd-9555-7b6d2829be04
-begin
+function set_polygon(path_to_data::String)
 	fil = joinpath(path_to_data,"GOaS_v1_20211214","goas_v01.shp")
 	if isfile(fil)
         NorthAtl,names=read_polygon(fil,p=9,k=1)
@@ -196,10 +197,15 @@ begin
             
 		println(names)
     else
-        NorthAtl=missing
-        println("polygon data not found")
+		line=GI.LineString([(-76,40),(-31,40),(-31,50),(-76,50)])
+		NorthAtl=GI.Polygon(line)
+        println("NorthAtlBox")
     end
+	NorthAtl
 end
+
+# ╔═╡ bd49828f-adb3-42b5-9112-edbde5133673
+NorthAtl=set_polygon(path_to_data)
 
 # ╔═╡ e450cb01-cd62-44a4-88b8-5ae2376ec8aa
 function plot_subset(data,ii; mask=missing,name="",mksize=2)
@@ -212,10 +218,6 @@ end
 
 # ╔═╡ 198e675a-2aef-459e-b1e6-7174cb443389
 begin
-	#this subsetting is fast, since the polygon is simple
-	line=GI.LineString([(-76,40),(-31,40),(-31,50),(-76,50)])
-	pol=GI.Polygon(line)
-#	is_in_pol=[GO.within(p,pol) for p in points[1:np]];
 	is_in_pol=[GO.within(p,NorthAtl) for p in points[1:np]];
 	is_in_pol=(!).(is_in_pol)
 	
@@ -2049,13 +2051,13 @@ version = "4.1.0+0"
 # ╟─ee5f6fd6-a789-4d13-b5f2-766ef6a7f6bc
 # ╟─49439775-c3ac-4e64-a474-a837cbcfda56
 # ╟─1257cc5c-2946-4bb0-a57f-94b51b9caf68
+# ╟─bd49828f-adb3-42b5-9112-edbde5133673
 # ╟─643259db-28db-4349-a0e6-e63466b03efd
 # ╟─47df4cda-8b17-48b6-b0c2-6d79dbacb695
 # ╟─8f3145af-3f47-410a-a19f-bc90e67a8465
 # ╠═3137001d-c6f1-4fed-88b8-1d105b7079d8
 # ╟─0bfb4822-50dd-41ae-8b6d-38ebd43d6bfc
 # ╟─198e675a-2aef-459e-b1e6-7174cb443389
-# ╟─44456d92-bf45-43fd-9555-7b6d2829be04
 # ╟─c0790af4-4836-4065-8114-34a6c25391e8
 # ╟─967e3d86-ba48-11f0-30a2-05f62d439a4d
 # ╟─2187f884-9f68-45ae-b896-8f583a29bc27
@@ -2063,5 +2065,6 @@ version = "4.1.0+0"
 # ╟─e450cb01-cd62-44a4-88b8-5ae2376ec8aa
 # ╟─dd8cb198-abae-4e33-9277-e8123624dd66
 # ╟─baf0fb54-7470-43ec-99ce-3f5c0715adc6
+# ╟─44456d92-bf45-43fd-9555-7b6d2829be04
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
