@@ -4,6 +4,18 @@
 using Markdown
 using InteractiveUtils
 
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    #! format: off
+    return quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
+        el
+    end
+    #! format: on
+end
+
 # ╔═╡ 967e3d86-ba48-11f0-30a2-05f62d439a4d
 begin
 	using CairoMakie, Glob
@@ -19,61 +31,39 @@ md"""# Continuous Plankton Recorder
 
 This notebook is based on examples provided by @PierreHelaouet at the 2025 CPR-BEAMS workshop (in Matlab/Octave).
 
+!!! note
+    if you use this data please cite <https://doi.mba.ac.uk/data/3567/> and adequate peer-reviewed publications.
+
 - [CPR-BEAMS project](https://website.whoi.edu/cpr-beams/)
 - [CPR data url](https://dassh.ac.uk/downloads/mba_rdm/CPR_DataRequest_CPRBeam_Workshop.zip)
 - [Polygon Data](https://marineregions.org/downloads.php) : See `GOaS_v1_20211214/goas_v01.shp`
-
-!!! note
-    if you use this data please cite https://doi.mba.ac.uk/data/3567/ and adequate peer-reviewed publications.
 """
 
 # ╔═╡ ce10938d-5bad-47d0-a4cf-cec1a294bca6
 PlutoUI.TableOfContents()
 
 # ╔═╡ e19df1d2-8e3e-4797-b8ac-8025dc87c46b
-md"""## Read Data"""
+md"""## Read Data
 
-# ╔═╡ ee5f6fd6-a789-4d13-b5f2-766ef6a7f6bc
-begin
-    path_to_data=joinpath(tempdir(),"CPRBeam_DataExtract")
-    ispath(path_to_data) ? path_to_data : download_cpr_data(path_to_data)
-    readdir(path_to_data)
-end
-
-# ╔═╡ 49439775-c3ac-4e64-a474-a837cbcfda56
-begin
-	data,meta,taxa=read_cpr(path_to_data)
-	taxa_list=unique(taxa.Phylum)
-end
-
-# ╔═╡ 1257cc5c-2946-4bb0-a57f-94b51b9caf68
-begin
-	#convert lon,lat to GI.Point
-	np=length(data.Longitude)
-	points=[GI.Point(data.Longitude[i],data.Latitude[i]) for i in 1:np];
-end
+- download data to temporary folder
+- read from `csv` file into `DataFrame`
+- convert `lon,lat` to `GI.Point`
+"""
 
 # ╔═╡ 643259db-28db-4349-a0e6-e63466b03efd
-md"""## Plot Data"""
+md"""## Plot Data
 
-# ╔═╡ 44456d92-bf45-43fd-9555-7b6d2829be04
-begin
-	fil = joinpath(path_to_data,"GOaS_v1_20211214","goas_v01.shp")
-	if isfile(fil)
-        NorthAtl,names=read_polygon(fil,p=9,k=1)
-        #NorthPac1,names=read_polygon(fil,4,1)
-        #NorthPac2,names=read_polygon(fil,4,2)
-        #poly(NorthPac1); poly!(NorthPac2); current_figure()
-            
-        #this complicated geometry takes a while, hence the subsetting
-        npp=1000
-        is_in_NorthAtl=[GO.within(p,NorthAtl) for p in points[1:npp:np]]
-		println(names)
-    else
-        NorthAtl=missing
-        println("polygon data not found")
-    end
-end
+- plot `#1` : year of samples, for all samples
+- plot `#2` : number of samples per year and month
+"""
+
+# ╔═╡ 0bfb4822-50dd-41ae-8b6d-38ebd43d6bfc
+md"""## Subset Data within Polygon
+
+1. simplify the North Atl polygons
+1. select data in the North Atl
+1. _plot time series averaged over selected region_
+"""
 
 # ╔═╡ c0790af4-4836-4065-8114-34a6c25391e8
 md"""## Packages and Functions"""
@@ -90,6 +80,14 @@ function download_cpr_data(path_to_data)
 	download(url,joinpath(path_to_data,"CPRBeam_DataExtract.zip"))
     Dataverse.unzip(joinpath(path_to_data,"CPRBeam_DataExtract.zip"))
 	path_to_data
+end
+
+# ╔═╡ ee5f6fd6-a789-4d13-b5f2-766ef6a7f6bc
+begin
+    path_to_data=joinpath(tempdir(),"CPRBeam_DataExtract")
+    ispath(path_to_data) ? path_to_data : download_cpr_data(path_to_data)
+	println(path_to_data)
+    readdir(path_to_data)
 end
 
 # ╔═╡ 4c86d37b-9ae2-430a-8e7c-a4acc3e0b151
@@ -115,6 +113,44 @@ function read_cpr(path_to_data::String)
 
     data,meta,taxa
 end
+
+# ╔═╡ 49439775-c3ac-4e64-a474-a837cbcfda56
+begin
+	data,meta,taxa=read_cpr(path_to_data)
+	taxa_list=unique(taxa.Phylum)
+end
+
+# ╔═╡ 1257cc5c-2946-4bb0-a57f-94b51b9caf68
+begin
+	np=length(data.Longitude)
+	points=[GI.Point(data.Longitude[i],data.Latitude[i]) for i in 1:np];
+end
+
+# ╔═╡ dd8cb198-abae-4e33-9277-e8123624dd66
+function plot_checks(data::DataFrame)
+    T_Map = data[:,1:8]
+
+    f1=scatter(T_Map.Longitude,T_Map.Latitude,color=T_Map.Year,markersize=2)
+
+    T_SampEff = groupby(T_Map, ["Year", "Month"])
+
+    k=keys(T_SampEff)
+    n=[size(t,1) for t in T_SampEff]
+    y=[k.Year for k in keys(T_SampEff)]
+    m=[k.Month for k in keys(T_SampEff)]
+    f2=scatter(y,m,color=n)
+
+    f1,f2
+end
+
+# ╔═╡ 3137001d-c6f1-4fed-88b8-1d105b7079d8
+f1,f2=plot_checks(data);
+
+# ╔═╡ 47df4cda-8b17-48b6-b0c2-6d79dbacb695
+@bind fig_check PlutoUI.Select([f1,f2])
+
+# ╔═╡ 8f3145af-3f47-410a-a19f-bc90e67a8465
+fig_check
 
 # ╔═╡ baf0fb54-7470-43ec-99ce-3f5c0715adc6
 """
@@ -147,10 +183,28 @@ function read_polygon(fil; p=1,k=1)
     pol,names
 end
 
+# ╔═╡ 44456d92-bf45-43fd-9555-7b6d2829be04
+begin
+	fil = joinpath(path_to_data,"GOaS_v1_20211214","goas_v01.shp")
+	if isfile(fil)
+        NorthAtl,names=read_polygon(fil,p=9,k=1)
+		NorthAtl=GO.simplify(NorthAtl,number=1000) #simplification is important for performance
+		
+        #NorthPac1,names=read_polygon(fil,4,1)
+        #NorthPac2,names=read_polygon(fil,4,2)
+        #poly(NorthPac1); poly!(NorthPac2); current_figure()
+            
+		println(names)
+    else
+        NorthAtl=missing
+        println("polygon data not found")
+    end
+end
+
 # ╔═╡ e450cb01-cd62-44a4-88b8-5ae2376ec8aa
-function plot_subset(data,ii; mask=missing,name="")
-    fig,ax,_=scatter(data.Longitude,data.Latitude,color=data.Year)
-    scatter!(ax,data.Longitude[ii],data.Latitude[ii],color=:red)
+function plot_subset(data,ii; mask=missing,name="",mksize=2)
+    fig,ax,_=scatter(data.Longitude,data.Latitude,color=data.Year,markersize=mksize)
+    scatter!(ax,data.Longitude[ii],data.Latitude[ii],color=:red,markersize=mksize)
     ismissing(mask) ? nothing : lines!(ax,NorthAtl,color=:black)
     ax.title=name
     fig
@@ -161,30 +215,13 @@ begin
 	#this subsetting is fast, since the polygon is simple
 	line=GI.LineString([(-76,40),(-31,40),(-31,50),(-76,50)])
 	pol=GI.Polygon(line)
-	is_in_pol=[GO.within(p,pol) for p in points[1:np]];
+#	is_in_pol=[GO.within(p,pol) for p in points[1:np]];
+	is_in_pol=[GO.within(p,NorthAtl) for p in points[1:np]];
+	is_in_pol=(!).(is_in_pol)
+	
 	ii=findall(is_in_pol)
     ismissing(NorthAtl) ? plot_subset(data,ii) : plot_subset(data,ii,mask=NorthAtl,name="North Atlantic (contour)")
 end
-
-# ╔═╡ dd8cb198-abae-4e33-9277-e8123624dd66
-function plot_checks(data::DataFrame)
-    T_Map = data[:,1:8]
-
-    f1=scatter(T_Map.Longitude,T_Map.Latitude,color=T_Map.Year)
-
-    T_SampEff = groupby(T_Map, ["Year", "Month"])
-
-    k=keys(T_SampEff)
-    n=[size(t,1) for t in T_SampEff]
-    y=[k.Year for k in keys(T_SampEff)]
-    m=[k.Month for k in keys(T_SampEff)]
-    f2=scatter(y,m,color=n)
-
-    f1,f2
-end
-
-# ╔═╡ 3137001d-c6f1-4fed-88b8-1d105b7079d8
-f1,f2=plot_checks(data)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -214,9 +251,9 @@ Shapefile = "~0.13.3"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.6"
+julia_version = "1.12.1"
 manifest_format = "2.0"
-project_hash = "8118b74b224e07c98888d73ad68b5ab134fe279e"
+project_hash = "fcfdb376beb268bced39f5e3db6efcadb0bdb312"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -426,7 +463,7 @@ weakdeps = ["Dates", "LinearAlgebra"]
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "1.1.1+0"
+version = "1.3.0+1"
 
 [[deps.ComputePipeline]]
 deps = ["Observables", "Preferences"]
@@ -1013,6 +1050,11 @@ git-tree-sha1 = "4255f0032eafd6451d707a51d5f0248b8a165e4d"
 uuid = "aacddb02-875f-59d6-b918-886e6ef4fbf8"
 version = "3.1.3+0"
 
+[[deps.JuliaSyntaxHighlighting]]
+deps = ["StyledStrings"]
+uuid = "ac6e5ff7-fb65-4e79-a425-ec3bc9c03011"
+version = "1.12.0"
+
 [[deps.KernelDensity]]
 deps = ["Distributions", "DocStringExtensions", "FFTW", "Interpolations", "StatsBase"]
 git-tree-sha1 = "ba51324b894edaf1df3ab16e2cc6bc3280a2f1a7"
@@ -1064,24 +1106,24 @@ uuid = "b27032c2-a3e7-50c8-80cd-2d36dbcbfd21"
 version = "0.6.4"
 
 [[deps.LibCURL_jll]]
-deps = ["Artifacts", "LibSSH2_jll", "Libdl", "MbedTLS_jll", "Zlib_jll", "nghttp2_jll"]
+deps = ["Artifacts", "LibSSH2_jll", "Libdl", "OpenSSL_jll", "Zlib_jll", "nghttp2_jll"]
 uuid = "deac9b47-8bc7-5906-a0fe-35ac56dc84c0"
-version = "8.6.0+0"
+version = "8.11.1+1"
 
 [[deps.LibGit2]]
-deps = ["Base64", "LibGit2_jll", "NetworkOptions", "Printf", "SHA"]
+deps = ["LibGit2_jll", "NetworkOptions", "Printf", "SHA"]
 uuid = "76f85450-5226-5b5a-8eaa-529ad045b433"
 version = "1.11.0"
 
 [[deps.LibGit2_jll]]
-deps = ["Artifacts", "LibSSH2_jll", "Libdl", "MbedTLS_jll"]
+deps = ["Artifacts", "LibSSH2_jll", "Libdl", "OpenSSL_jll"]
 uuid = "e37daf67-58a4-590a-8e99-b0245dd2ffc5"
-version = "1.7.2+0"
+version = "1.9.0+0"
 
 [[deps.LibSSH2_jll]]
-deps = ["Artifacts", "Libdl", "MbedTLS_jll"]
+deps = ["Artifacts", "Libdl", "OpenSSL_jll"]
 uuid = "29816b5a-b9ab-546f-933c-edad1886dfa8"
-version = "1.11.0+1"
+version = "1.11.3+1"
 
 [[deps.Libdl]]
 uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
@@ -1126,7 +1168,7 @@ version = "2.41.2+0"
 [[deps.LinearAlgebra]]
 deps = ["Libdl", "OpenBLAS_jll", "libblastrampoline_jll"]
 uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
-version = "1.11.0"
+version = "1.12.0"
 
 [[deps.LogExpFunctions]]
 deps = ["DocStringExtensions", "IrrationalConstants", "LinearAlgebra"]
@@ -1182,7 +1224,7 @@ uuid = "dbb5928d-eab1-5f90-85c2-b9b0edb7c900"
 version = "0.4.2"
 
 [[deps.Markdown]]
-deps = ["Base64"]
+deps = ["Base64", "JuliaSyntaxHighlighting", "StyledStrings"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 version = "1.11.0"
 
@@ -1199,7 +1241,8 @@ uuid = "739be429-bea8-5141-9913-cc70e7f3736d"
 version = "1.1.9"
 
 [[deps.MbedTLS_jll]]
-deps = ["Artifacts", "Libdl"]
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "926c6af3a037c68d02596a44c22ec3595f5f760b"
 uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
 version = "2.28.6+0"
 
@@ -1221,7 +1264,7 @@ version = "0.3.4"
 
 [[deps.MozillaCACerts_jll]]
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
-version = "2023.12.12"
+version = "2025.5.20"
 
 [[deps.NaNMath]]
 deps = ["OpenLibm_jll"]
@@ -1237,7 +1280,7 @@ version = "1.1.1"
 
 [[deps.NetworkOptions]]
 uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
-version = "1.2.0"
+version = "1.3.0"
 
 [[deps.Observables]]
 git-tree-sha1 = "7438a59546cf62428fc9d1bc94729146d37a7225"
@@ -1268,7 +1311,7 @@ version = "0.3.29+0"
 [[deps.OpenBLAS_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
 uuid = "4536629a-c528-5b80-bd46-f80d51c5b363"
-version = "0.3.27+1"
+version = "0.3.29+0"
 
 [[deps.OpenEXR]]
 deps = ["Colors", "FileIO", "OpenEXR_jll"]
@@ -1285,7 +1328,7 @@ version = "3.2.4+0"
 [[deps.OpenLibm_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
-version = "0.8.5+0"
+version = "0.8.7+0"
 
 [[deps.OpenSSL]]
 deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "NetworkOptions", "OpenSSL_jll", "Sockets"]
@@ -1294,10 +1337,9 @@ uuid = "4d8831e6-92b7-49fb-bdf8-b643e874388c"
 version = "1.6.0"
 
 [[deps.OpenSSL_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "f19301ae653233bc88b1810ae908194f07f8db9d"
+deps = ["Artifacts", "Libdl"]
 uuid = "458c3c95-2e84-50aa-8efc-19380b2a3a95"
-version = "3.5.4+0"
+version = "3.5.1+0"
 
 [[deps.OpenSpecFun_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl"]
@@ -1319,7 +1361,7 @@ version = "1.8.1"
 [[deps.PCRE2_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "efcefdf7-47ab-520b-bdef-62a2eaa19f15"
-version = "10.42.0+1"
+version = "10.44.0+1"
 
 [[deps.PDMats]]
 deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse"]
@@ -1370,7 +1412,7 @@ version = "0.44.2+0"
 [[deps.Pkg]]
 deps = ["Artifacts", "Dates", "Downloads", "FileWatching", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "Random", "SHA", "TOML", "Tar", "UUIDs", "p7zip_jll"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
-version = "1.11.0"
+version = "1.12.0"
 weakdeps = ["REPL"]
 
     [deps.Pkg.extensions]
@@ -1458,7 +1500,7 @@ version = "2.11.2"
     Enzyme = "7da242da-08ed-463a-9acd-ee780be4f1d9"
 
 [[deps.REPL]]
-deps = ["InteractiveUtils", "Markdown", "Sockets", "StyledStrings", "Unicode"]
+deps = ["InteractiveUtils", "JuliaSyntaxHighlighting", "Markdown", "Sockets", "StyledStrings", "Unicode"]
 uuid = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 version = "1.11.0"
 
@@ -1617,7 +1659,7 @@ version = "1.2.2"
 [[deps.SparseArrays]]
 deps = ["Libdl", "LinearAlgebra", "Random", "Serialization", "SuiteSparse_jll"]
 uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
-version = "1.11.0"
+version = "1.12.0"
 
 [[deps.SpecialFunctions]]
 deps = ["IrrationalConstants", "LogExpFunctions", "OpenLibm_jll", "OpenSpecFun_jll"]
@@ -1733,7 +1775,7 @@ uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
 [[deps.SuiteSparse_jll]]
 deps = ["Artifacts", "Libdl", "libblastrampoline_jll"]
 uuid = "bea87d4a-7f5b-5778-9afe-8cc45184846c"
-version = "7.7.0+0"
+version = "7.8.3+2"
 
 [[deps.TOML]]
 deps = ["Dates"]
@@ -1910,7 +1952,7 @@ version = "0.10.1"
 [[deps.Zlib_jll]]
 deps = ["Libdl"]
 uuid = "83775a58-1f1d-513f-b197-d71354ab007a"
-version = "1.2.13+1"
+version = "1.3.1+2"
 
 [[deps.Zstd_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -1939,7 +1981,7 @@ version = "0.17.4+0"
 [[deps.libblastrampoline_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
-version = "5.11.0+0"
+version = "5.15.0+0"
 
 [[deps.libfdk_aac_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -1974,7 +2016,7 @@ version = "1.6.0+0"
 [[deps.nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850ede-7688-5339-a07c-302acd2aaf8d"
-version = "1.59.0+0"
+version = "1.64.0+1"
 
 [[deps.oneTBB_jll]]
 deps = ["Artifacts", "JLLWrappers", "LazyArtifacts", "Libdl"]
@@ -1985,7 +2027,7 @@ version = "2022.0.0+1"
 [[deps.p7zip_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
-version = "17.4.0+2"
+version = "17.5.0+2"
 
 [[deps.x264_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -2008,15 +2050,18 @@ version = "4.1.0+0"
 # ╟─49439775-c3ac-4e64-a474-a837cbcfda56
 # ╟─1257cc5c-2946-4bb0-a57f-94b51b9caf68
 # ╟─643259db-28db-4349-a0e6-e63466b03efd
-# ╟─3137001d-c6f1-4fed-88b8-1d105b7079d8
+# ╟─47df4cda-8b17-48b6-b0c2-6d79dbacb695
+# ╟─8f3145af-3f47-410a-a19f-bc90e67a8465
+# ╠═3137001d-c6f1-4fed-88b8-1d105b7079d8
+# ╟─0bfb4822-50dd-41ae-8b6d-38ebd43d6bfc
 # ╟─198e675a-2aef-459e-b1e6-7174cb443389
 # ╟─44456d92-bf45-43fd-9555-7b6d2829be04
 # ╟─c0790af4-4836-4065-8114-34a6c25391e8
 # ╟─967e3d86-ba48-11f0-30a2-05f62d439a4d
 # ╟─2187f884-9f68-45ae-b896-8f583a29bc27
 # ╟─4c86d37b-9ae2-430a-8e7c-a4acc3e0b151
-# ╟─baf0fb54-7470-43ec-99ce-3f5c0715adc6
 # ╟─e450cb01-cd62-44a4-88b8-5ae2376ec8aa
 # ╟─dd8cb198-abae-4e33-9277-e8123624dd66
+# ╟─baf0fb54-7470-43ec-99ce-3f5c0715adc6
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
