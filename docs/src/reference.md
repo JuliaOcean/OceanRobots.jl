@@ -5,10 +5,11 @@ Each type of ocean data gets :
 - a simple `read` function that downloads data if needed.
 - a default `plot` function that depicts some of the data.
 
-```@setup ex1
+```@example ex1
 using MeshArrays, Shapefile, DataDeps
 pol_file=demo.download_polygons("ne_110m_admin_0_countries.shp")
 pol=MeshArrays.read_polygons(pol_file)
+GC.gc()
 nothing #hide
 ```
 

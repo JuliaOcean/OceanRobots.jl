@@ -1,5 +1,7 @@
 using Documenter, OceanRobots, PlutoSliderServer, CairoMakie
 
+println("downloading files ...")
+
 ENV["DATADEPS_ALWAYS_ACCEPT"]=true
 OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
 
@@ -7,7 +9,14 @@ using MeshArrays, Shapefile, DataDeps
 pol_file=demo.download_polygons("ne_110m_admin_0_countries.shp")
 pol=MeshArrays.read_polygons(pol_file)
 
+GliderFiles.check_for_file_Spray("GulfStream.nc")
+GliderFiles.check_for_file_Spray("CUGN_along.nc")
+
+GDP_CloudDrift.CloudDrift_subset_download()
+
 ##
+
+println("calling makedocs ...")
 
 makedocs(;
     modules=[OceanRobots, OceanRobotsMakieExt],
@@ -24,8 +33,9 @@ makedocs(;
     warnonly = [:cross_references,:missing_docs],
     )
 
-GliderFiles.check_for_file_Spray("GulfStream.nc")
-GliderFiles.check_for_file_Spray("CUGN_along.nc")
+##
+
+println("running notebooks ...")
 
 lst=("CPR_notebook.jl","Roce_interop.jl","XBT_transect.jl","ShipCruise_CCHDO.jl",
   "Drifter_CloudDrift.jl","Buoy_NWP_NOAA_monthly.jl","Glider_Spray.jl","OceanOPS.jl",
