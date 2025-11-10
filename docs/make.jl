@@ -9,6 +9,8 @@ pol=MeshArrays.read_polygons(pol_file)
 
 ##
 
+println("calling makedocs ...")
+
 makedocs(;
     modules=[OceanRobots, OceanRobotsMakieExt],
     format=Documenter.HTML(),
@@ -24,8 +26,12 @@ makedocs(;
     warnonly = [:cross_references,:missing_docs],
     )
 
+println("downloading files ...")
+
 GliderFiles.check_for_file_Spray("GulfStream.nc")
 GliderFiles.check_for_file_Spray("CUGN_along.nc")
+
+println("running notebooks ...")
 
 lst=("CPR_notebook.jl","Roce_interop.jl","XBT_transect.jl","ShipCruise_CCHDO.jl",
   "Drifter_CloudDrift.jl","Buoy_NWP_NOAA_monthly.jl","Glider_Spray.jl","OceanOPS.jl",
