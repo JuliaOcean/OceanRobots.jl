@@ -10,7 +10,13 @@ function Base.show(io::IO, z::AbstractOceanRobotData)
     in(:ID,zn) ? printstyled(io, "$(z.ID)\n",color=:magenta) : nothing
     if in(:data,zn)
         printstyled(io, "  data      = ",color=:normal)
-        tmp=(isa(z.data,NamedTuple) ? keys(z.data) : typeof.(z.data))
+        tmp=(if isa(z.data,NamedTuple)
+            keys(z.data)
+        elseif isa(z.data,DataFrames.DataFrame)
+            show(z.data)
+        else
+            typeof.(z.data)
+        end)
         printstyled(io, "$(tmp)\n",color=:magenta)
     end
     in(:file,zn) ? printstyled(io, "  file      = ",color=:normal) : nothing
