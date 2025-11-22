@@ -35,4 +35,4 @@ Moored Observatories :
 ## More Notebooks
 
 - For Argo and state estimates, see [ArgoData.jl](https://github.com/JuliaOcean/ArgoData.jl)
-- For simulations of drifter data, see [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl)
+- For simulations of drifter data, see [Drifters.jl](https://github.com/JuliaClimate/Drifters.jl)
