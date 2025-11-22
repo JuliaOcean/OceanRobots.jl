@@ -29,7 +29,7 @@ url="https://github.com/JuliaOcean/OceanRobots.jl"
 run(`$(git()) clone $(url)`)
 ```
 
-```@example 1
+```
 using Pkg; Pkg.add("Pluto"); using Pluto
 
 notebook="examples/Float_Argo.jl"
