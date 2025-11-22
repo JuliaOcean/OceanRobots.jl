@@ -695,7 +695,7 @@ function CloudDrift_demo(file="")
 end
 
 CloudDrift_subset_download() = begin
-    url="https://zenodo.org/records/11325477/files/gdp_subset.nc?download=1"
+    url="https://zenodo.org/records/11325477/files/gdp_subset.nc"
     fil=joinpath(tempdir(),"gdp_subset.nc")
     !isfile(fil) ? Downloads.download(url,fil) : nothing
     fil
