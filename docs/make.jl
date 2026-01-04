@@ -6,8 +6,7 @@ ENV["DATADEPS_ALWAYS_ACCEPT"]=true
 OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
 
 using MeshArrays, Shapefile, DataDeps
-pol_file=demo.download_polygons("ne_110m_admin_0_countries.shp")
-pol=MeshArrays.read_polygons(pol_file)
+pol=MeshArrays.Dataset("countries_shp1")
 
 GliderFiles.check_for_file_Spray("GulfStream.nc")
 GliderFiles.check_for_file_Spray("CUGN_along.nc")

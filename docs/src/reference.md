@@ -7,9 +7,8 @@ Each type of ocean data gets :
 
 ```@example ex1
 using MeshArrays, Shapefile, DataDeps
-pol_file=demo.download_polygons("ne_110m_admin_0_countries.shp")
-pol=MeshArrays.read_polygons(pol_file)
-GC.gc()
+pol=MeshArrays.Dataset("countries_shp1")
+GC.gc() #hide
 nothing #hide
 ```
 
@@ -37,7 +36,8 @@ plot(drifter,pol=pol)
 ```@example ex1
 using OceanRobots, CairoMakie
 argo=read(ArgoFloat(),wmo=2900668)
-plot(argo,pol=pol)
+#plot(argo,pol=pol)
+plot(argo)
 ```
 
 ### Ship-Based CTD
@@ -115,16 +115,6 @@ OceanRobots.query(XBTtransect,"AOML")
 ```
 
 ## Add-Ons
-
-!!! note
-    To put data in context, it is useful to download country polygons.
-
-```@example ex1
-using MeshArrays, Shapefile, DataDeps, CairoMakie
-pol_file=demo.download_polygons("ne_110m_admin_0_countries.shp")
-pol=MeshArrays.read_polygons(pol_file)
-plot(argo,pol=pol)
-```
 
 !!! note
     To put data in context, it is useful to download gridded data sets.
