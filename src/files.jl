@@ -1035,11 +1035,14 @@ function get_platform(i)
         "%20%22ptfDepl.deplDate%22,%20%22ptfStatus.name%22]"
     tmp=JSON3.read(String(HTTP.get(url).body))
     #
+    ship=(isnothing(tmp.data[1].ptfDepl.ship) ? 
+        missing : tmp.data[1].ptfDepl.ship.name)
+    
     (id=tmp.data[1].ref,
     country=tmp.data[1].program.country.name,
     status=tmp.data[1].ptfStatus.name,
     deployed=tmp.data[1].ptfDepl.deplDate,
-    ship=tmp.data[1].ptfDepl.ship.name,
+    ship=ship,
     )
 end
 
