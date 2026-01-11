@@ -19,6 +19,7 @@ Drifting Observatories :
 - [Drifter\_GDP.html](Drifter_GDP.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/Drifter_GDP.jl)) : near-surface [drifter](https://www.aoml.noaa.gov/phod/gdp/hourly_data.php) time series
 - [Drifter\_CloudDrift.html](Drifter_CloudDrift.html) (➭ [code link](https://github.com/JuliaOcean/OceanRobots.jl/blob/master/examples/Drifter_CloudDrift.jl)) : near-surface drifter statistics
 - [Glider\_Spray.html](Glider_Spray.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/Glider_Spray.jl)) : underwater [glider](http://spraydata.ucsd.edu/projects/) data
+- [Glider\_EGO.html](Glider_EGO.html) (➭ [code link](https://raw.githubusercontent.com/JuliaOcean/OceanRobots.jl/master/examples/Glider_EGO.jl)) : underwater [glider](http://spraydata.ucsd.edu/projects/) data
 
 Moored Observatories : 
 
