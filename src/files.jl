@@ -283,7 +283,11 @@ missions,folders,files=Glider_EGO_module.file_lists(1:10)
 Glider_EGO_module.glider_download(files[1][1])
 
 data=read(Glider_EGO(),2)
-fig_glider=plot_glider(ds=data.ds,variable="CHLA")
+
+
+fig_glider=plot(data)
+
+ds=data.ds,variable="CHLA")
 ```
 """
 function file_lists(k=1:2)
@@ -337,11 +341,12 @@ function file_indices(files)
 	i_nc,i_json
 end
 
-function read_Glider_EGO(ID=1)
+
+function read_Glider_EGO(ID::Int)
     missions,folders,files=file_lists(ID:ID)
-    i_nc,i_json=file_indices(files[ID])
-    file_nc=glider_download(files[ID][i_nc])
-    file_json=glider_download(files[ID][i_json])
+    i_nc,i_json=file_indices(files[1])
+    file_nc=glider_download(files[1][i_nc])
+    file_json=glider_download(files[1][i_json])
     ds=Dataset(file_nc)
     js=JSON3.read(file_json)
     (missions=missions,file_nc=file_nc,file_json=file_json,ds=ds,js=js)

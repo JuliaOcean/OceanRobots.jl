@@ -3,6 +3,7 @@ module OceanRobotsMakieExt
 using OceanRobots, Makie
 import OceanRobots: Dates
 import Makie: plot
+using Statistics
 
 ## Argo
 
@@ -350,14 +351,24 @@ plot(x::Glider_EGO;size=(900,600),pol=missing) = begin
 	plot_glider_EGO(; ds=x.data.ds, variable="CHLA")
 end
 
-function scatter_glider!(; ds=missing, variable="CHLA")
+function scatter_glider!(; ds=missing, variable="CHLA", cr=missing)
 	if haskey(ds,variable)
 		dt=ds["TIME"][:]
 		dt=(dt.-minimum(dt))
 		c=ds[variable][:]
 		c[ismissing.(c)].=NaN
-		scatter!(dt,-ds["PRES"][:],color=c,markersize=4)
+		loc_cr=(ismissing(cr) ? colorrange(c) : cr)
+		scatter!(dt,-ds["PRES"][:],color=c,markersize=4,colorrange=loc_cr)
 	end
+end
+
+function colorrange(x;positive=false)
+	y=findall((!ismissing).(x)); z=x[y];
+	y=findall((!isnan).(z)); z=z[y];
+	if positive
+		y=findall(x.>0); z=z[y];
+	end
+	quantile(z, 0.05),quantile(z, 0.95)
 end
 
 function plot_glider_EGO(; ds=missing, variable="CHLA")

@@ -1,6 +1,6 @@
 module OceanRobots
 
-using Dates
+using Dates, Statistics
 export DateTime, Date
 
 import Base: read
