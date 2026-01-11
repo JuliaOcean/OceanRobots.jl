@@ -8,8 +8,8 @@ OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
 using MeshArrays, Shapefile, DataDeps
 pol=MeshArrays.Dataset("countries_shp1")
 
-GliderFiles.check_for_file_Spray("GulfStream.nc")
-GliderFiles.check_for_file_Spray("CUGN_along.nc")
+Glider_Spray_module.check_for_file_Spray("GulfStream.nc")
+Glider_Spray_module.check_for_file_Spray("CUGN_along.nc")
 
 GDP_CloudDrift.CloudDrift_subset_download()
 

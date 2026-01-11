@@ -332,7 +332,7 @@ plot(gliders,1,size=(900,600))
 ```
 """
 plot(x::Glider_Spray,ID;size=(900,600),pol=missing) = begin
-	gdf=GliderFiles.groupby(x.data,:ID)
+	gdf=Glider_Spray_module.groupby(x.data,:ID)
 	plot_glider(x.data,gdf,ID,size=size,pol=pol)
 end
 

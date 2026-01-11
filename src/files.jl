@@ -262,7 +262,7 @@ function to_DataFrame(ds)
 	df
 end
 
-end #module GliderFiles
+end
 
 ## 
 
