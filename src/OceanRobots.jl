@@ -1,6 +1,6 @@
 module OceanRobots
 
-using Dates
+using Dates, Statistics
 export DateTime, Date
 
 import Base: read
@@ -11,9 +11,11 @@ include("files.jl")
 include("files_XBT.jl")
 include("example_GOM.jl")
 
-export GDP, GDP_CloudDrift, NOAA, GliderFiles, ArgoFiles, OceanSites, OceanOPS, CCHDO, XBT
+export GDP, GDP_CloudDrift, NOAA, ArgoFiles
+export OceanSites, OceanOPS, CCHDO, XBT
+export Glider_Spray_module, Glider_EGO_module
 #export THREDDS
-export NOAAbuoy, NOAAbuoy_monthly, ArgoFloat, SurfaceDrifter, Gliders
-export OceanSite, CloudDrift, ShipCruise, XBTtransect
+export NOAAbuoy, NOAAbuoy_monthly, ArgoFloat, SurfaceDrifter, Glider_Spray
+export OceanSite, CloudDrift, ShipCruise, XBTtransect, Glider_EGO
 
 end # module

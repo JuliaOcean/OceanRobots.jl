@@ -1,5 +1,5 @@
 
-using DataFrames, NCDatasets
+using DataFrames, NCDatasets, JSON3
 
 abstract type AbstractOceanRobotData <: Any end
 
@@ -77,12 +77,23 @@ end
 
 CloudDrift() = CloudDrift("",NamedTuple())
 
-struct Gliders <: AbstractOceanRobotData
+struct Glider_Spray <: AbstractOceanRobotData
     file::String
     data::DataFrame
 end
 
-Gliders() = Gliders("",DataFrame())
+Glider_Spray() = Glider_Spray("",DataFrame())
+
+##
+
+struct Glider_EGO <: AbstractOceanRobotData
+    ID::Union{Missing,Int64}
+    data::NamedTuple
+end
+
+Glider_EGO() = Glider_EGO(missing,NamedTuple())
+
+##
 
 struct OceanSite <: AbstractOceanRobotData
     ID::Symbol
@@ -122,7 +133,7 @@ OceanRobots.query(ShipCruise)
 OceanRobots.query(XBTtransect,"AOML")
 ```
 
-#not treated yet : Gliders, CloudDrift
+#not treated yet : Glider_Spray, CloudDrift
 """
 function query(x::DataType,args...;kwargs...)
     if x==ShipCruise

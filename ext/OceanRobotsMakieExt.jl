@@ -3,6 +3,7 @@ module OceanRobotsMakieExt
 using OceanRobots, Makie
 import OceanRobots: Dates
 import Makie: plot
+using Statistics
 
 ## Argo
 
@@ -265,7 +266,7 @@ function plot_chi!(x;variable="chi_up",colorrange=(-12.0,-10.0),apply_log10=true
 	scatter!(a,b,color=c,markersize=markersize,colorrange=colorrange)
 end
 
-## Gliders
+## Glider_Spray
 
 rng(x;mini=NaN,maxi=NaN,pad=0.1) = begin
 	xlm=collect(extrema(skipmissing(x)))
@@ -316,7 +317,7 @@ function plot_glider(df,gdf,ID;size=(900,600),pol=missing)
 end
 
 """
-    plot(x::Gliders,ID;size=(900,600),pol=missing)
+    plot(x::Glider_Spray,ID;size=(900,600),pol=missing)
 
 Default plot for glider data.
 	
@@ -326,13 +327,57 @@ Default plot for glider data.
 
 ```
 using OceanRobots, CairoMakie
-gliders=read(Gliders(),"GulfStream.nc")
+gliders=read(Glider_Spray(),"GulfStream.nc")
 plot(gliders,1,size=(900,600))
 ```
 """
-plot(x::Gliders,ID;size=(900,600),pol=missing) = begin
-	gdf=GliderFiles.groupby(x.data,:ID)
+plot(x::Glider_Spray,ID;size=(900,600),pol=missing) = begin
+	gdf=Glider_Spray_module.groupby(x.data,:ID)
 	plot_glider(x.data,gdf,ID,size=size,pol=pol)
+end
+
+## Glider EGO
+
+"""
+    plot(x::Glider_EGO;size=(900,600),pol=missing)
+
+```
+using OceanRobots, CairoMakie
+glider=read(Glider_EGO(),1);
+plot(glider)
+```
+"""
+plot(x::Glider_EGO;size=(900,600),pol=missing) = begin
+	plot_glider_EGO(; ds=x.data.ds, variable="CHLA")
+end
+
+function scatter_glider!(; ds=missing, variable="CHLA", cr=missing)
+	if haskey(ds,variable)
+		dt=ds["TIME"][:]
+		dt=(dt.-minimum(dt))
+		c=ds[variable][:]
+		c[ismissing.(c)].=NaN
+		loc_cr=(ismissing(cr) ? colorrange(c) : cr)
+		scatter!(dt,-ds["PRES"][:],color=c,markersize=4,colorrange=loc_cr)
+	end
+end
+
+function colorrange(x;positive=false)
+	y=findall((!ismissing).(x)); z=x[y];
+	y=findall((!isnan).(z)); z=z[y];
+	if positive
+		y=findall(x.>0); z=z[y];
+	end
+	quantile(z, 0.05),quantile(z, 0.95)
+end
+
+function plot_glider_EGO(; ds=missing, variable="CHLA")
+	fig=Figure()
+	Axis(fig[1,1],title="position"); scatter!(ds["LONGITUDE"][:],ds["LATITUDE"][:])
+	Axis(fig[1,2],title=variable); scatter_glider!(ds=ds,variable=variable)
+	Axis(fig[2,1],title="TEMP"); scatter_glider!(ds=ds,variable="TEMP")
+	Axis(fig[2,2],title="PSAL"); scatter_glider!(ds=ds,variable="PSAL")
+	fig
 end
 
 ## OceanOPS

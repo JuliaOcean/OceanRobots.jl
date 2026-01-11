@@ -203,9 +203,9 @@ end
 
 ##
 
-module GliderFiles
+module Glider_Spray_module
 
-import OceanRobots: Gliders
+import OceanRobots: Glider_Spray
 using Downloads, Glob, DataFrames, NCDatasets
 import Base: read
 
@@ -231,14 +231,14 @@ function check_for_file_Spray(args...)
 end
 
 """
-    read(x::Gliders, file::String)
+    read(x::Glider_Spray, file::String)
 
 Read a Spray Glider file.    
 """
-read(x::Gliders, file="GulfStream.nc") = begin
+read(x::Glider_Spray, file="GulfStream.nc") = begin
     f=check_for_file_Spray(file)
     df=to_DataFrame(Dataset(f))
-    Gliders(f,df)
+    Glider_Spray(f,df)
 end
 
 function to_DataFrame(ds)
@@ -262,7 +262,107 @@ function to_DataFrame(ds)
 	df
 end
 
-end #module GliderFiles
+end
+
+## 
+
+module Glider_EGO_module
+
+using FTPClient, NCDatasets
+using JSON3, FTPClient
+import OceanRobots: Glider_EGO
+import Base: read
+
+"""
+    file_lists(k=1:2)
+
+Get list of EGO glider files from ftp server `ftp://ftp.ifremer.fr/ifremer/glider/v2/`
+
+```
+missions,folders,files=Glider_EGO_module.file_lists(1:10)
+Glider_EGO_module.glider_download(files[1][1])
+
+data=read(Glider_EGO(),2)
+
+
+fig_glider=plot(data)
+
+ds=data.ds,variable="CHLA")
+```
+"""
+function file_lists(k=1:2)
+	ftp=FTPClient.FTP("ftp://ftp.ifremer.fr/ifremer/glider/v2/")
+	missions=readdir(ftp)
+	folders=[]
+	files=[]
+	for m in missions[k]
+		ftp=FTPClient.FTP("ftp://ftp.ifremer.fr/ifremer/glider/v2/"*m*"/")
+		push!(folders,readdir(ftp))
+		for n in folders[end]
+			ftp=FTPClient.FTP("ftp://ftp.ifremer.fr/ifremer/glider/v2/"*m*"/"*n*"/")
+			url0="ftp://ftp.ifremer.fr/ifremer/glider/v2/"*m*"/"*n*"/"			
+			push!(files,url0.*readdir(ftp))
+		end
+	end
+	missions,folders,files
+end
+
+function glider_download(fil)
+	url0=dirname(fil)
+	fil0=basename(fil)
+
+	n0=length("ftp://ftp.ifremer.fr/ifremer/glider/v2/")
+	tmp1=url0[n0+1:end]
+	tmp2=dirname(tmp1)
+
+	pth=joinpath(tempdir(),"glider")
+    !isdir(pth) ? mkdir(pth) : nothing
+
+	pth=joinpath(tempdir(),"glider",tmp2)
+    !isdir(pth) ? mkdir(pth) : nothing
+
+	pth=joinpath(tempdir(),"glider",tmp1)
+    !isdir(pth) ? mkdir(pth) : nothing
+
+    fil_out=joinpath(pth,fil0)
+	ftp=FTPClient.FTP(url0)
+    !isfile(fil_out) ? FTPClient.download(ftp, fil0, fil_out) : nothing
+    fil_out
+end
+
+function file_indices(files)
+	if split(files[1],".")[end]=="json"
+		i_nc=2
+		i_json=1
+	else
+		i_nc=1
+		i_json=2
+	end
+	i_nc,i_json
+end
+
+
+function read_Glider_EGO(ID::Int)
+    missions,folders,files=file_lists(ID:ID)
+    i_nc,i_json=file_indices(files[1])
+    file_nc=glider_download(files[1][i_nc])
+    file_json=glider_download(files[1][i_json])
+    ds=Dataset(file_nc)
+    js=JSON3.read(file_json)
+    (missions=missions,file_nc=file_nc,file_json=file_json,ds=ds,js=js)
+end
+
+"""
+    read(x::Glider_EGO, ID=1)
+
+Read a EGO Glider files.    
+"""
+read(x::Glider_EGO, ID=1) = begin
+    data=read_Glider_EGO(ID)
+    Glider_EGO(ID,data)
+end
+
+end
 
 ##
 
