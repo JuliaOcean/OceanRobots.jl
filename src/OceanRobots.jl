@@ -14,7 +14,7 @@ include("example_GOM.jl")
 export GDP, GDP_CloudDrift, NOAA, GliderFiles, ArgoFiles
 export OceanSites, OceanOPS, CCHDO, XBT, Glider_EGO_module
 #export THREDDS
-export NOAAbuoy, NOAAbuoy_monthly, ArgoFloat, SurfaceDrifter, Gliders
+export NOAAbuoy, NOAAbuoy_monthly, ArgoFloat, SurfaceDrifter, Glider_Spray
 export OceanSite, CloudDrift, ShipCruise, XBTtransect, Glider_EGO
 
 end # module

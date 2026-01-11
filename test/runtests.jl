@@ -52,9 +52,9 @@ end
     @test isa(f1,Figure)
 end
 
-@testset "Gliders" begin
-    b=read(Gliders(),"GulfStream.nc")
-    @test isa(b,Gliders)
+@testset "Glider_Spray" begin
+    b=read(Glider_Spray(),"GulfStream.nc")
+    @test isa(b,Glider_Spray)
     f3=plot(b,1)
     @test isa(f3,Figure)
 end

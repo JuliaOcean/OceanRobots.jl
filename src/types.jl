@@ -77,12 +77,12 @@ end
 
 CloudDrift() = CloudDrift("",NamedTuple())
 
-struct Gliders <: AbstractOceanRobotData
+struct Glider_Spray <: AbstractOceanRobotData
     file::String
     data::DataFrame
 end
 
-Gliders() = Gliders("",DataFrame())
+Glider_Spray() = Glider_Spray("",DataFrame())
 
 ##
 
@@ -133,7 +133,7 @@ OceanRobots.query(ShipCruise)
 OceanRobots.query(XBTtransect,"AOML")
 ```
 
-#not treated yet : Gliders, CloudDrift
+#not treated yet : Glider_Spray, CloudDrift
 """
 function query(x::DataType,args...;kwargs...)
     if x==ShipCruise

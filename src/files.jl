@@ -203,9 +203,9 @@ end
 
 ##
 
-module GliderFiles
+module Glider_Spray_module
 
-import OceanRobots: Gliders
+import OceanRobots: Glider_Spray
 using Downloads, Glob, DataFrames, NCDatasets
 import Base: read
 
@@ -231,14 +231,14 @@ function check_for_file_Spray(args...)
 end
 
 """
-    read(x::Gliders, file::String)
+    read(x::Glider_Spray, file::String)
 
 Read a Spray Glider file.    
 """
-read(x::Gliders, file="GulfStream.nc") = begin
+read(x::Glider_Spray, file="GulfStream.nc") = begin
     f=check_for_file_Spray(file)
     df=to_DataFrame(Dataset(f))
-    Gliders(f,df)
+    Glider_Spray(f,df)
 end
 
 function to_DataFrame(ds)

@@ -266,7 +266,7 @@ function plot_chi!(x;variable="chi_up",colorrange=(-12.0,-10.0),apply_log10=true
 	scatter!(a,b,color=c,markersize=markersize,colorrange=colorrange)
 end
 
-## Gliders
+## Glider_Spray
 
 rng(x;mini=NaN,maxi=NaN,pad=0.1) = begin
 	xlm=collect(extrema(skipmissing(x)))
@@ -317,7 +317,7 @@ function plot_glider(df,gdf,ID;size=(900,600),pol=missing)
 end
 
 """
-    plot(x::Gliders,ID;size=(900,600),pol=missing)
+    plot(x::Glider_Spray,ID;size=(900,600),pol=missing)
 
 Default plot for glider data.
 	
@@ -327,11 +327,11 @@ Default plot for glider data.
 
 ```
 using OceanRobots, CairoMakie
-gliders=read(Gliders(),"GulfStream.nc")
+gliders=read(Glider_Spray(),"GulfStream.nc")
 plot(gliders,1,size=(900,600))
 ```
 """
-plot(x::Gliders,ID;size=(900,600),pol=missing) = begin
+plot(x::Glider_Spray,ID;size=(900,600),pol=missing) = begin
 	gdf=GliderFiles.groupby(x.data,:ID)
 	plot_glider(x.data,gdf,ID,size=size,pol=pol)
 end
