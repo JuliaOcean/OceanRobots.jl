@@ -59,6 +59,13 @@ end
     @test isa(f3,Figure)
 end
 
+@testset "Glider_EGO" begin
+    b=read(Glider_EGO(),1)
+    @test isa(b,Glider_EGO)
+    f3=plot(b)
+    @test isa(f3,Figure)
+end
+
 @testset "NOAAbuoy" begin
     allstations=OceanRobots.query(NOAAbuoy)
     @test isa(allstations,Vector)
