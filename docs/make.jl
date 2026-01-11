@@ -36,7 +36,7 @@ makedocs(;
 
 println("running notebooks ...")
 
-lst=("CPR_notebook.jl","Roce_interop.jl","XBT_transect.jl","ShipCruise_CCHDO.jl",
+lst=("Glider_EGO.jl","CPR_notebook.jl","Roce_interop.jl","XBT_transect.jl","ShipCruise_CCHDO.jl",
   "Drifter_CloudDrift.jl","Buoy_NWP_NOAA_monthly.jl","Glider_Spray.jl","OceanOPS.jl",
   "Buoy_NWP_NOAA.jl","Mooring_WHOTS.jl","Drifter_GDP.jl","Float_Argo.jl")
 for i in lst
