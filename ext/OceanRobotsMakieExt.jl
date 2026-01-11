@@ -335,6 +335,40 @@ plot(x::Gliders,ID;size=(900,600),pol=missing) = begin
 	plot_glider(x.data,gdf,ID,size=size,pol=pol)
 end
 
+## Glider EGO
+
+"""
+    plot(x::Glider_EGO;size=(900,600),pol=missing)
+
+```
+using OceanRobots, CairoMakie
+glider=read(Glider_EGO(),1);
+plot(glider)
+```
+"""
+plot(x::Glider_EGO;size=(900,600),pol=missing) = begin
+	plot_glider_EGO(; ds=x.data.ds, variable="CHLA")
+end
+
+function scatter_glider!(; ds=missing, variable="CHLA")
+	if haskey(ds,variable)
+		dt=ds["TIME"][:]
+		dt=(dt.-minimum(dt))
+		c=ds[variable][:]
+		c[ismissing.(c)].=NaN
+		scatter!(dt,-ds["PRES"][:],color=c,markersize=4)
+	end
+end
+
+function plot_glider_EGO(; ds=missing, variable="CHLA")
+	fig=Figure()
+	Axis(fig[1,1],title="position"); scatter!(ds["LONGITUDE"][:],ds["LATITUDE"][:])
+	Axis(fig[1,2],title=variable); scatter_glider!(ds=ds,variable=variable)
+	Axis(fig[2,1],title="TEMP"); scatter_glider!(ds=ds,variable="TEMP")
+	Axis(fig[2,2],title="PSAL"); scatter_glider!(ds=ds,variable="PSAL")
+	fig
+end
+
 ## OceanOPS
 
 ## XBT

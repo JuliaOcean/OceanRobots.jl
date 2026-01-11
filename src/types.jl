@@ -1,5 +1,5 @@
 
-using DataFrames, NCDatasets
+using DataFrames, NCDatasets, JSON3
 
 abstract type AbstractOceanRobotData <: Any end
 
@@ -83,6 +83,17 @@ struct Gliders <: AbstractOceanRobotData
 end
 
 Gliders() = Gliders("",DataFrame())
+
+##
+
+struct Glider_EGO <: AbstractOceanRobotData
+    ID::Union{Missing,Int64}
+    data::NamedTuple
+end
+
+Glider_EGO() = Glider_EGO(missing,NamedTuple())
+
+##
 
 struct OceanSite <: AbstractOceanRobotData
     ID::Symbol
