@@ -18,8 +18,9 @@ end
 
 # ╔═╡ 263ec6b0-49a0-45ec-9f70-5b50ab2d75fe
 begin
-	using CSV, DataFrames, CairoMakie, OceanRobots
-	using PlutoUI, FTPClient, NCDatasets
+	#using CSV, DataFrames
+	using CairoMakie, OceanRobots, PlutoUI	
+	import OceanRobots.Glider_EGO_module: JSON3, NCDatasets
 end
 
 # ╔═╡ 00eed108-ed57-11f0-ad11-2b926f36f35c
@@ -63,52 +64,8 @@ md"""## Get File from FTP server"""
 #CSV.read("glider_traj_index.txt",DataFrame,skipto=9)
 #CSV.read("glider_traj_index_tmp.csv",DataFrame)
 
-# ╔═╡ 9af35ec8-01df-415d-a1dd-e7238348e4d5
-function glider_list_files(k=1:2)
-	ftp=FTPClient.FTP("ftp://ftp.ifremer.fr/ifremer/glider/v2/")
-	missions=readdir(ftp)
-	folders=[]
-	files=[]
-	for m in missions[k]
-		println(m)
-		ftp=FTPClient.FTP("ftp://ftp.ifremer.fr/ifremer/glider/v2/"*m*"/")
-		push!(folders,readdir(ftp))
-		for n in folders[end]
-			ftp=FTPClient.FTP("ftp://ftp.ifremer.fr/ifremer/glider/v2/"*m*"/"*n*"/")
-			url0="ftp://ftp.ifremer.fr/ifremer/glider/v2/"*m*"/"*n*"/"			
-			push!(files,url0.*readdir(ftp))
-		end
-	end
-	missions,folders,files
-end
-
 # ╔═╡ f6583d39-df24-4717-8508-97a4f64be05e
-missions,folders,files=glider_list_files(1:3)
-
-# ╔═╡ cd961c16-adb0-45cd-be4e-4aed7bd72524
-function glider_download(fil)
-	url0=dirname(fil)
-	fil0=basename(fil)
-
-	n0=length("ftp://ftp.ifremer.fr/ifremer/glider/v2/")
-	tmp1=url0[n0+1:end]
-	tmp2=dirname(tmp1)
-
-	pth=joinpath(tempdir(),"glider")
-    !isdir(pth) ? mkdir(pth) : nothing
-
-	pth=joinpath(tempdir(),"glider",tmp2)
-    !isdir(pth) ? mkdir(pth) : nothing
-
-	pth=joinpath(tempdir(),"glider",tmp1)
-    !isdir(pth) ? mkdir(pth) : nothing
-
-	
-    fil_out=joinpath(pth,fil0)
-	ftp=FTPClient.FTP(url0)
-    !isfile(fil_out) ? FTPClient.download(ftp, fil0, fil_out) : nothing
-    fil_out
-end
+missions,folders,files=Glider_EGO_module.file_lists(1:3)
 
 # ╔═╡ 47bf53d1-72a7-4072-b831-4e9302b3ea03
 @bind ms Select(missions)
@@ -117,31 +74,28 @@ end
 i_ms=findall(missions.==ms)[1]
 
 # ╔═╡ 4c62e9bf-a04b-466f-9962-284810fb72e1
-begin
-	if split(files[i_ms][1],".")[end]=="json"
-		i_nc=2
-		i_json=1
-	else
-		i_nc=1
-		i_json=2
-	end
-	[i_nc i_json]
-end
+(i_nc,i_json)=Glider_EGO_module.file_indices(files[i_ms])
 
 # ╔═╡ 1399bfc1-2791-4bfe-bc46-0a3efc13ff8b
 basename.(files[i_ms])
 
 # ╔═╡ 46ae54e8-aacf-40f7-94da-ebcc18c018bd
-file_nc=glider_download(files[i_ms][i_nc])
+file_nc=Glider_EGO_module.glider_download(files[i_ms][i_nc])
 
 # ╔═╡ f7b1e2d7-87a3-4c95-ba0f-e9d18e2a3f42
-file_json=glider_download(files[i_ms][i_json])
+file_json=Glider_EGO_module.glider_download(files[i_ms][i_json])
 
 # ╔═╡ d559f4f6-9ce1-49e6-8ebc-a4f8a8541a51
 md"""## Reading Data Sample"""
 
+# ╔═╡ 07519430-fced-4038-9670-83ae53e7874a
+js=JSON3.read(file_json)
+
+# ╔═╡ 170cc827-3d9a-482f-b75e-4010b9b8615e
+display(js)
+
 # ╔═╡ 9c79bede-1874-44e4-8cc5-e01305d22d7e
-file_ds=Dataset(file_nc)
+file_ds=NCDatasets.Dataset(file_nc)
 
 # ╔═╡ 255e2eb2-0ff3-49bf-beba-6b96c27d0fd4
 println.(keys(file_ds));
@@ -152,29 +106,11 @@ file_ds["TEMP"]
 # ╔═╡ 71ad0c41-51af-43ff-abab-bfebb0248d3b
 md"""## Visualization"""
 
-# ╔═╡ 907a4c79-8e58-4518-b275-86490d92fced
-function scatter_glider!(; ds=file_ds, variable="CHLA")
-	if haskey(ds,variable)
-		dt=ds["TIME"][:]
-		dt=(dt.-minimum(dt))
-		c=ds[variable][:]
-		c[ismissing.(c)].=NaN
-		scatter!(dt,-file_ds["PRES"][:],color=c,markersize=4)
-	end
+# ╔═╡ 4c449c7c-7037-4bda-9534-ba280e298fb3
+begin
+	glider=read(Glider_EGO(),i_ms)
+    fig_glider=plot(glider)
 end
-
-# ╔═╡ ec976c1e-e02f-4eed-86e4-c55abab3add6
-function plot_glider(; ds=file_ds, variable="CHLA")
-	fig=Figure()
-	Axis(fig[1,1],title="position"); scatter!(ds["LONGITUDE"][:],ds["LATITUDE"][:])
-	Axis(fig[1,2],title=variable); scatter_glider!(ds=ds,variable=variable)
-	Axis(fig[2,1],title="TEMP"); scatter_glider!(ds=ds,variable="TEMP")
-	Axis(fig[2,2],title="PSAL"); scatter_glider!(ds=ds,variable="PSAL")
-	fig
-end
-
-# ╔═╡ b75c4ffc-24de-4ed5-a15d-82da546d9a7b
-fig_glider=plot_glider(ds=file_ds,variable="CHLA")
 
 # ╔═╡ 1ea52fe1-c177-4bd9-b6be-1964612627f3
 fig_glider
@@ -182,33 +118,16 @@ fig_glider
 # ╔═╡ 4c78f8e6-423a-4f42-9212-3abc34ba4fcc
 md"""## Julia Packages"""
 
-# ╔═╡ c31a3b92-d497-4ee7-be85-ad8c1dc36c27
-import OceanRobots.OceanOPS: JSON3
-
-# ╔═╡ 07519430-fced-4038-9670-83ae53e7874a
-js=JSON3.read(file_json)
-
-# ╔═╡ 170cc827-3d9a-482f-b75e-4010b9b8615e
-display(js)
-
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
-CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
-DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-FTPClient = "01fcc997-4f28-56b8-8a06-30002c134abb"
-NCDatasets = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
 OceanRobots = "0b51df41-3294-4961-8d23-db645e32016d"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
-CSV = "~0.10.15"
 CairoMakie = "~0.15.8"
-DataFrames = "~1.8.1"
-FTPClient = "~1.2.1"
-NCDatasets = "~0.14.10"
-OceanRobots = "~0.2.22"
+OceanRobots = "~0.3.0"
 PlutoUI = "~0.7.77"
 """
 
@@ -218,7 +137,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.1"
 manifest_format = "2.0"
-project_hash = "c126559bf6f3c1ba66e3ae2bcd3d12ff22a07eb8"
+project_hash = "8a3f93d4db06f631755d11cde59954dc728f996d"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1634,9 +1553,9 @@ version = "0.5.5"
 
 [[deps.OceanRobots]]
 deps = ["ArgoData", "CFTime", "CSV", "CodecZlib", "DataFrames", "Dataverse", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "Interpolations", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "TableScraper", "URIs"]
-git-tree-sha1 = "19eafe8efabd40691d9d922c3fa0456809311a2a"
+git-tree-sha1 = "c1f977025f644f5f85f7bcc54989d347f02fb60c"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
-version = "0.2.22"
+version = "0.3.0"
 weakdeps = ["Makie"]
 
     [deps.OceanRobots.extensions]
@@ -2320,9 +2239,9 @@ version = "0.1.3"
 
 [[deps.WoodburyMatrices]]
 deps = ["LinearAlgebra", "SparseArrays"]
-git-tree-sha1 = "c1a7aa6219628fcd757dede0ca95e245c5cd9511"
+git-tree-sha1 = "248a7031b3da79a127f14e5dc5f417e26f9f6db7"
 uuid = "efce3f68-66dc-5838-9240-27a6d6f5f9b6"
-version = "1.0.0"
+version = "1.1.0"
 
 [[deps.WorkerUtilities]]
 git-tree-sha1 = "cd1659ba0d57b71a464a29e64dbc67cfe83d54e7"
@@ -2525,12 +2444,10 @@ version = "4.1.0+0"
 # ╟─9da131eb-f476-47a8-a363-048bf6833224
 # ╟─60b0cc49-ce13-453d-a01c-6c185b93d093
 # ╠═97e6e9a4-a247-4c35-a642-0afd9c2d8186
-# ╟─9af35ec8-01df-415d-a1dd-e7238348e4d5
-# ╠═f6583d39-df24-4717-8508-97a4f64be05e
-# ╟─cd961c16-adb0-45cd-be4e-4aed7bd72524
+# ╟─f6583d39-df24-4717-8508-97a4f64be05e
 # ╟─47bf53d1-72a7-4072-b831-4e9302b3ea03
 # ╟─698e3f44-fae5-4077-a659-49fb86a559d7
-# ╟─4c62e9bf-a04b-466f-9962-284810fb72e1
+# ╠═4c62e9bf-a04b-466f-9962-284810fb72e1
 # ╟─1399bfc1-2791-4bfe-bc46-0a3efc13ff8b
 # ╠═46ae54e8-aacf-40f7-94da-ebcc18c018bd
 # ╠═f7b1e2d7-87a3-4c95-ba0f-e9d18e2a3f42
@@ -2541,11 +2458,8 @@ version = "4.1.0+0"
 # ╠═255e2eb2-0ff3-49bf-beba-6b96c27d0fd4
 # ╠═4b25f524-a785-4fce-a89f-13af10858773
 # ╟─71ad0c41-51af-43ff-abab-bfebb0248d3b
-# ╠═b75c4ffc-24de-4ed5-a15d-82da546d9a7b
-# ╟─907a4c79-8e58-4518-b275-86490d92fced
-# ╟─ec976c1e-e02f-4eed-86e4-c55abab3add6
+# ╠═4c449c7c-7037-4bda-9534-ba280e298fb3
 # ╟─4c78f8e6-423a-4f42-9212-3abc34ba4fcc
 # ╠═263ec6b0-49a0-45ec-9f70-5b50ab2d75fe
-# ╠═c31a3b92-d497-4ee7-be85-ad8c1dc36c27
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
