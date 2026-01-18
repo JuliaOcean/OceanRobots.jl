@@ -42,16 +42,24 @@ md"""
 - `glider_traj_index.txt` provides a global the list of trajectory files (one per mission)
 - data in each missing folder is provided in `.nc`, `.json` files
 
+## User Interface 
+
+```
+i_ms=2
+using OceanRobots
+glider=read(Glider_EGO(),i_ms)
+fig_glider=plot(glider)
+```
+
 ## Possible Next Steps
 
-- create a module with `read`, `plot`, `query` methods
-- desired functionalities include:
+- create `query` and filter methods
   - what do I have for the region and this year? (query)
   - filter by region and date? (filter)
-  - ability to keep track of what changes in the database?
-    - after downloading full copies of the FTP dataset?
-    - by scanning the FTP site?
-    - using the text files listed above?
+- ability to keep track of what changes in the database?
+  - after downloading full copies of the FTP dataset?
+  - by scanning the FTP site?
+  - using the text files listed above?
 """
 
 # ╔═╡ 9da131eb-f476-47a8-a363-048bf6833224
@@ -68,31 +76,41 @@ md"""## Get File from FTP server"""
 missions,folders,files=Glider_EGO_module.file_lists(1:3)
 
 # ╔═╡ 47bf53d1-72a7-4072-b831-4e9302b3ea03
-@bind ms Select(missions)
+@bind ms Select(missions, default=missions[2])
 
 # ╔═╡ 698e3f44-fae5-4077-a659-49fb86a559d7
 i_ms=findall(missions.==ms)[1]
 
-# ╔═╡ 4c62e9bf-a04b-466f-9962-284810fb72e1
-(i_nc,i_json)=Glider_EGO_module.file_indices(files[i_ms])
-
 # ╔═╡ 1399bfc1-2791-4bfe-bc46-0a3efc13ff8b
 basename.(files[i_ms])
 
-# ╔═╡ 46ae54e8-aacf-40f7-94da-ebcc18c018bd
-file_nc=Glider_EGO_module.glider_download(files[i_ms][i_nc])
+# ╔═╡ d785fc62-23d7-479f-860c-ea8acc996a15
+md"""## Easy Access"""
 
-# ╔═╡ f7b1e2d7-87a3-4c95-ba0f-e9d18e2a3f42
-file_json=Glider_EGO_module.glider_download(files[i_ms][i_json])
+# ╔═╡ 5ed02414-ce22-4697-a125-930206102184
+glider=read(Glider_EGO(),i_ms)
+
+# ╔═╡ ae5cc8e1-a76f-4c2c-94a0-64987aa47892
+fig_glider=plot(glider)
+
+# ╔═╡ 1ea52fe1-c177-4bd9-b6be-1964612627f3
+fig_glider
 
 # ╔═╡ d559f4f6-9ce1-49e6-8ebc-a4f8a8541a51
-md"""## Reading Data Sample"""
+md"""## Direct Access"""
+
+# ╔═╡ 4c62e9bf-a04b-466f-9962-284810fb72e1
+begin
+	(i_nc,i_json)=Glider_EGO_module.file_indices(files[i_ms]);
+	file_nc=Glider_EGO_module.glider_download(files[i_ms][i_nc])
+	file_json=Glider_EGO_module.glider_download(files[i_ms][i_json])
+end
 
 # ╔═╡ 07519430-fced-4038-9670-83ae53e7874a
-js=JSON3.read(file_json)
-
-# ╔═╡ 170cc827-3d9a-482f-b75e-4010b9b8615e
-display(js)
+begin
+	js=JSON3.read(file_json)
+	display(js)
+end
 
 # ╔═╡ 9c79bede-1874-44e4-8cc5-e01305d22d7e
 file_ds=NCDatasets.Dataset(file_nc)
@@ -102,18 +120,6 @@ println.(keys(file_ds));
 
 # ╔═╡ 4b25f524-a785-4fce-a89f-13af10858773
 file_ds["TEMP"]
-
-# ╔═╡ 71ad0c41-51af-43ff-abab-bfebb0248d3b
-md"""## Visualization"""
-
-# ╔═╡ 4c449c7c-7037-4bda-9534-ba280e298fb3
-begin
-	glider=read(Glider_EGO(),i_ms)
-    fig_glider=plot(glider)
-end
-
-# ╔═╡ 1ea52fe1-c177-4bd9-b6be-1964612627f3
-fig_glider
 
 # ╔═╡ 4c78f8e6-423a-4f42-9212-3abc34ba4fcc
 md"""## Julia Packages"""
@@ -2445,20 +2451,18 @@ version = "4.1.0+0"
 # ╟─60b0cc49-ce13-453d-a01c-6c185b93d093
 # ╠═97e6e9a4-a247-4c35-a642-0afd9c2d8186
 # ╟─f6583d39-df24-4717-8508-97a4f64be05e
-# ╟─47bf53d1-72a7-4072-b831-4e9302b3ea03
+# ╠═47bf53d1-72a7-4072-b831-4e9302b3ea03
 # ╟─698e3f44-fae5-4077-a659-49fb86a559d7
-# ╠═4c62e9bf-a04b-466f-9962-284810fb72e1
 # ╟─1399bfc1-2791-4bfe-bc46-0a3efc13ff8b
-# ╠═46ae54e8-aacf-40f7-94da-ebcc18c018bd
-# ╠═f7b1e2d7-87a3-4c95-ba0f-e9d18e2a3f42
+# ╟─d785fc62-23d7-479f-860c-ea8acc996a15
+# ╠═5ed02414-ce22-4697-a125-930206102184
+# ╠═ae5cc8e1-a76f-4c2c-94a0-64987aa47892
 # ╟─d559f4f6-9ce1-49e6-8ebc-a4f8a8541a51
+# ╠═4c62e9bf-a04b-466f-9962-284810fb72e1
 # ╠═07519430-fced-4038-9670-83ae53e7874a
-# ╠═170cc827-3d9a-482f-b75e-4010b9b8615e
 # ╠═9c79bede-1874-44e4-8cc5-e01305d22d7e
 # ╠═255e2eb2-0ff3-49bf-beba-6b96c27d0fd4
 # ╠═4b25f524-a785-4fce-a89f-13af10858773
-# ╟─71ad0c41-51af-43ff-abab-bfebb0248d3b
-# ╠═4c449c7c-7037-4bda-9534-ba280e298fb3
 # ╟─4c78f8e6-423a-4f42-9212-3abc34ba4fcc
 # ╠═263ec6b0-49a0-45ec-9f70-5b50ab2d75fe
 # ╟─00000000-0000-0000-0000-000000000001
