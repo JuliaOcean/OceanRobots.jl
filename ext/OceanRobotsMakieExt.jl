@@ -3,6 +3,7 @@ module OceanRobotsMakieExt
 using OceanRobots, Makie
 import OceanRobots: Dates
 import Makie: plot
+using Statistics
 
 ## Argo
 
@@ -26,11 +27,11 @@ end
 ## DRIFTERS
 
 """
-    plot_drifter(ds;size=(900,600),pol=Any[])
+    plot_drifter(ds;size=(900,600),pol=missing)
 
 Plot drifter data.        
 """
-function plot_drifter(ds;size=(900,600),pol=Any[])	
+function plot_drifter(ds;size=(900,600),pol=missing)	
 	la=GDP.read_v(ds,"latitude")
 	lo=GDP.read_v(ds,"longitude")
 	lon360=GDP.read_v(ds,"lon360")
@@ -46,7 +47,7 @@ function plot_drifter(ds;size=(900,600),pol=Any[])
 	fig1 = Figure(size=size)
 	ax1 = Axis(fig1[1,1], xlabel="longitude",ylabel="latitude",limits=(xlims,ylims))
 	scatter!(ax1,lo[:],la[:],markersize=8,color=:red)
-	!isempty(pol) ? [lines!(ax1,l1,color = :black, linewidth = 0.5) for l1 in pol] : nothing
+	ismissing(pol) ? nothing : lines!(pol,color = :black, linewidth = 0.5)
 
 	ax1 = Axis(fig1[1,2], xlabel="eastward vel.",ylabel="northward vel.")
 	scatter!(ax1,ve[:],vn[:])
@@ -70,7 +71,7 @@ function plot_drifter(ds;size=(900,600),pol=Any[])
 end
 
 """
-    plot(x::SurfaceDrifter;size=(900,600),pol=Any[])
+    plot(x::SurfaceDrifter;size=(900,600),pol=missing)
 
 Default plot for surface drifter data.
 	
@@ -83,7 +84,7 @@ drifter=read(SurfaceDrifter(),1)
 plot(drifter)
 ```
 """
-plot(x::SurfaceDrifter;size=(900,600),pol=Any[]) = plot_drifter(x.data,size=size,pol=pol)
+plot(x::SurfaceDrifter;size=(900,600),pol=missing) = plot_drifter(x.data,size=size,pol=pol)
 
 
 ## WHOTS
@@ -203,7 +204,7 @@ end
 
 """
     plot(x::ShipCruise; 
-		markersize=6,pol=Any[],colorrange=(2,20),
+		markersize=6,pol=missing,colorrange=(2,20),
 		size=(900,600),variable="temperature",apply_log10=false)
 
 Default plot for ShipCruise (source : https://cchdo.ucsd.edu).
@@ -228,7 +229,7 @@ plot(cruise,variable="chi_up",apply_log10=true,colorrange=(-12,-10))
 ```
 """
 function plot(x::ShipCruise; 
-	markersize=6,pol=Any[],colorrange=(2,20),
+	markersize=6,pol=missing,colorrange=(2,20),
 	size=(900,600),variable="temperature",apply_log10=false)
 
 	fig=Figure(size=size); ax=Axis(fig[1,1],title="$(variable) from cruise $(x.ID)")
@@ -265,7 +266,7 @@ function plot_chi!(x;variable="chi_up",colorrange=(-12.0,-10.0),apply_log10=true
 	scatter!(a,b,color=c,markersize=markersize,colorrange=colorrange)
 end
 
-## Gliders
+## Glider_Spray
 
 rng(x;mini=NaN,maxi=NaN,pad=0.1) = begin
 	xlm=collect(extrema(skipmissing(x)))
@@ -276,7 +277,12 @@ rng(x;mini=NaN,maxi=NaN,pad=0.1) = begin
 	(xlm[1],xlm[2])
 end
 
-function plot_glider(df,gdf,ID;size=(900,600),pol=Any[])
+function convert_time(tim)
+	y1=Dates.year(tim[1])
+	y1.+(tim.-Dates.DateTime(y1))./Dates.Millisecond(1)/1000/86400/365.25
+end
+
+function plot_glider(df,gdf,ID;size=(900,600),pol=missing)
 	f=Figure(size=size)
 #	xlims=rng(df.lon,mini=-180,maxi=180)
 #	ylims=rng(df.lat,mini=-90,maxi=90)
@@ -285,9 +291,10 @@ function plot_glider(df,gdf,ID;size=(900,600),pol=Any[])
 	a_traj=Axis(f[1,1],title="Positions",limits = (xlims, ylims))
 	p=scatter!(a_traj,df.lon,df.lat,markersize=1)
 	p=scatter!(a_traj,gdf[ID].lon,gdf[ID].lat,color=:red)
-	!isempty(pol) ? [lines!(a_traj,l1,color = :black, linewidth = 0.5) for l1 in pol] : nothing
+	ismissing(pol) ? nothing : lines!(pol,color = :black, linewidth = 0.5)
 
 	tim=DateTime.(gdf[ID].time[:])
+	tim=convert_time(tim) #this should not be needed (?)
 
 	a_uv=Axis(f[1,2],title="Velocity (m/s, depth mean)")
 	p=lines!(a_uv,tim,gdf[ID].u[:])
@@ -310,7 +317,7 @@ function plot_glider(df,gdf,ID;size=(900,600),pol=Any[])
 end
 
 """
-    plot(x::Gliders,ID;size=(900,600),pol=Any[])
+    plot(x::Glider_Spray,ID;size=(900,600),pol=missing)
 
 Default plot for glider data.
 	
@@ -320,13 +327,57 @@ Default plot for glider data.
 
 ```
 using OceanRobots, CairoMakie
-gliders=read(Gliders(),"GulfStream.nc")
+gliders=read(Glider_Spray(),"GulfStream.nc")
 plot(gliders,1,size=(900,600))
 ```
 """
-plot(x::Gliders,ID;size=(900,600),pol=Any[]) = begin
-	gdf=GliderFiles.groupby(x.data,:ID)
+plot(x::Glider_Spray,ID;size=(900,600),pol=missing) = begin
+	gdf=Glider_Spray_module.groupby(x.data,:ID)
 	plot_glider(x.data,gdf,ID,size=size,pol=pol)
+end
+
+## Glider EGO
+
+"""
+    plot(x::Glider_EGO;size=(900,600),pol=missing)
+
+```
+using OceanRobots, CairoMakie
+glider=read(Glider_EGO(),1);
+plot(glider)
+```
+"""
+plot(x::Glider_EGO;size=(900,600),pol=missing) = begin
+	plot_glider_EGO(; ds=x.data.ds, variable="CHLA")
+end
+
+function scatter_glider!(; ds=missing, variable="CHLA", cr=missing)
+	if haskey(ds,variable)
+		dt=ds["TIME"][:]
+		dt=(dt.-minimum(dt))
+		c=ds[variable][:]
+		c[ismissing.(c)].=NaN
+		loc_cr=(ismissing(cr) ? colorrange(c) : cr)
+		scatter!(dt,-ds["PRES"][:],color=c,markersize=4,colorrange=loc_cr)
+	end
+end
+
+function colorrange(x;positive=false)
+	y=findall((!ismissing).(x)); z=x[y];
+	y=findall((!isnan).(z)); z=z[y];
+	if positive
+		y=findall(x.>0); z=z[y];
+	end
+	quantile(z, 0.05),quantile(z, 0.95)
+end
+
+function plot_glider_EGO(; ds=missing, variable="CHLA")
+	fig=Figure()
+	Axis(fig[1,1],title="position"); scatter!(ds["LONGITUDE"][:],ds["LATITUDE"][:])
+	Axis(fig[1,2],title=variable); scatter_glider!(ds=ds,variable=variable)
+	Axis(fig[2,1],title="TEMP"); scatter_glider!(ds=ds,variable="TEMP")
+	Axis(fig[2,2],title="PSAL"); scatter_glider!(ds=ds,variable="PSAL")
+	fig
 end
 
 ## OceanOPS
@@ -334,7 +385,7 @@ end
 ## XBT
 
 """
-    plot(x::XBTtransect;pol=Any[])	
+    plot(x::XBTtransect;pol=missing)	
 
 Default plot for XBT data.
 	
@@ -344,7 +395,7 @@ xbt=read(XBTtransect(),transect="PX05",cruise="0910")
 plot(xbt)
 ```
 """
-function plot(x::XBTtransect;pol=Any[])	
+function plot(x::XBTtransect;pol=missing)	
 	if x.format=="AOML"
         plot_XBT_AOML(x,pol=pol)
     elseif x.format=="SIO"
@@ -357,28 +408,29 @@ function plot(x::XBTtransect;pol=Any[])
     end
 end
 
-function plot_XBT_SIO(x::XBTtransect;pol=Any[])	
+function plot_XBT_SIO(x::XBTtransect;pol=missing)	
 	transect=x.ID
 	T_all=x.data[1]
 	meta_all=x.data[2]
 	CR=x.data[3]
 	dep=XBT.dep
+	tim=convert_time(meta_all[:,3])
 
 	fig=Figure()
 	
 	ax=Axis(fig[1,1],title=transect*" -- cruise "*CR,ylabel="depth")
-	hm=heatmap!(meta_all[:,3],dep,T_all)
+	hm=heatmap!(tim,dep,T_all)
 	Colorbar(fig[1,2],hm)
 
 	ax=Axis(fig[2,1:2],title=transect*" -- cruise "*CR)
-	isempty(pol) ? nothing : lines!(pol;color=:black, linewidth = 0.5)
+	ismissing(pol) ? nothing : lines!(pol,color = :black, linewidth = 0.5)
 	scatter!(meta_all[:,1],meta_all[:,2],color=:red)
 	xlims!(-180,180); ylims!(-90,90)
 
 	fig
 end
 
-function plot_XBT_AOML(x::XBTtransect;pol=Any[])	
+function plot_XBT_AOML(x::XBTtransect;pol=missing)	
 	transect=x.ID
 	d=x.data[1]
 	m=x.data[2]
@@ -391,14 +443,14 @@ function plot_XBT_AOML(x::XBTtransect;pol=Any[])
 	Colorbar(fig[1,2],hm)
 
 	ax=Axis(fig[2,1:2],title=transect*" -- cruise "*CR)
-	isempty(pol) ? nothing : lines!(pol;color=:black, linewidth = 0.5)
+	ismissing(pol) ? nothing : lines!(pol,color = :black, linewidth = 0.5)
 	scatter!(m.lon,m.lat,color=:red)
 	xlims!(-180,180); ylims!(-90,90)
 
 	fig
 end
 
-function plot_XBT_IMOS(x::XBTtransect;pol=Any[])	
+function plot_XBT_IMOS(x::XBTtransect;pol=missing)	
 	ID=x.ID
 #	transect_year=x.data[2].cruise[1]
 	d=x.data[1]
@@ -410,7 +462,7 @@ function plot_XBT_IMOS(x::XBTtransect;pol=Any[])
 	Colorbar(fig[1,2],hm)
 
 	ax=Axis(fig[2,1:2],title=ID)
-	isempty(pol) ? nothing : lines!(pol;color=:black, linewidth = 0.5)
+	ismissing(pol) ? nothing : lines!(pol,color = :black, linewidth = 0.5)
 	scatter!(m.lon,m.lat,color=:red)
 	xlims!(-180,180); ylims!(-90,90)
 

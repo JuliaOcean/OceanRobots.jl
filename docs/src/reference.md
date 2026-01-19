@@ -5,10 +5,10 @@ Each type of ocean data gets :
 - a simple `read` function that downloads data if needed.
 - a default `plot` function that depicts some of the data.
 
-```@setup ex1
+```@example ex1
 using MeshArrays, Shapefile, DataDeps
-pol_file=demo.download_polygons("ne_110m_admin_0_countries.shp")
-pol=MeshArrays.read_polygons(pol_file)
+pol=MeshArrays.Dataset("countries_shp1")
+GC.gc() #hide
 nothing #hide
 ```
 
@@ -20,7 +20,7 @@ nothing #hide
 - Ship-Based CTD (`ShipCruise_CCHDO.jl`)
 - Ship-Based XBT (`XBT_transect.jl`)
 - NOAA Buoys (`Buoy_NWP_NOAA.jl` , `Buoy_NWP_NOAA_monthly.jl`)
-- Spray Gliders (`Glider_Spray.jl`)
+- Gliders (`Glider_EGO.jl`,`Glider_Spray.jl`)
 - WHOTS Mooring (`Mooring_WHOTS.jl`)
 
 ### Surface Drifters
@@ -36,7 +36,8 @@ plot(drifter,pol=pol)
 ```@example ex1
 using OceanRobots, CairoMakie
 argo=read(ArgoFloat(),wmo=2900668)
-plot(argo,pol=pol)
+#plot(argo,pol=pol)
+plot(argo)
 ```
 
 ### Ship-Based CTD
@@ -86,7 +87,7 @@ plot(whots,date1,date2)
 
 ```@example ex1
 using OceanRobots, CairoMakie
-gliders=read(Gliders(),"GulfStream.nc")
+gliders=read(Glider_Spray(),"GulfStream.nc")
 plot(gliders,1,pol=pol)
 ```
 
@@ -114,16 +115,6 @@ OceanRobots.query(XBTtransect,"AOML")
 ```
 
 ## Add-Ons
-
-!!! note
-    To put data in context, it is useful to download country polygons.
-
-```@example ex1
-using MeshArrays, Shapefile, DataDeps, CairoMakie
-pol_file=demo.download_polygons("ne_110m_admin_0_countries.shp")
-pol=MeshArrays.read_polygons(pol_file)
-plot(argo,pol=pol)
-```
 
 !!! note
     To put data in context, it is useful to download gridded data sets.

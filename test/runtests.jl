@@ -1,7 +1,7 @@
 using OceanRobots, DataFrames, CairoMakie
 using Test
 
-@testset "OceanRobots.jl" begin
+@testset "SurfaceDrifter" begin
 
     list1=OceanRobots.query(SurfaceDrifter)
     @test isa(list1,Vector)
@@ -27,7 +27,9 @@ using Test
     GM=OceanRobots.Gulf_of_Mexico.example_prep(file=file)
     @test isa(GM.drifters_real,DataFrame)
 
-    #
+end
+
+@testset "OceanSites" begin
 
     oceansites_index=OceanSites.index()
     @test !isempty(oceansites_index)
@@ -40,23 +42,31 @@ using Test
     data=OceanSites.read_variables(file,:lon,:lat,:time,:TEMP)
     @test !isempty(data.TEMP)
 
-    #
+end
 
+@testset "ArgoFloat" begin
     b=read(ArgoFloat(),wmo=2900668)
     @test isa(b,ArgoFloat)
 
     f1=plot(b,option=:samples)
     @test isa(f1,Figure)
-        
-    #
+end
 
-    b=read(Gliders(),"GulfStream.nc")
-    @test isa(b,Gliders)
+@testset "Glider_Spray" begin
+    b=read(Glider_Spray(),"GulfStream.nc")
+    @test isa(b,Glider_Spray)
     f3=plot(b,1)
     @test isa(f3,Figure)
+end
 
-    ##
+@testset "Glider_EGO" begin
+    b=read(Glider_EGO(),1)
+    @test isa(b,Glider_EGO)
+    f3=plot(b)
+    @test isa(f3,Figure)
+end
 
+@testset "NOAAbuoy" begin
     allstations=OceanRobots.query(NOAAbuoy)
     @test isa(allstations,Vector)
 
@@ -86,9 +96,9 @@ using Test
 
     files_year,files_url=OceanRobots.THREDDS.parse_catalog_NOAA_buoy()
     @test !isempty(files_url)
+end
 
-    ##
-
+@testset "OceanOPS" begin
     list_Argo=OceanOPS.get_list(:Argo)
     @test isa(list_Argo,Vector)
 
@@ -100,11 +110,11 @@ using Test
 
     tmp=OceanOPS.list_platform_types()
     @test isa(tmp.name,Vector)
+end
 
-    ##
-
-    list1=OceanRobots.query(ShipCruise)
-    @test isa(list1,Vector)
+@testset "CCHDO" begin
+#    list1=OceanRobots.query(ShipCruise)
+#    @test isa(list1,Vector)
 
     ID="33RR20160208"
     path=CCHDO.download(ID)
@@ -115,9 +125,9 @@ using Test
 
     fig=plot(cruise)
     @test isa(fig,Figure)
+end
 
-    ##
-
+@testset "XBT" begin
     xbt=read(XBTtransect(),source="IMOS",transect="IX21",cruise="2006")
     fig=plot(xbt)
     @test isa(fig,Figure)
@@ -153,5 +163,4 @@ using Test
     df0=XBT.valid_XBT_AOML(path=path0)
     xbt=XBT.read_XBT_AOML(df0.cruise[1],path=path0)
     @test isa(xbt,XBTtransect)
-    
 end

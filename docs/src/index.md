@@ -9,6 +9,7 @@ Pages = [
     "reference.md",
     "examples.md",
     "internals.md",
+    "contributing.md",
 ]
 Depth = 2
 ```

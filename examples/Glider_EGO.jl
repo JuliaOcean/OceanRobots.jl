@@ -16,164 +16,126 @@ macro bind(def, element)
     #! format: on
 end
 
-# ╔═╡ ccf98691-9386-41b9-a957-3cdeba51312b
-using OceanRobots, CairoMakie, PlutoUI, MeshArrays
+# ╔═╡ 263ec6b0-49a0-45ec-9f70-5b50ab2d75fe
+begin
+	#using CSV, DataFrames
+	using CairoMakie, OceanRobots, PlutoUI	
+	import OceanRobots.Glider_EGO_module: JSON3, NCDatasets
+end
 
-# ╔═╡ 30277358-0a8d-437e-9d2e-ebc7c307db31
-using Shapefile, GeoJSON, DataDeps, PrettyTables, Proj
+# ╔═╡ 00eed108-ed57-11f0-ad11-2b926f36f35c
+md"""# EGO Glider Data
 
-# ╔═╡ 5fa93c17-0a01-44c6-8679-d712c786907a
-md"""# OceanOPS : Global Ocean Metadata
+This notebook is a first step towards supporting [EGO glider data set](ftp://ftp.ifremer.fr/ifremer/glider/v2) in [OceanRobots.jl](https://github.com/JuliaOcean/OceanRobots.jl).
 
-Source : <https://www.ocean-ops.org/board>, <https://www.ocean-ops.org/share/>
-
-## Visualize Data Cover
+!!! note
+    - Gaël Forget created the initial notebook
+    - Manuela Juliano, Francisco Campuzano presented dataset
 """
 
-# ╔═╡ 31fe91d7-dea2-49e3-902b-31aa62075986
+# ╔═╡ 3434054c-5cb0-4d9c-9e3a-aa13b9c4bf36
+md"""
+## Data Source
+
+- folders in <ftp://ftp.ifremer.fr/ifremer/glider/v2> correspond to different missions
+- `glider_prof_index.txt` provides a global the list of files (one per dive / profile)
+- `glider_traj_index.txt` provides a global the list of trajectory files (one per mission)
+- data in each missing folder is provided in `.nc`, `.json` files
+
+## User Interface 
+
+```
+i_ms=2
+using OceanRobots
+glider=read(Glider_EGO(),i_ms)
+fig_glider=plot(glider)
+```
+
+## Possible Next Steps
+
+- create `query` and filter methods
+  - what do I have for the region and this year? (query)
+  - filter by region and date? (filter)
+- ability to keep track of what changes in the database?
+  - after downloading full copies of the FTP dataset?
+  - by scanning the FTP site?
+  - using the text files listed above?
+"""
+
+# ╔═╡ 9da131eb-f476-47a8-a363-048bf6833224
 TableOfContents()
 
-# ╔═╡ 1042f70c-4337-4bf2-b533-edf27a422365
-md"""## Select a Platform Type
+# ╔═╡ 60b0cc49-ce13-453d-a01c-6c185b93d093
+md"""## Get File from FTP server"""
 
-Each color represents one type of observing platform.
-"""
+# ╔═╡ 97e6e9a4-a247-4c35-a642-0afd9c2d8186
+#CSV.read("glider_traj_index.txt",DataFrame,skipto=9)
+#CSV.read("glider_traj_index_tmp.csv",DataFrame)
 
-# ╔═╡ 596bce95-e13f-4439-858f-e944834c0924
+# ╔═╡ f6583d39-df24-4717-8508-97a4f64be05e
+missions,folders,files=Glider_EGO_module.file_lists(1:3)
+
+# ╔═╡ 47bf53d1-72a7-4072-b831-4e9302b3ea03
+@bind ms Select(missions, default=missions[2])
+
+# ╔═╡ 698e3f44-fae5-4077-a659-49fb86a559d7
+i_ms=findall(missions.==ms)[1]
+
+# ╔═╡ 1399bfc1-2791-4bfe-bc46-0a3efc13ff8b
+basename.(files[i_ms])
+
+# ╔═╡ d785fc62-23d7-479f-860c-ea8acc996a15
+md"""## Easy Access"""
+
+# ╔═╡ 5ed02414-ce22-4697-a125-930206102184
+glider=read(Glider_EGO(),i_ms)
+
+# ╔═╡ ae5cc8e1-a76f-4c2c-94a0-64987aa47892
+fig_glider=plot(glider)
+
+# ╔═╡ 1ea52fe1-c177-4bd9-b6be-1964612627f3
+fig_glider
+
+# ╔═╡ d559f4f6-9ce1-49e6-8ebc-a4f8a8541a51
+md"""## Direct Access"""
+
+# ╔═╡ 4c62e9bf-a04b-466f-9962-284810fb72e1
 begin
-	bind_nam = @bind nam Select([:Argo,:Drifter])
-	md"""## Explore Platform Metadata
-
-	Here you can select a data set and then a platform. Meta-data from that platform is displayed as a result.
-	
-	Data set : $(bind_nam)
-	"""
+	(i_nc,i_json)=Glider_EGO_module.file_indices(files[i_ms]);
+	file_nc=Glider_EGO_module.glider_download(files[i_ms][i_nc])
+	file_json=Glider_EGO_module.glider_download(files[i_ms][i_json])
 end
 
-# ╔═╡ aa80092c-80b9-489c-97b9-06c3d39ac594
+# ╔═╡ 07519430-fced-4038-9670-83ae53e7874a
 begin
-	list_data=OceanOPS.get_list(nam)
-	bind_id = @bind id Select(list_data)
-	md"""Platform ID : $(bind_id)"""
+	js=JSON3.read(file_json)
+	display(js)
 end
 
-# ╔═╡ 401180a9-cb62-4dc6-b0a1-35df35f834db
-begin
-	meta=OceanOPS.get_platform(id)
-	md"""
-	| Item         | Value |
-	|--------------|:-----------|
-	| platform ID  | $(meta.id) |
-	| status      | $(meta.status) |
-	| country      | $(meta.country) |
-	| ship      | $(meta.ship) |
-	| deployed      | $(meta.deployed) |
-	"""
-end
+# ╔═╡ 9c79bede-1874-44e4-8cc5-e01305d22d7e
+file_ds=NCDatasets.Dataset(file_nc)
 
-# ╔═╡ cb5cce8c-f67f-496b-ba10-38eefe9285e1
-md"""## List of Platform Types"""
+# ╔═╡ 255e2eb2-0ff3-49bf-beba-6b96c27d0fd4
+println.(keys(file_ds));
 
-# ╔═╡ 9d4b4eed-2cc8-49cd-bb4d-2e7d51e9e4d9
-begin
-	list_platform_types=OceanOPS.list_platform_types()
+# ╔═╡ 4b25f524-a785-4fce-a89f-13af10858773
+file_ds["TEMP"]
 
-	tb=pretty_table(
-		[list_platform_types[:,:name] list_platform_types[:,:wigosCode] list_platform_types[:,:id]],
-		header = ["name","wigosCode","ID"],
-		header_crayon = crayon"yellow bold",
-		highlighters  = ( hl_col(1, crayon"yellow"),hl_col(2, crayon"white"),hl_col(3, crayon"white") ),
-	)
-	display(tb)
-end
-
-# ╔═╡ 3b80d06d-72b8-4f67-945e-0b18f61de6e9
-@bind nam_platform_types Select(list_platform_types.nameShort,default="TROPICAL_MB")
-
-# ╔═╡ 34855d22-aace-4d14-a1b7-d7b60a8fa678
-begin
-	more_platform_ii=findall(list_platform_types.nameShort.==nam_platform_types)[1]
-	more_platform_name=list_platform_types[more_platform_ii,:name]
-end
-
-# ╔═╡ 1bf99223-ef46-4202-bdcc-8d7d6c561822
-md"""## Appendices"""
-
-# ╔═╡ 18cf7db9-f987-4c41-adf2-035e810c2da0
-begin
-	fil=demo.download_polygons("ne_110m_admin_0_countries.shp")
-	#fil=demo.download_polygons("countries.geojson")
-	pol=MeshArrays.read_polygons(fil)
-end
-
-# ╔═╡ fccdc273-2e9f-4f60-a659-8ee2790ae2fc
-more_operational=OceanOPS.get_list_pos(Symbol(nam_platform_types))
-
-# ╔═╡ b6a138b0-fce5-4767-b4d1-eed0d0560988
-OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
-
-# ╔═╡ 52dc1cd5-e57a-43bb-82c9-feb1de25e5ca
-begin
-	argo_operational=OceanOPS.get_list_pos(:Argo)
-	
-	a0=OceanOPS.get_list_pos(:Argo,status=:PROBABLE)
-	a1=OceanOPS.get_list_pos(:Argo,status=:CONFIRMED)
-	a2=OceanOPS.get_list_pos(:Argo,status=:REGISTERED)
-	
-	argo_planned=( lon=vcat(a0.lon,a1.lon,a2.lon),
-				lat=vcat(a0.lat,a1.lat,a2.lat),
-				flag=vcat(a0.flag,a1.flag,a2.flag))
-
-	drifter_operational=OceanOPS.get_list_pos(:Drifter)
-
-	"Done with accessing latest positions."
-end
-
-# ╔═╡ c5f24071-1c1f-4edf-b7b2-b6194c33b571
-begin
-	function demofigure()
-		lon0=-160
-		proj=Proj.Transformation(MA_preset=2,lon0=lon0)
-	
-		fi0=Figure(size=(900,600),fontsize=24)
-		ax0=Axis(fi0[1,1],title="Distribution of Ocean Observing Platforms")
-		pr_ax=MeshArrays.ProjAxis(ax0; proj=proj,lon0=lon0)
-		lines!(pr_ax,polygons=pol;color=:white, linewidth = 0.5)
-	
-		sc1=scatter!(pr_ax,argo_operational.lon,argo_operational.lat,
-			markersize=6.0,label="Argo (operational)" => (; markersize = 15),color=:deepskyblue)
-		sc2=scatter!(pr_ax,argo_planned.lon,argo_planned.lat,
-			markersize=6.0,label="Argo (planned)" => (; markersize = 15),color=:violet)
-		sc3=scatter!(pr_ax,drifter_operational.lon,drifter_operational.lat,
-			markersize=8.0,label="Drifter" => (; markersize = 15),color=:green1)
-		sc4=scatter!(pr_ax,more_operational.lon,more_operational.lat,
-			markersize=12.0,label=more_platform_name => (; markersize = 15),color=:red,marker=:star5)
-		
-		MeshArrays.grid_lines!(pr_ax;color=:yellow,linewidth=0.5)
-
-#		Legend(fi0[2, 1],[sc1,sc2,sc3,sc4],[sc1.label,sc2.label,sc3.label,sc4.label],
-#			orientation = :horizontal, fontsize=16)
-        Legend(fi0[2, 1],ax0,orientation = :horizontal, fontsize=16)
-
-		fi0
-	end
-
-	fig1=with_theme(demofigure, theme_black())
-end
+# ╔═╡ 4c78f8e6-423a-4f42-9212-3abc34ba4fcc
+md"""## Julia Packages"""
 
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
-DataDeps = "124859b0-ceae-595e-8997-d05f6a7a8dfe"
-GeoJSON = "61d90e0f-e114-555e-ac52-39dfb47a3ef9"
-MeshArrays = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
 OceanRobots = "0b51df41-3294-4961-8d23-db645e32016d"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-PrettyTables = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
-Proj = "c94c279d-25a6-4763-9509-64d165bea63e"
-Shapefile = "8e980c4a-a4fe-5da2-b3a7-4b4b0353a2f4"
+
+[compat]
+CairoMakie = "~0.15.8"
+OceanRobots = "~0.3.0"
+PlutoUI = "~0.7.77"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -182,7 +144,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.1"
 manifest_format = "2.0"
-project_hash = "6a72799a8a63b66abbd9ae43aa49e4a14f022bce"
+project_hash = "8a3f93d4db06f631755d11cde59954dc728f996d"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -596,22 +558,10 @@ git-tree-sha1 = "439e35b0b36e2e5881738abc8857bd92ad6ff9a8"
 uuid = "d38c429a-6771-53c6-b99e-75d170b6e991"
 version = "0.6.3"
 
-[[deps.CoordinateTransformations]]
-deps = ["LinearAlgebra", "StaticArrays"]
-git-tree-sha1 = "a692f5e257d332de1e554e4566a4e5a8a72de2b2"
-uuid = "150eb455-5306-5404-9cee-2592286d6298"
-version = "0.6.4"
-
 [[deps.Crayons]]
 git-tree-sha1 = "249fe38abf76d48563e2f4556bebd215aa317e15"
 uuid = "a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"
 version = "4.1.1"
-
-[[deps.DBFTables]]
-deps = ["Dates", "Printf", "Tables", "WeakRefStrings"]
-git-tree-sha1 = "25f7e32f980605f8261ed8008418e41f5faec4b1"
-uuid = "75c7ada1-017a-5fb6-b8c7-2125ff2d6c93"
-version = "1.2.7"
 
 [[deps.DataAPI]]
 git-tree-sha1 = "abe83f3a2f1b857aac70ef8b269080af17764bbe"
@@ -907,20 +857,6 @@ version = "1.6.0"
 
     [deps.GeoInterface.weakdeps]
     GeometryBasics = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
-    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-    RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
-
-[[deps.GeoJSON]]
-deps = ["Extents", "GeoFormatTypes", "GeoInterface", "JSON3", "StructTypes", "Tables"]
-git-tree-sha1 = "ce64817b826c36b30493b31be2ce53c55a277835"
-uuid = "61d90e0f-e114-555e-ac52-39dfb47a3ef9"
-version = "0.8.4"
-
-    [deps.GeoJSON.extensions]
-    GeoJSONMakieExt = "Makie"
-    GeoJSONRecipesBaseExt = "RecipesBase"
-
-    [deps.GeoJSON.weakdeps]
     Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
     RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 
@@ -1731,12 +1667,6 @@ git-tree-sha1 = "cf181f0b1e6a18dfeb0ee8acc4a9d1672499626c"
 uuid = "f57f5aa1-a3ce-4bc8-8ab9-96f992907883"
 version = "0.4.4"
 
-[[deps.PROJ_jll]]
-deps = ["Artifacts", "JLLWrappers", "LibCURL_jll", "Libdl", "Libtiff_jll", "SQLite_jll"]
-git-tree-sha1 = "817778f5802156bff35b472c73b0c4e611bd23c3"
-uuid = "58948b4f-47e0-5654-a9ad-f609743f8632"
-version = "902.700.0+0"
-
 [[deps.Packing]]
 deps = ["GeometryBasics"]
 git-tree-sha1 = "bc5bf2ea3d5351edf285a06b0016788a121ce92c"
@@ -1840,12 +1770,6 @@ git-tree-sha1 = "fbb92c6c56b34e1a2c4c36058f68f332bec840e7"
 uuid = "92933f4c-e287-5a05-a399-4b506db050ca"
 version = "1.11.0"
 
-[[deps.Proj]]
-deps = ["CEnum", "CoordinateTransformations", "GeoFormatTypes", "GeoInterface", "NetworkOptions", "PROJ_jll"]
-git-tree-sha1 = "61188669db4f5b400173e4ec60da8bcb72d6e749"
-uuid = "c94c279d-25a6-4763-9509-64d165bea63e"
-version = "1.9.0"
-
 [[deps.PtrArrays]]
 git-tree-sha1 = "1d36ef11a9aaf1e8b74dacc6a731dd1de8fd493d"
 uuid = "43287f4e-b6f4-7ad1-bb20-aadabca52c3d"
@@ -1938,12 +1862,6 @@ git-tree-sha1 = "e24dc23107d426a096d3eae6c165b921e74c18e4"
 uuid = "fdea26ae-647d-5447-a871-4b548cad5224"
 version = "3.7.2"
 
-[[deps.SQLite_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Zlib_jll", "dlfcn_win32_jll"]
-git-tree-sha1 = "0b5f220f90642566b65ba86549d1ee4118ab2579"
-uuid = "76ed43ae-9a5d-5a62-8c75-30186b810ce8"
-version = "3.51.2+0"
-
 [[deps.ScopedValues]]
 deps = ["HashArrayMappedTries", "Logging"]
 git-tree-sha1 = "c3b2323466378a2ba15bea4b2f73b081e022f473"
@@ -1977,22 +1895,6 @@ deps = ["ColorTypes", "FixedPointNumbers", "GeometryBasics", "LinearAlgebra", "O
 git-tree-sha1 = "818554664a2e01fc3784becb2eb3a82326a604b6"
 uuid = "65257c39-d410-5151-9873-9b3e5be5013e"
 version = "0.5.0"
-
-[[deps.Shapefile]]
-deps = ["DBFTables", "DataAPI", "Extents", "GeoFormatTypes", "GeoInterface", "OrderedCollections", "Tables"]
-git-tree-sha1 = "761a19d86ab3e90ed4dcb07692b2ce225124feb3"
-uuid = "8e980c4a-a4fe-5da2-b3a7-4b4b0353a2f4"
-version = "0.13.3"
-
-    [deps.Shapefile.extensions]
-    ShapefileMakieExt = "Makie"
-    ShapefileRecipesBaseExt = "RecipesBase"
-    ShapefileZipFileExt = "ZipFile"
-
-    [deps.Shapefile.weakdeps]
-    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-    RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
-    ZipFile = "a5390f91-8eb1-5f08-bee0-b1d1ffed6cea"
 
 [[deps.SharedArrays]]
 deps = ["Distributed", "Mmap", "Random", "Serialization"]
@@ -2443,12 +2345,6 @@ git-tree-sha1 = "46fda47f4215c957bc92fd5fbb5ad04fee1e3743"
 uuid = "4611771a-a7d2-5e23-8d00-b1becdba1aae"
 version = "1.2.0+0"
 
-[[deps.dlfcn_win32_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "e141d67ffe550eadfb5af1bdbdaf138031e4805f"
-uuid = "c4b69c83-5512-53e3-94e6-de98773c479f"
-version = "1.4.2+0"
-
 [[deps.isoband_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "51b5eeb3f98367157a7a12a1fb0aa5328946c03c"
@@ -2550,23 +2446,26 @@ version = "4.1.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╟─5fa93c17-0a01-44c6-8679-d712c786907a
-# ╟─31fe91d7-dea2-49e3-902b-31aa62075986
-# ╟─c5f24071-1c1f-4edf-b7b2-b6194c33b571
-# ╟─1042f70c-4337-4bf2-b533-edf27a422365
-# ╟─3b80d06d-72b8-4f67-945e-0b18f61de6e9
-# ╟─34855d22-aace-4d14-a1b7-d7b60a8fa678
-# ╟─596bce95-e13f-4439-858f-e944834c0924
-# ╟─aa80092c-80b9-489c-97b9-06c3d39ac594
-# ╟─401180a9-cb62-4dc6-b0a1-35df35f834db
-# ╟─cb5cce8c-f67f-496b-ba10-38eefe9285e1
-# ╟─9d4b4eed-2cc8-49cd-bb4d-2e7d51e9e4d9
-# ╟─1bf99223-ef46-4202-bdcc-8d7d6c561822
-# ╠═ccf98691-9386-41b9-a957-3cdeba51312b
-# ╠═30277358-0a8d-437e-9d2e-ebc7c307db31
-# ╟─18cf7db9-f987-4c41-adf2-035e810c2da0
-# ╟─fccdc273-2e9f-4f60-a659-8ee2790ae2fc
-# ╟─b6a138b0-fce5-4767-b4d1-eed0d0560988
-# ╟─52dc1cd5-e57a-43bb-82c9-feb1de25e5ca
+# ╟─00eed108-ed57-11f0-ad11-2b926f36f35c
+# ╟─1ea52fe1-c177-4bd9-b6be-1964612627f3
+# ╟─3434054c-5cb0-4d9c-9e3a-aa13b9c4bf36
+# ╟─9da131eb-f476-47a8-a363-048bf6833224
+# ╟─60b0cc49-ce13-453d-a01c-6c185b93d093
+# ╠═97e6e9a4-a247-4c35-a642-0afd9c2d8186
+# ╟─f6583d39-df24-4717-8508-97a4f64be05e
+# ╠═47bf53d1-72a7-4072-b831-4e9302b3ea03
+# ╟─698e3f44-fae5-4077-a659-49fb86a559d7
+# ╟─1399bfc1-2791-4bfe-bc46-0a3efc13ff8b
+# ╟─d785fc62-23d7-479f-860c-ea8acc996a15
+# ╠═5ed02414-ce22-4697-a125-930206102184
+# ╠═ae5cc8e1-a76f-4c2c-94a0-64987aa47892
+# ╟─d559f4f6-9ce1-49e6-8ebc-a4f8a8541a51
+# ╠═4c62e9bf-a04b-466f-9962-284810fb72e1
+# ╠═07519430-fced-4038-9670-83ae53e7874a
+# ╠═9c79bede-1874-44e4-8cc5-e01305d22d7e
+# ╠═255e2eb2-0ff3-49bf-beba-6b96c27d0fd4
+# ╠═4b25f524-a785-4fce-a89f-13af10858773
+# ╟─4c78f8e6-423a-4f42-9212-3abc34ba4fcc
+# ╠═263ec6b0-49a0-45ec-9f70-5b50ab2d75fe
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
