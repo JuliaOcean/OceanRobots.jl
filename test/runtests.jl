@@ -135,7 +135,7 @@ end
     list=OceanRobots.query(XBTtransect,"SIO")
     cruises=XBT.list_of_cruises("PX05")
     
-    xbt=read(XBTtransect(),source="SIO",transect="PX05",cruise="0910")
+    xbt=read(XBTtransect(),source="SIO",transect="PX05",cruise="PX05_0910")
     fig=plot(xbt)
     @test isa(fig,Figure)
 
@@ -161,6 +161,6 @@ end
     @test isfile(joinpath(path0,"list_AX01.csv"))
 
     df0=XBT.valid_XBT_AOML(path=path0)
-    xbt=XBT.read_XBT_AOML(df0.cruise[1],path=path0)
+    xbt=XBT.read_XBT_AOML(df0.subfolder[1],path=path0)
     @test isa(xbt,XBTtransect)
 end
