@@ -161,6 +161,6 @@ end
     @test isfile(joinpath(path0,"list_AX01.csv"))
 
     df0=XBT.valid_XBT_AOML(path=path0)
-    xbt=XBT.read_XBT_AOML(df0.cruise[1],path=path0)
+    xbt=XBT.read_XBT_AOML(df0.subfolder[1],path=path0)
     @test isa(xbt,XBTtransect)
 end
