@@ -221,12 +221,12 @@ function read(x::XBTtransect;source="SIO",transect="PX05",cr=1,cruise="")
     elseif source=="AOML"
 #       list2=XBT.get_url_to_transect(transect)
         CR=(isempty(cruise) ? cr : findall(cruises.==cruise)[1])
-        files=XBT.download_file_if_needed_AOML(transect,cruises[CR])
+        files=download_file_if_needed_AOML(transect,cruises[CR])
         if !isempty(files)
             path=dirname(files[1])
             (data,meta)=read_NOAA_XBT(path)
             tr=string(transect)
-            XBTtransect(source,source,tr,tr,path,[data,meta,cruises[CR]])
+            XBTtransect(source,source,tr,basename(path),path,[data,meta,cruises[CR]])
         else
             XBTtransect()
         end
@@ -393,10 +393,10 @@ Download XBT data files from AOML site.
 function download_all_AOML(;path="XBT_AOML",quick_test=false)
     !ispath(path) ? mkdir(path) : nothing
     lst_AOML=query(XBTtransect,"AOML")
-    lst_AOML=(quick_test ? lst_AOML[1:2] : nothing)
+    lst_AOML=(quick_test ? lst_AOML[1:2] : lst_AOML)
     for transect in lst_AOML
-        lst_AOML_files=DataFrame("transect"=>String[],"cruise"=>Int[],"file"=>String[])
         println(transect)
+        lst_AOML_files=DataFrame("transect"=>String[],"cruise"=>Int[],"file"=>String[])
         df=list_files_on_server(transect)
         for cr in 1:size(df,1)
             files=download_file_if_needed_AOML(transect,df[cr])
@@ -467,14 +467,14 @@ function read_XBT_AOML(ii=1,jj=1; path="XBT_AOML")
     read_XBT_AOML(list; path=path) 
 end
 
-function read_XBT_AOML(list4::AbstractDataFrame; path="XBT_AOML")    
+function read_XBT_AOML(list4::AbstractDataFrame; path="XBT_AOML")  
     transect=list4[1,:transect]
     cruise=string(list4[1,:cruise])
     subfolder=transect*"_"*cruise
 
     path2=joinpath(path,subfolder)
     T_all,meta_all=read_NOAA_XBT(path2)
-    XBTtransect("AOML","AOML",subfolder,transect,path2,[T_all,meta_all,subfolder])
+    XBTtransect("AOML","AOML",cruise,transect,path2,[T_all,meta_all,subfolder])
 end
 
 function valid_XBT_AOML(;path="XBT_AOML")
@@ -493,7 +493,8 @@ function valid_XBT_AOML(;path="XBT_AOML")
             catch
                 false
             end
-            append!(df,DataFrame("transect"=>transect,"cruise"=>subfolder,"test"=>test))
+            append!(df,DataFrame("transect"=>transect,
+                "cruise"=>cruise,"subfolder"=>subfolder,"test"=>test))
         end
     end
     ok=findall(df.test)
@@ -525,16 +526,30 @@ end
 
 ## 
 
-function download_file_if_needed_IMOS(files)
-    path1=joinpath(tempdir(),files[1,:cruise])
+function download_file_if_needed_IMOS(files; path=tempdir(), verbose=false)
+    path1=joinpath(path,files[1,:cruise])
     isdir(path1) ? nothing : mkdir(path1)
     for i in 1:size(files,1)
         url=files[i,:url]
         fil=joinpath(path1,basename(url))
-        isfile(fil) ? nothing : println(basename(url))
-        isfile(fil) ? nothing : Downloads.download(url,fil)
+        verbose ? (isfile(fil) ? nothing : println(basename(url))) : nothing
+        try
+            isfile(fil) ? nothing : Downloads.download(url,fil)
+        catch
+            println("FAILED to download "*fil)
+        end
     end
     [joinpath(path1,basename(url)) for url in files.url]
+end
+
+function download_all_IMOS(; path=tempname(),transect="PX05")
+    ispath(path) ? nothing : mkdir(path)
+    cruises=list_of_cruises(transect,source="IMOS")
+    for cr in cruises
+        println(cr)
+        download_file_if_needed_IMOS(cr; path=path)
+    end
+    path
 end
 
 function read_IMOS_XBT(df)
