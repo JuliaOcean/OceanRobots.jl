@@ -189,7 +189,7 @@ function list_of_cruises_SIO(transect="PX05")
     x=scrape_tables(url0)
     y=x[4].rows
 
-    months=Int[]; years=Int[]; cruises=String[]
+    months=Int[]; years=Int[]; cruises=String[]; url00=String[]; 
     for row in 3:length(y)
         z=y[row]
         a=cleanup_2(cleanup_1.(z))
@@ -197,10 +197,12 @@ function list_of_cruises_SIO(transect="PX05")
             push!(months,parse(Int,a[k][3:4]))
             push!(years,parse(Int,z[1]))
             push!(cruises,transect*"_"*a[k])
+            push!(url00,a[k])
         end
     end
 
-    DataFrame("cruise" => cruises, "year" => years, "month" => months, "url" => .*(.*(url_base,cruises),".html"))
+    url1=.*(.*(url_base,url00),".html")
+    DataFrame("cruise" => cruises, "year" => years, "month" => months, "url" => url1)
 end
 
 cleanup_1(x)=strip.(split(x,"\n"))

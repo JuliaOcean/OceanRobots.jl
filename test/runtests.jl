@@ -135,7 +135,7 @@ end
     list=OceanRobots.query(XBTtransect,"SIO")
     cruises=XBT.list_of_cruises("PX05")
     
-    xbt=read(XBTtransect(),source="SIO",transect="PX05",cruise="0910")
+    xbt=read(XBTtransect(),source="SIO",transect="PX05",cruise="PX05_0910")
     fig=plot(xbt)
     @test isa(fig,Figure)
 
