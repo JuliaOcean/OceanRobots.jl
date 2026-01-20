@@ -247,7 +247,7 @@ read(XBTtransect(),source="SIO",transect="PX05",cruise="0910")
 function read(x::XBTtransect;source="SIO",transect="PX05",cr=1,cruise="")
     cruises=list_of_cruises(transect,source=source)
     if source=="SIO"
-        CR=(isempty(cruise) ? cr : findall(cruises.cruise.=="0910")[1])
+        CR=(isempty(cruise) ? cr : findall(cruises.cruise.==cruise)[1])
         url1=cruises.url[CR]
         url2=get_url_to_download(url1)
         path2=download_SIO_cruise(url2)
@@ -255,13 +255,14 @@ function read(x::XBTtransect;source="SIO",transect="PX05",cr=1,cruise="")
         XBTtransect(source,source,transect,transect,path2,[T_all,meta_all,cruises.cruise[CR]])
     elseif source=="AOML"
 #       list2=XBT.get_url_to_transect(transect)
-        CR=(isempty(cruise) ? cr : findall(cruises.==cruise)[1])
-        files=download_AOML_cruise(transect,cruises[CR])
+        CR=(isempty(cruise) ? cr : findall(cruises.File.==cruise)[1])
+        cru=cruises.File[CR]
+        files=download_AOML_cruise(transect,cru)
         if !isempty(files)
             path=dirname(files[1])
             (data,meta)=read_NOAA_XBT(path)
             tr=string(transect)
-            XBTtransect(source,source,tr,basename(path),path,[data,meta,cruises[CR]])
+            XBTtransect(source,source,tr,basename(path),path,[data,meta,cru])
         else
             XBTtransect()
         end
