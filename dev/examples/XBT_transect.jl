@@ -79,6 +79,12 @@ end
 # ╔═╡ 5c0f77e2-f11d-4f21-9a87-ce4aee0a2f2b
 plot(xbt,pol=pol)
 
+# ╔═╡ a6a403b0-70eb-43ef-9b37-856bebd58e91
+if source=="IMOS"
+	xbt.data[1].rec=[findall(xbt.data[2].time.==a)[1] for a in xbt.data[1].time]
+	scatter(xbt.data[1].rec,-xbt.data[1].depth,color=xbt.data[1].temp,markersize=2)
+end
+
 # ╔═╡ c796c837-09a4-41b3-93e8-60e76f9adc16
 md"""## Appendix"""
 
@@ -2431,6 +2437,7 @@ version = "4.1.0+0"
 # ╟─e51b6b37-2448-42eb-b33b-6e9ee6524acd
 # ╟─0b69a4c8-3aba-4086-9deb-377307fc8fcc
 # ╟─5c0f77e2-f11d-4f21-9a87-ce4aee0a2f2b
+# ╠═a6a403b0-70eb-43ef-9b37-856bebd58e91
 # ╟─66d64a82-0e69-4089-96e3-645e54e52cfb
 # ╟─8821d099-b91b-4677-9425-b94d6d1d38fa
 # ╟─c796c837-09a4-41b3-93e8-60e76f9adc16
