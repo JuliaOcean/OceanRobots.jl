@@ -212,7 +212,10 @@ function cleanup_2(x)
     y[findall(.!(y.==""))]
 end
 
-list_of_cruises_AOML(transect) = list_files_on_server(transect)
+function list_of_cruises_AOML(transect)
+    files=list_files_on_server(transect)
+    DataFrame("File"=>files)
+end
 
 function list_of_cruises_IMOS(transect)
     list_files_path=joinpath(tempdir(),"files_"*transect*".csv")
@@ -444,6 +447,24 @@ function download_all_AOML(;path="XBT_AOML",quick_test=false)
         fil="list_"*transect*".csv"
         CSV.write(joinpath(path,fil),lst_AOML_files)
     end
+end
+
+###
+
+"""
+    scan_AOML()
+
+"""
+function scan_AOML()
+    source="AOML"
+    list=query(XBTtransect,source)
+    data=DataFrame()
+    for transect in list
+        cruises=list_of_cruises(transect,source=source)
+        append!(data,cruises)
+    end
+    data.source.=source
+    data
 end
 
 ###
