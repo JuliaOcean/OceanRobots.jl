@@ -162,6 +162,8 @@ function query(x::DataType,args...;kwargs...)
         list.wmo
     elseif x==OceanSite
         OceanSites.index()
+    elseif x==Glider_AOML
+        Glider_AOML_module.query(;kwargs...)
     else
         warning("unknown data type")
     end

@@ -170,15 +170,38 @@ import Base: read
 
 url0="ftp://ftp.aoml.noaa.gov/phod/pub/bringas/Glider/Operation/Data/"
 
+"""
+    query(; option=:gliders, glider=missing, mission=missing)
+
+```
+OceanRobots.query(Glider_AOML,glider="SG610",mission="M03JUL2015",option=:profiles)
+
+list1=Glider_AOML_module.query(option=:gliders);
+list2=Glider_AOML_module.query(glider=list1[1],option=:missions)
+list3=Glider_AOML_module.query(glider="SG610",mission="M03JUL2015",option=:profiles)
+```
+"""
+function query(; option=:gliders, glider=missing, mission=missing)
+	if option==:gliders
+		ftp=FTPClient.FTP(url0)
+		readdir(ftp)
+	elseif option==:missions
+		url=url0*glider*"/"; println(url)
+		readdir(FTPClient.FTP(url0*glider*"/"))
+	elseif option==:profiles
+		readdir(FTPClient.FTP(url0*glider*"/"*mission*"/"))
+	else
+		"unknown option"
+	end
+end
+
 function scan(i=5,j=1,k=3)
-	ftp=FTPClient.FTP(url0)
-	top=readdir(ftp)
+	top=Glider_AOML_module.query(option=:gliders);
 	name_glider=top[i]
-	ls_glider=readdir(FTPClient.FTP(url0*name_glider*"/"))
+	ls_glider=query(glider=name_glider,option=:missions)
 	name_mission=ls_glider[j]
-	ls_mission=readdir(FTPClient.FTP(url0*name_glider*"/"*name_mission*"/"))
+	ls_mission=query(glider=name_glider,mission=name_mission,option=:profiles)
 	name_file=ls_mission[k]
-	close(ftp)
 
 	sample_file=url0*name_glider*"/"*name_mission*"/"*name_file
 	(top_level=top,name_glider=name_glider,name_mission=name_mission,
@@ -186,16 +209,20 @@ function scan(i=5,j=1,k=3)
 	sample_file=sample_file)
 end
 
+function download_AOML(ID::Symbol)
+	#download whole set of profiles
+end
+
 """
-    download(fil)
+    download_AOML(fil)
 
 ```
 using OceanRobots
-scan=OceanRobots.Glider_AOML.scan();
-sample_file=OceanRobots.Glider_AOML.download(scan.sample_file)
+scan=OceanRobots.Glider_AOML_module.scan();
+sample_file=OceanRobots.Glider_AOML_module.download_AOML(scan.sample_file)
 ```	
 """
-function download(fil)
+function download_AOML(fil)
 	url0=dirname(fil)
 	fil0=basename(fil)
 
@@ -236,8 +263,8 @@ read(x::Glider_AOML, file::String=sample_file()) = begin
 end
 
 function sample_file()
-	scan=OceanRobots.Glider_AOML.scan();
-	sample_file=OceanRobots.Glider_AOML.download(scan.sample_file)
+	sc=scan();
+	sample_file=download_AOML(sc.sample_file)
 end
 
 """
@@ -246,7 +273,7 @@ end
 ```
 using OceanRobots
 scan=OceanRobots.Glider_AOML.scan();
-sample_file=OceanRobots.Glider_AOML.download(scan.sample_file)
+sample_file=OceanRobots.Glider_AOML.download_AOML(scan.sample_file)
 ds,data=OceanRobots.Glider_AOML.read(sample_file)
 ```
 """
