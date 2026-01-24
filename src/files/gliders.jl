@@ -162,9 +162,11 @@ end
 
 ##
 
-module Glider_AOML
+module Glider_AOML_module
 
+import OceanRobots: Glider_AOML
 import FTPClient, NCDatasets
+import Base: read
 
 url0="ftp://ftp.aoml.noaa.gov/phod/pub/bringas/Glider/Operation/Data/"
 
@@ -217,8 +219,52 @@ function download(fil)
     fil_out
 end
 
-function read(file)
+"""
+    read(x::Glider_AOML, file::String)
+
+Read a AOML Glider file. 
+
+```
+using OceanRobots
+sample_file=OceanRobots.Glider_AOML_module.sample_file()
+glider=read(Glider_AOML(),sample_file);
+```
+"""
+read(x::Glider_AOML, file::String=sample_file()) = begin
+	ds,data=read_glider(file)
+    Glider_AOML(file,data)
+end
+
+function sample_file()
+	scan=OceanRobots.Glider_AOML.scan();
+	sample_file=OceanRobots.Glider_AOML.download(scan.sample_file)
+end
+
+"""
+    read_glider(file)
+
+```
+using OceanRobots
+scan=OceanRobots.Glider_AOML.scan();
+sample_file=OceanRobots.Glider_AOML.download(scan.sample_file)
+ds,data=OceanRobots.Glider_AOML.read(sample_file)
+```
+"""
+function read_glider(file)
+	println(file)
 	ds=NCDatasets.Dataset(file)
+
+	tmp=Dict()
+	merge!(tmp,Dict("trajectory" => string(ds["trajectory"][:]...)))
+	lst=["ctd_time","longitude","latitude","ctd_depth","temperature","salinity"]
+	append!(lst,["profile_id","profile_time","profile_lon","profile_lat","du","dv"])
+	for i in lst
+		merge!(tmp,Dict(i=>ds[i][:]))
+	end
+
+	data=NamedTuple((Symbol(key),value) for (key,value) in tmp)
+	
+	ds,data
 end
 
 end

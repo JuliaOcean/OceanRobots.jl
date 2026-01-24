@@ -77,6 +77,8 @@ end
 
 CloudDrift() = CloudDrift("",NamedTuple())
 
+##
+
 struct Glider_Spray <: AbstractOceanRobotData
     file::String
     data::DataFrame
@@ -92,6 +94,15 @@ struct Glider_EGO <: AbstractOceanRobotData
 end
 
 Glider_EGO() = Glider_EGO(missing,NamedTuple())
+
+##
+
+struct Glider_AOML <: AbstractOceanRobotData
+    file::String
+    data::NamedTuple
+end
+
+Glider_AOML() = Glider_AOML("",NamedTuple())
 
 ##
 
