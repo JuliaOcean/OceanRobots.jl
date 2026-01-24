@@ -162,3 +162,63 @@ end
 
 ##
 
+module Glider_AOML
+
+import FTPClient, NCDatasets
+
+url0="ftp://ftp.aoml.noaa.gov/phod/pub/bringas/Glider/Operation/Data/"
+
+function scan(i=5,j=1,k=3)
+	ftp=FTPClient.FTP(url0)
+	top=readdir(ftp)
+	name_glider=top[i]
+	ls_glider=readdir(FTPClient.FTP(url0*name_glider*"/"))
+	name_mission=ls_glider[j]
+	ls_mission=readdir(FTPClient.FTP(url0*name_glider*"/"*name_mission*"/"))
+	name_file=ls_mission[k]
+	close(ftp)
+
+	sample_file=url0*name_glider*"/"*name_mission*"/"*name_file
+	(top_level=top,name_glider=name_glider,name_mission=name_mission,
+	name_file=name_file,ls_glider=ls_glider,ls_mission=ls_mission,
+	sample_file=sample_file)
+end
+
+"""
+    download(fil)
+
+```
+using OceanRobots
+scan=OceanRobots.Glider_AOML.scan();
+sample_file=OceanRobots.Glider_AOML.download(scan.sample_file)
+```	
+"""
+function download(fil)
+	url0=dirname(fil)
+	fil0=basename(fil)
+
+	n0=length(url0)
+	tmp1=url0[n0+1:end]
+	tmp2=dirname(tmp1)
+
+	pth=joinpath(tempdir(),"glider_AOML")
+    !isdir(pth) ? mkdir(pth) : nothing
+
+	pth=joinpath(tempdir(),"glider_AOML",tmp2)
+    !isdir(pth) ? mkdir(pth) : nothing
+
+	pth=joinpath(tempdir(),"glider_AOML",tmp1)
+    !isdir(pth) ? mkdir(pth) : nothing
+
+    fil_out=joinpath(pth,fil0)
+	ftp=FTPClient.FTP(url0)
+
+    !isfile(fil_out) ? FTPClient.download(ftp, fil0, fil_out) : nothing
+    fil_out
+end
+
+function read(file)
+	ds=NCDatasets.Dataset(file)
+end
+
+end
