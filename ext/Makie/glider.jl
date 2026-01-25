@@ -133,18 +133,21 @@ function plot_glider_AOML(glider)
 	da=glider.data
 	fig=Figure(size=(1000,600))
 
-	Axis(fig[1,1],title="position")
-	scatter!(da.longitude,da.latitude,markersize=2)
+	tim=DateTime.(da.time)
+	dt=tim.-minimum(tim)
+	dt=Dates.value.(dt)./(60*60*24*1000)
 
+	tt=findall(	(!ismissing).(da.temperature) .&& 
+				(!ismissing).(da.salinity)	)
+
+	Axis(fig[1,1],title="time")
+	scatter!(da.longitude[tt],da.latitude[tt],color=dt[tt],markersize=2)
+	Axis(fig[1,2],title="depth")
+	scatter!(da.longitude[tt],da.latitude[tt],color=da.ctd_depth[tt],markersize=2)
 	Axis(fig[2,1:2],title="temperature")
-	tt=findall((!ismissing).(da.temperature))
-	scatter!(DateTime.(da.time)[tt],-da.ctd_depth[tt],
-		color=da.temperature[tt],markersize=2)
-
+	scatter!(tim[tt],-da.ctd_depth[tt],color=da.temperature[tt],markersize=1)
 	Axis(fig[3,1:2],title="salinity")
-	tt=findall((!ismissing).(da.salinity))
-	scatter!(DateTime.(da.time)[tt],-da.ctd_depth[tt],
-		color=da.salinity[tt],markersize=2)
+	scatter!(tim[tt],-da.ctd_depth[tt],color=da.salinity[tt],markersize=1)
 
 	fig
 end
