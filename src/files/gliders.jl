@@ -27,17 +27,51 @@ function check_for_file_Spray(args...)
 end
 
 """
-    read(x::Glider_Spray, file::String)
+    read(x::Glider_Spray, file::String, cruise=1, format=0)
 
-Read a Spray Glider file.    
+Read a Spray Glider file into a `Glider_Spray`.
+
+- `format==0` (default) : format data via `to_DataFrame`
+- `format==0` : format data via `to_DataFrame_v1` (to plot via `plot_glider_Spray_v1`)
 """
-read(x::Glider_Spray, file="GulfStream.nc") = begin
+read(x::Glider_Spray, file="GulfStream.nc", cruise=1, format=0) = begin
     f=check_for_file_Spray(file)
-    df=to_DataFrame(Dataset(f))
-    Glider_Spray(f,df)
+    data=if format==0
+		to_DataFrame(Dataset(f),cruise)
+	elseif format==-1
+		to_DataFrame_v1(Dataset(f))
+	else
+		error("unknown format")
+	end
+    Glider_Spray(f,data)
 end
 
-function to_DataFrame(ds)
+function to_DataFrame(ds,cruise=0)
+#	id=unique(ds["trajectory_index"])
+	nz=ds.dim["depth"]
+	np=ds.dim["profile"]
+	ii=findall(ds["trajectory_index"].==cruise-1)
+	npi=length(ii)
+
+	lon=ds[:lon][ii]*ones(1,nz)
+	lat=ds[:lat][ii]*ones(1,nz)
+	dep=ones(npi,1)*ds["depth"][:]'
+	temp=ds[:temperature][ii,:]
+	sal=ds[:salinity][ii,:]
+	tim=repeat(ds[:time][ii],1,nz)
+
+	df=DataFrames.DataFrame()
+	df.time=tim[:]
+	df.longitude=lon[:]
+	df.latitude=lat[:]
+	df.depth=dep[:]
+	df.temperature=temp[:]
+	df.salinity=sal[:]
+
+	df
+end
+
+function to_DataFrame_v1(ds)
 	df=DataFrame(:lon => ds[:lon][:], :lat => ds[:lat][:], :ID => ds[:trajectory_index][:])
 	df.time=ds[:time][:]
 
@@ -142,7 +176,7 @@ function read_Glider_EGO(ID::Int)
     i_nc,i_json=file_indices(files[1])
     file_nc=glider_download(files[1][i_nc])
     file_json=glider_download(files[1][i_json])
-    ds=Dataset(file_nc)
+    ds=NCDatasets.Dataset(file_nc)
     js=JSON3.read(file_json)
     (missions=missions,file_nc=file_nc,file_json=file_json,ds=ds,js=js)
 end
