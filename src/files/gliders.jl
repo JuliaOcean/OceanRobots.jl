@@ -31,10 +31,16 @@ end
 
 Read a Spray Glider file into a `Glider_Spray`.
 
+```
+using OceanRobots, CairoMakie
+glider=read(Glider_Spray(),"GulfStream.nc",1)
+plot(glider)
+```
+
 - `format==0` (default) : format data via `to_DataFrame`
 - `format==0` : format data via `to_DataFrame_v1` (to plot via `plot_glider_Spray_v1`)
 """
-read(x::Glider_Spray, file="GulfStream.nc", cruise=1, format=0) = begin
+function read(x::Glider_Spray, file="GulfStream.nc", cruise=1, format=0)
     f=check_for_file_Spray(file)
     data=if format==0
 		to_DataFrame(Dataset(f),cruise)

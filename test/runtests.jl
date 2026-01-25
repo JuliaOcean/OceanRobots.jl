@@ -53,10 +53,16 @@ end
 end
 
 @testset "Glider_Spray" begin
-    b=read(Glider_Spray(),"GulfStream.nc")
+    b=read(Glider_Spray(),"GulfStream.nc",1)
     @test isa(b,Glider_Spray)
-    f3=plot(b,1)
+    f3=plot(b)
     @test isa(f3,Figure)
+
+	OceanRobotsMakieExt = Base.get_extension(OceanRobots, :OceanRobotsMakieExt);
+	x=read(Glider_Spray(),"GulfStream.nc",1,-1);
+	gdf=Glider_Spray_module.groupby(x.data,:ID);
+	fig=OceanRobotsMakieExt.plot_glider_Spray_v1(gl_Spray_v1.data,gdf,1)
+    @test isa(fig,Figure)
 end
 
 @testset "Glider_EGO" begin
