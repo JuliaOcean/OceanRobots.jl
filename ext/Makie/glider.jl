@@ -80,19 +80,8 @@ glider=read(Glider_EGO(),1);
 plot(glider)
 ```
 """
-plot(x::Glider_EGO;size=(900,600),pol=missing) = begin
-	plot_glider_EGO(; ds=x.data.ds, variable="CHLA")
-end
-
-function scatter_glider!(; ds=missing, variable="CHLA", cr=missing)
-	if haskey(ds,variable)
-		dt=ds["TIME"][:]
-		dt=(dt.-minimum(dt))
-		c=ds[variable][:]
-		c[ismissing.(c)].=NaN
-		loc_cr=(ismissing(cr) ? colorrange(c) : cr)
-		scatter!(dt,-ds["PRES"][:],color=c,markersize=4,colorrange=loc_cr)
-	end
+plot(x::Glider_EGO; size=(900,600),pol=missing) = begin
+	plot_glider_default(x)
 end
 
 function colorrange(x;positive=false)
@@ -104,17 +93,8 @@ function colorrange(x;positive=false)
 	quantile(z, 0.05),quantile(z, 0.95)
 end
 
-function plot_glider_EGO(; ds=missing, variable="CHLA")
-	fig=Figure()
-	Axis(fig[1,1],title="position"); scatter!(ds["LONGITUDE"][:],ds["LATITUDE"][:])
-	Axis(fig[1,2],title=variable); scatter_glider!(ds=ds,variable=variable)
-	Axis(fig[2,1],title="TEMP"); scatter_glider!(ds=ds,variable="TEMP")
-	Axis(fig[2,2],title="PSAL"); scatter_glider!(ds=ds,variable="PSAL")
-	fig
-end
 
 ## Glider AOML
-
 
 """
     plot(x::Glider_AOML;size=(900,600),pol=missing)
@@ -126,10 +106,12 @@ plot(glider)
 ```
 """
 plot(glider::Glider_AOML;size=(900,600),pol=missing) = begin
-	plot_glider_AOML(glider)
+	plot_glider_default(glider)
 end
 
-function plot_glider_AOML(glider)
+##
+
+function plot_glider_default(glider)
 	da=glider.data
 	fig=Figure(size=(1000,600))
 
@@ -143,11 +125,11 @@ function plot_glider_AOML(glider)
 	Axis(fig[1,1],title="time")
 	scatter!(da.longitude[tt],da.latitude[tt],color=dt[tt],markersize=2)
 	Axis(fig[1,2],title="depth")
-	scatter!(da.longitude[tt],da.latitude[tt],color=da.ctd_depth[tt],markersize=2)
+	scatter!(da.longitude[tt],da.latitude[tt],color=da.depth[tt],markersize=2)
 	Axis(fig[2,1:2],title="temperature")
-	scatter!(tim[tt],-da.ctd_depth[tt],color=da.temperature[tt],markersize=1)
+	scatter!(tim[tt],-da.depth[tt],color=da.temperature[tt],markersize=1)
 	Axis(fig[3,1:2],title="salinity")
-	scatter!(tim[tt],-da.ctd_depth[tt],color=da.salinity[tt],markersize=1)
+	scatter!(tim[tt],-da.depth[tt],color=da.salinity[tt],markersize=1)
 
 	fig
 end

@@ -64,8 +64,7 @@ end
 
 module Glider_EGO_module
 
-using FTPClient, NCDatasets
-using JSON3, FTPClient
+import FTPClient, NCDatasets, DataFrames, JSON3
 import OceanRobots: Glider_EGO
 import Base: read
 
@@ -154,8 +153,20 @@ end
 Read a EGO Glider files.    
 """
 read(x::Glider_EGO, ID=1) = begin
-    data=read_Glider_EGO(ID)
+    tmp=read_Glider_EGO(ID)
+	data=to_DataFrame(tmp.ds)
     Glider_EGO(ID,data)
+end
+
+function to_DataFrame(ds)
+	df=DataFrames.DataFrame()
+	df.time=ds[:TIME][:]
+	df.longitude=ds[:LONGITUDE][:]
+	df.latitude=ds[:LATITUDE][:]
+	df.depth=ds[:GLIDER_DEPTH][:]
+	df.temperature=ds[:TEMP][:]
+	df.salinity=ds[:PSAL][:]
+	df
 end
 
 end
@@ -334,7 +345,7 @@ function to_DataFrame(ds)
 	df.time=ds[:ctd_time][:]
 	df.longitude=ds[:longitude][:]
 	df.latitude=ds[:latitude][:]
-	df.ctd_depth=ds[:ctd_depth][:]
+	df.depth=ds[:ctd_depth][:]
 	df.temperature=ds[:temperature][:]
 	df.salinity=ds[:salinity][:]
 	df

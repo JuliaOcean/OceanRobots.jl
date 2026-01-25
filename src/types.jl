@@ -90,7 +90,7 @@ Glider_Spray() = Glider_Spray("",DataFrame())
 
 struct Glider_EGO <: AbstractOceanRobotData
     ID::Union{Missing,Int64}
-    data::NamedTuple
+    data::Any #Union{NamedTuple,DataFrame}
 end
 
 Glider_EGO() = Glider_EGO(missing,NamedTuple())
