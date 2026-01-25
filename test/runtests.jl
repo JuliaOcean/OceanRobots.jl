@@ -66,6 +66,22 @@ end
     @test isa(f3,Figure)
 end
 
+@testset "Glider_AOML" begin
+    glider=OceanRobots.query(Glider_AOML)[5]
+    mission=OceanRobots.query(Glider_AOML,
+            glider=glider,option=:missions)[1]
+    file=OceanRobots.query(Glider_AOML,
+            glider=glider,mission=mission,option=:profiles)[1]
+    Glider_AOML_module.download_AOML(file)
+    @test isfile(file)
+
+    data=read(Glider_AOML(),file)
+    @test isa(data,Glider_AOML)
+
+#    f=plot(data,1)
+#    @test isa(f,Figure)
+end
+
 @testset "NOAAbuoy" begin
     allstations=OceanRobots.query(NOAAbuoy)
     @test isa(allstations,Vector)
@@ -164,3 +180,4 @@ end
     xbt=XBT.read_XBT_AOML(df0.subfolder[1],path=path0)
     @test isa(xbt,XBTtransect)
 end
+

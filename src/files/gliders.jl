@@ -184,13 +184,15 @@ list3=Glider_AOML_module.query(glider=g,mission=m,option=:profiles)
 p=list3[1]
 ```
 """
-function query(; option=:gliders, glider=missing, mission=missing)
+function query(; option=:gliders,  
+	glider=missing, mission=missing, verbose=false)
 	if option==:gliders
 		ftp=FTPClient.FTP(url0)
 		Symbol.(readdir(ftp))
 	elseif option==:missions
-		url=url0*string(glider)*"/"; println(url)
-		Symbol.(readdir(FTPClient.FTP(url0*string(glider)*"/")))
+		url=url0*string(glider)*"/"
+		verbose ? println(url) : nothing
+		Symbol.(readdir(FTPClient.FTP(url)))
 	elseif option==:profiles
 		url1=url0*string(glider)*"/"*string(mission)*"/"
 		url_to_file.(url1.*readdir(FTPClient.FTP(url1)))
@@ -225,7 +227,7 @@ function download_AOML(ID::Symbol; verbose=false)
 	for m in missions
 		profiles=query(glider=string(ID),mission=m,option=:profiles)
 		for p in profiles
-				println(p)
+			verbose ? println(p) : nothing
 			download_AOML(p,verbose=verbose)
 		end
 	end
@@ -270,7 +272,7 @@ sample_file=Glider_AOML_module.sample_file()
 glider=read(Glider_AOML(),sample_file);
 ```
 """
-read(x::Glider_AOML, file::String=sample_file()) = begin
+function read(x::Glider_AOML, file::String=sample_file())
 	_,tmp=read_profile(file)
 	data=NamedTuple((Symbol(key),value) for (key,value) in tmp)
     Glider_AOML(file,data)
@@ -283,17 +285,14 @@ Read a AOML glider mission.
 
 ```
 using OceanRobots
-
-gliders=Glider_AOML_module.query();
-ID=gliders[5]
-
-missions=OceanRobots.query(Glider_AOML,glider=ID,option=:missions)
-glider=read(Glider_AOML(),ID,missions[1]);
+glider_ID=OceanRobots.query(Glider_AOML,option=:gliders,ID=5)
+missions=OceanRobots.query(Glider_AOML,glider=glider_ID,option=:missions)
+glider=read(Glider_AOML(),glider_ID,missions[1]);
 
 scatter(glider.data.longitude,glider.data.latitude)
 ```
 """
-read(x::Glider_AOML, ID::Symbol, mission::Symbol) = begin
+function read(x::Glider_AOML, ID::Symbol, mission::Symbol)
 	profiles=query(glider=string(ID),mission=string(mission),option=:profiles)
 	p=joinpath(tempdir(),"glider_AOML",string(ID),string(mission))
 	profiles=Glob.glob("*.nc",p)
