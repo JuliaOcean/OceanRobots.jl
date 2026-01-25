@@ -165,7 +165,7 @@ end
 module Glider_AOML_module
 
 import OceanRobots: Glider_AOML
-import FTPClient, NCDatasets
+import FTPClient, NCDatasets, Glob
 import Base: read
 
 url0="ftp://ftp.aoml.noaa.gov/phod/pub/bringas/Glider/Operation/Data/"
@@ -176,24 +176,30 @@ url0="ftp://ftp.aoml.noaa.gov/phod/pub/bringas/Glider/Operation/Data/"
 ```
 OceanRobots.query(Glider_AOML,glider="SG610",mission="M03JUL2015",option=:profiles)
 
-list1=Glider_AOML_module.query(option=:gliders);
-list2=Glider_AOML_module.query(glider=list1[1],option=:missions)
-list3=Glider_AOML_module.query(glider="SG610",mission="M03JUL2015",option=:profiles)
+list1=Glider_AOML_module.query(option=:gliders)
+g=list1[5]
+list2=Glider_AOML_module.query(glider=g,option=:missions)
+m=list1[2]
+list3=Glider_AOML_module.query(glider=g,mission=m,option=:profiles)
+p=list3[1]
 ```
 """
 function query(; option=:gliders, glider=missing, mission=missing)
 	if option==:gliders
 		ftp=FTPClient.FTP(url0)
-		readdir(ftp)
+		Symbol.(readdir(ftp))
 	elseif option==:missions
-		url=url0*glider*"/"; println(url)
-		readdir(FTPClient.FTP(url0*glider*"/"))
+		url=url0*string(glider)*"/"; println(url)
+		Symbol.(readdir(FTPClient.FTP(url0*string(glider)*"/")))
 	elseif option==:profiles
-		readdir(FTPClient.FTP(url0*glider*"/"*mission*"/"))
+		url1=url0*string(glider)*"/"*string(mission)*"/"
+		url_to_file.(url1.*readdir(FTPClient.FTP(url1)))
 	else
 		"unknown option"
 	end
 end
+
+##
 
 function scan(i=5,j=1,k=3)
 	top=Glider_AOML_module.query(option=:gliders);
@@ -201,84 +207,161 @@ function scan(i=5,j=1,k=3)
 	ls_glider=query(glider=name_glider,option=:missions)
 	name_mission=ls_glider[j]
 	ls_mission=query(glider=name_glider,mission=name_mission,option=:profiles)
-	name_file=ls_mission[k]
+	sample_file=ls_mission[k]
 
-	sample_file=url0*name_glider*"/"*name_mission*"/"*name_file
 	(top_level=top,name_glider=name_glider,name_mission=name_mission,
-	name_file=name_file,ls_glider=ls_glider,ls_mission=ls_mission,
-	sample_file=sample_file)
+	ls_glider=ls_glider,ls_mission=ls_mission,sample_file=sample_file)
 end
 
-function download_AOML(ID::Symbol)
-	#download whole set of profiles
-end
-
-"""
-    download_AOML(fil)
-
-```
-using OceanRobots
-scan=OceanRobots.Glider_AOML_module.scan();
-sample_file=OceanRobots.Glider_AOML_module.download_AOML(scan.sample_file)
-```	
-"""
-function download_AOML(fil)
-	url0=dirname(fil)
-	fil0=basename(fil)
-
-	n0=length(url0)
-	tmp1=url0[n0+1:end]
-	tmp2=dirname(tmp1)
-
-	pth=joinpath(tempdir(),"glider_AOML")
-    !isdir(pth) ? mkdir(pth) : nothing
-
-	pth=joinpath(tempdir(),"glider_AOML",tmp2)
-    !isdir(pth) ? mkdir(pth) : nothing
-
-	pth=joinpath(tempdir(),"glider_AOML",tmp1)
-    !isdir(pth) ? mkdir(pth) : nothing
-
-    fil_out=joinpath(pth,fil0)
-	ftp=FTPClient.FTP(url0)
-
-    !isfile(fil_out) ? FTPClient.download(ftp, fil0, fil_out) : nothing
-    fil_out
-end
-
-"""
-    read(x::Glider_AOML, file::String)
-
-Read a AOML Glider file. 
-
-```
-using OceanRobots
-sample_file=OceanRobots.Glider_AOML_module.sample_file()
-glider=read(Glider_AOML(),sample_file);
-```
-"""
-read(x::Glider_AOML, file::String=sample_file()) = begin
-	ds,data=read_glider(file)
-    Glider_AOML(file,data)
-end
+##
 
 function sample_file()
 	sc=scan();
 	sample_file=download_AOML(sc.sample_file)
 end
 
+##
+
 """
-    read_glider(file)
+    download_AOML(ID::Symbol)
+
+```
+using OceanRobots
+gliders=Glider_AOML_module.query();
+ID=Symbol(gliders[5]);
+
+missions=Glider_AOML_module.query(glider=string(ID),option=:missions)
+#Glider_AOML_module.download_AOML(ID);
+
+m=missions[1]
+profiles=Glider_AOML_module.query(glider=string(ID),mission=m,option=:profiles)
+
+p=profiles[1]
+isfile(p) ? nothing : Glider_AOML_module.download_AOML(p)
+glider=read(Glider_AOML(),p);
+```
+"""
+function download_AOML(ID::Symbol; verbose=false)
+	missions=query(glider=string(ID),option=:missions)
+	for m in missions
+		profiles=Glider_AOML_module.query(glider=string(ID),mission=m,option=:profiles)
+		for p in profiles
+				println(p)
+			download_AOML(p,verbose=verbose)
+		end
+	end
+end
+
+"""
+    download_AOML(fil::String)
+
+```
+using OceanRobots
+
+scan=OceanRobots.Glider_AOML_module.scan();
+sample_file=OceanRobots.Glider_AOML_module.download_AOML(scan.sample_file)
+```	
+"""
+function download_AOML(fil::String; verbose=false)
+	verbose ? println(fil) : nothing
+
+	paths=[dirname(dirname(dirname(fil))), dirname(dirname(fil)), dirname(fil)]
+	for p in paths
+	    !isdir(p) ? mkdir(p) : nothing
+	end
+
+	fil0=basename(fil)
+	url1=dirname(file_to_url(fil))
+	ftp=FTPClient.FTP(url1)
+
+	verbose ? println(fil) : nothing
+    !isfile(fil) ? FTPClient.download(ftp, fil0, fil) : nothing
+    fil
+end
+
+function url_to_file(url; folder=joinpath(tempdir(),"glider_AOML"))
+	tmp0=split(url,"/")
+	tmp1=tmp0[end-2]
+	tmp2=tmp0[end-1]
+	fil0=tmp0[end]
+	joinpath(folder,tmp1,tmp2,fil0)
+end
+
+function file_to_url(fil)
+	tmp0=split(fil,"/")
+	tmp1=tmp0[end-2]
+	tmp2=tmp0[end-1]
+	fil0=tmp0[end]
+	joinpath(url0,tmp1,tmp2,fil0)
+end
+
+##
+
+"""
+    read_profiles(x::Glider_AOML, file::String)
+
+Read a AOML Glider file. 
+
+```
+using OceanRobots
+sample_file=Glider_AOML_module.sample_file()
+glider=Glider_AOML_module.read_profile(Glider_AOML(),sample_file);
+```
+"""
+read_profile(x::Glider_AOML, file::String=sample_file()) = begin
+	_,tmp=read_profile(file)
+	data=NamedTuple((Symbol(key),value) for (key,value) in tmp)
+    Glider_AOML(file,data)
+end
+
+"""
+    read(x::Glider_AOML, ID::Symbol, mission::Symbol)
+
+Read a AOML glider mission. 
+
+```
+using OceanRobots
+
+sample_file=OceanRobots.Glider_AOML_module.sample_file()
+glider=read(Glider_AOML(),sample_file);
+
+scatter(glider.data.longitude,glider.data.latitude)
+```
+"""
+read(x::Glider_AOML, ID::Symbol, mission::Symbol) = begin
+#	missions=query(glider=string(ID),option=:missions)
+#	profiles=query(glider=string(ID),mission=missions[m],option=:profiles)
+
+	profiles=query(glider=string(ID),mission=string(mission),option=:profiles)
+	p=joinpath(tempdir(),"glider_AOML",string(ID),string(mission))
+	profiles=Glob.glob("*.nc",p)
+
+	tmp=Dict()
+	for p in profiles[1:120]
+		_,data=read_profile(p)
+		merge!(tmp,data)
+	end
+	data=NamedTuple((Symbol(key),value) for (key,value) in tmp)
+    Glider_AOML(dirname(profiles[1]),data)
+end
+
+"""
+    read_profile(file)
 
 ```
 using OceanRobots
 scan=OceanRobots.Glider_AOML.scan();
 sample_file=OceanRobots.Glider_AOML.download_AOML(scan.sample_file)
 ds,data=OceanRobots.Glider_AOML.read(sample_file)
+
+gliders=Glider_AOML_module.query();
+ID=Symbol(gliders[5]);
+missions=Glider_AOML_module.download_AOML(ID);
+
 ```
 """
-function read_glider(file)
-	println(file)
+function read_profile(file; verbose=false)
+	verbose ? println(file) : nothing
 	ds=NCDatasets.Dataset(file)
 
 	tmp=Dict()
@@ -288,10 +371,8 @@ function read_glider(file)
 	for i in lst
 		merge!(tmp,Dict(i=>ds[i][:]))
 	end
-
-	data=NamedTuple((Symbol(key),value) for (key,value) in tmp)
 	
-	ds,data
+	ds,tmp
 end
 
 end
