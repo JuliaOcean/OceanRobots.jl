@@ -165,7 +165,7 @@ end
 module Glider_AOML_module
 
 import OceanRobots: Glider_AOML
-import FTPClient, NCDatasets, Glob
+import FTPClient, NCDatasets, DataFrames, Glob
 import Base: read
 
 url0="ftp://ftp.aoml.noaa.gov/phod/pub/bringas/Glider/Operation/Data/"
@@ -225,11 +225,14 @@ glider=read(Glider_AOML(),p);
 function download_AOML(ID::Symbol; verbose=false)
 	missions=query(glider=string(ID),option=:missions)
 	for m in missions
+		verbose ? println(m) : nothing
 		profiles=query(glider=string(ID),mission=m,option=:profiles)
+		url1=dirname(file_to_url(profiles[1]))
+		ftp=FTPClient.FTP(url1)
 		for p in profiles
-			verbose ? println(p) : nothing
-			download_AOML(p,verbose=verbose)
+			download_AOML(ftp,p,verbose=verbose)
 		end
+		close(ftp)
 	end
 end
 
@@ -244,17 +247,22 @@ sample_file=Glider_AOML_module.download_AOML(sample_file)
 """
 function download_AOML(fil::String; verbose=false)
 	verbose ? println(fil) : nothing
+	url1=dirname(file_to_url(fil))
+	ftp=FTPClient.FTP(url1)
+	download_AOML(ftp,fil; verbose=verbose)
+	close(ftp)
+	fil
+end
 
+function download_AOML(ftp::FTPClient.FTP,fil::String; verbose=false)
+	verbose ? println(fil) : nothing
+
+	path0,fil0=(dirname(fil),basename(fil))
 	paths=[dirname(dirname(dirname(fil))), dirname(dirname(fil)), dirname(fil)]
 	for p in paths
 	    !isdir(p) ? mkdir(p) : nothing
 	end
 
-	fil0=basename(fil)
-	url1=dirname(file_to_url(fil))
-	ftp=FTPClient.FTP(url1)
-
-	verbose ? println(fil) : nothing
     !isfile(fil) ? FTPClient.download(ftp, fil0, fil) : nothing
     fil
 end
@@ -273,9 +281,7 @@ glider=read(Glider_AOML(),sample_file);
 ```
 """
 function read(x::Glider_AOML, file::String=sample_file())
-	_,tmp=read_profile(file)
-	data=NamedTuple((Symbol(key),value) for (key,value) in tmp)
-    Glider_AOML(file,data)
+	    Glider_AOML(file,read_profile(file))
 end
 
 """
@@ -285,9 +291,9 @@ Read a AOML glider mission.
 
 ```
 using OceanRobots
-glider_ID=OceanRobots.query(Glider_AOML,option=:gliders,ID=5)
-missions=OceanRobots.query(Glider_AOML,glider=glider_ID,option=:missions)
-glider=read(Glider_AOML(),glider_ID,missions[1]);
+ID=OceanRobots.query(Glider_AOML,option=:gliders)[5]
+MS=OceanRobots.query(Glider_AOML,glider=ID,option=:missions)[1]
+glider=read(Glider_AOML(),ID,MS);
 
 scatter(glider.data.longitude,glider.data.latitude)
 ```
@@ -297,13 +303,13 @@ function read(x::Glider_AOML, ID::Symbol, mission::Symbol)
 	p=joinpath(tempdir(),"glider_AOML",string(ID),string(mission))
 	profiles=Glob.glob("*.nc",p)
 
-	tmp=Dict()
-	for p in profiles[1:120]
-		_,data=read_profile(p)
-		merge!(tmp,data)
+	tmp=DataFrames.DataFrame()
+	for p in profiles
+		ds=NCDatasets.Dataset(p)
+		append!(tmp,to_DataFrame(ds))
 	end
-	data=NamedTuple((Symbol(key),value) for (key,value) in tmp)
-    Glider_AOML(dirname(profiles[1]),data)
+	
+	Glider_AOML(p,tmp)
 end
 
 """
@@ -319,27 +325,28 @@ glider=read(Glider_AOML(),ID,missions[1]);
 ```
 """
 function read_profile(file; verbose=false)
-	verbose ? println(file) : nothing
 	ds=NCDatasets.Dataset(file)
+	to_DataFrame(ds)
+end 
 
-	tmp=Dict()
-	merge!(tmp,Dict("trajectory" => string(ds["trajectory"][:]...)))
-	lst=["ctd_time","longitude","latitude","ctd_depth","temperature","salinity"]
-	append!(lst,["profile_id","profile_time","profile_lon","profile_lat","du","dv"])
-	for i in lst
-		merge!(tmp,Dict(i=>ds[i][:]))
-	end
-	
-	ds,tmp
+function to_DataFrame(ds)
+	df=DataFrames.DataFrame()
+	df.time=ds[:ctd_time][:]
+	df.longitude=ds[:longitude][:]
+	df.latitude=ds[:latitude][:]
+	df.ctd_depth=ds[:ctd_depth][:]
+	df.temperature=ds[:temperature][:]
+	df.salinity=ds[:salinity][:]
+	df
 end
 
 ##
 
 function sample_file()
-	gliders=Glider_AOML_module.query();
+	gliders=query();
 	ID=Symbol(gliders[5]);
-	mission=Glider_AOML_module.query(glider=string(ID),option=:missions)[1]
-	profile=Glider_AOML_module.query(glider=string(ID),mission=mission,option=:profiles)[1]
+	mission=query(glider=string(ID),option=:missions)[1]
+	profile=query(glider=string(ID),mission=mission,option=:profiles)[1]
 end
 
 ##

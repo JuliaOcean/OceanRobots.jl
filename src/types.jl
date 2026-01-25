@@ -98,11 +98,11 @@ Glider_EGO() = Glider_EGO(missing,NamedTuple())
 ##
 
 struct Glider_AOML <: AbstractOceanRobotData
-    file::String
-    data::NamedTuple
+    path::String
+    data::DataFrame
 end
 
-Glider_AOML() = Glider_AOML("",NamedTuple())
+Glider_AOML() = Glider_AOML("",DataFrame())
 
 ##
 
