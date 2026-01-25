@@ -277,11 +277,11 @@ Read a AOML Glider file.
 ```
 using OceanRobots
 sample_file=Glider_AOML_module.sample_file()
-glider=read(Glider_AOML(),sample_file);
+glider=read(Glider_AOML(),sample_file)
 ```
 """
 function read(x::Glider_AOML, file::String=sample_file())
-	    Glider_AOML(file,read_profile(file))
+	Glider_AOML(file,read_profile(file))
 end
 
 """
@@ -291,10 +291,10 @@ Read a AOML glider mission.
 
 ```
 using OceanRobots
-ID=OceanRobots.query(Glider_AOML,option=:gliders)[5]
-MS=OceanRobots.query(Glider_AOML,glider=ID,option=:missions)[1]
-glider=read(Glider_AOML(),ID,MS);
+(ID,MS)=Glider_AOML_module.ID_MS(5,1)
+glider=read(Glider_AOML(),ID,MS)
 
+using CairoMakie
 scatter(glider.data.longitude,glider.data.latitude)
 ```
 """
@@ -317,17 +317,17 @@ end
 
 ```
 using OceanRobots
-
-gliders=Glider_AOML_module.query();
-ID=Symbol(gliders[5]);
-missions=Glider_AOML_module.download_AOML(ID);
-glider=read(Glider_AOML(),ID,missions[1]);
+sample_file=Glider_AOML_module.sample_file(3,1,1)
+df=Glider_AOML_module.read_profile(sample_file)
 ```
 """
 function read_profile(file; verbose=false)
+	isfile(file) ? nothing : download_AOML(file)
 	ds=NCDatasets.Dataset(file)
 	to_DataFrame(ds)
 end 
+
+##
 
 function to_DataFrame(ds)
 	df=DataFrames.DataFrame()
@@ -342,11 +342,17 @@ end
 
 ##
 
-function sample_file()
-	gliders=query();
-	ID=Symbol(gliders[5]);
-	mission=query(glider=string(ID),option=:missions)[1]
-	profile=query(glider=string(ID),mission=mission,option=:profiles)[1]
+function ID_MS(i,j)
+	ID=query(option=:gliders)[i]
+	MS=query(glider=ID,option=:missions)[j]
+	(ID,MS)
+end
+
+##
+
+function sample_file(i=5,j=1,k=1)
+	(ID,MS)=ID_MS(i,j)
+	profile=query(glider=string(ID),mission=MS,option=:profiles)[k]
 end
 
 ##
