@@ -9,7 +9,7 @@ end
 """
     plot_glider_Spray_v1(df,gdf,ID;size=(900,600),pol=missing)
 
-Read a Spray Glider file.
+Read a Spray Glider file (alternative to `plot_glider_default`).
 
 ```
 begin
@@ -67,8 +67,8 @@ Default plot for glider data.
 
 ```
 using OceanRobots, CairoMakie
-gliders=read(Glider_Spray(),"GulfStream.nc",1)
-plot(gliders)
+glider=read(Glider_Spray(),"GulfStream.nc",1)
+plot(glider)
 ```
 """
 function plot(x::Glider_Spray; size=(900,600), pol=missing)
@@ -107,22 +107,30 @@ end
 
 ```
 using OceanRobots, CairoMakie
-glider=read(Glider_EGO(),1);
-plot(glider)
+sample_file=Glider_AOML_module.sample_file()
+glider=read(Glider_AOML(),sample_file)
+plot(glider,markersize=8)
 ```
 """
-plot(glider::Glider_AOML; size=(1000,600), pol=missing) = begin
-	plot_glider_default(glider,markersize=2,size=size,pol=pol)
+plot(glider::Glider_AOML; size=(1000,600), markersize=2, pol=missing) = begin
+	plot_glider_default(glider,markersize=markersize,size=size,pol=pol)
 end
 
 ##
 
 
 """
+    plot_glider_default(glider; markersize=2, 
+		size=(600,800), pol=missing, pad=2.0)
+
 ```
+using OceanRobots
+glider=read(Glider_EGO(),1)
+
 using MeshArrays, GeoJSON, DataDeps
 pol=MeshArrays.Dataset("countries_geojson1")
 
+plot(glider,pol=pol)
 ```
 """
 function plot_glider_default(glider; markersize=2, 

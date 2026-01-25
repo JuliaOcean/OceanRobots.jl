@@ -118,10 +118,7 @@ missions,folders,files=Glider_EGO_module.file_lists(1:10)
 Glider_EGO_module.glider_download(files[1][1])
 
 data=read(Glider_EGO(),2)
-
-
 fig_glider=plot(data)
-
 ds=data.ds,variable="CHLA")
 ```
 """

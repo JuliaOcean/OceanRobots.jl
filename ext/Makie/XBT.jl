@@ -10,7 +10,7 @@ xbt=read(XBTtransect(),transect="PX05",cruise="0910")
 plot(xbt)
 ```
 """
-function plot(x::XBTtransect;pol=missing)	
+function plot(x::XBTtransect;pol=missing)
 	if x.format=="AOML"
         plot_XBT_AOML(x,pol=pol)
     elseif x.format=="SIO"
