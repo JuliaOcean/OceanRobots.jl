@@ -24,6 +24,15 @@ yrng(lat)=begin
 	b=(max(a[1]-dx/2,-90),min(a[2]+dx/2,90))
 end
 
+rng(x;mini=NaN,maxi=NaN,pad=0.1) = begin
+	xlm=collect(extrema(skipmissing(x)))
+	dxlm=diff(xlm)[1]
+	xlm=[xlm[1]-pad*dxlm,xlm[2]+pad*dxlm]
+	isfinite(mini) ? xlm[1]=max(mini,xlm[1]) : nothing
+	isfinite(maxi) ? xlm[2]=min(maxi,xlm[2]) : nothing
+	(xlm[1],xlm[2])
+end
+
 ## DRIFTERS
 
 """

@@ -1,15 +1,6 @@
 
 ## Glider_Spray
 
-rng(x;mini=NaN,maxi=NaN,pad=0.1) = begin
-	xlm=collect(extrema(skipmissing(x)))
-	dxlm=diff(xlm)[1]
-	xlm=[xlm[1]-pad*dxlm,xlm[2]+pad*dxlm]
-	isfinite(mini) ? xlm[1]=max(mini,xlm[1]) : nothing
-	isfinite(maxi) ? xlm[2]=min(maxi,xlm[2]) : nothing
-	(xlm[1],xlm[2])
-end
-
 function convert_time(tim)
 	y1=Dates.year(tim[1])
 	y1.+(tim.-Dates.DateTime(y1))./Dates.Millisecond(1)/1000/86400/365.25
@@ -76,14 +67,12 @@ Default plot for glider data.
 
 ```
 using OceanRobots, CairoMakie
-gliders=read(Glider_Spray(),"GulfStream.nc")
-plot(gliders,1,size=(900,600))
+gliders=read(Glider_Spray(),"GulfStream.nc",1)
+plot(gliders)
 ```
 """
-plot(x::Glider_Spray;size=(900,600),pol=missing) = begin
-#	gdf=Glider_Spray_module.groupby(x.data,:ID)
-#	plot_glider(x.data,gdf,ID,size=size,pol=pol)
-	plot_glider_default(x,markersize=4)
+function plot(x::Glider_Spray; size=(900,600), pol=missing)
+	plot_glider_default(x,markersize=4,pol=pol)
 end
 
 ## Glider EGO
@@ -98,7 +87,7 @@ plot(glider)
 ```
 """
 plot(x::Glider_EGO; size=(900,600),pol=missing) = begin
-	plot_glider_default(x)
+	plot_glider_default(x,markersize=2,pol=pol)
 end
 
 function colorrange(x;positive=false)
@@ -122,15 +111,24 @@ glider=read(Glider_EGO(),1);
 plot(glider)
 ```
 """
-plot(glider::Glider_AOML;size=(900,600),pol=missing) = begin
-	plot_glider_default(glider,markersize=2)
+plot(glider::Glider_AOML; size=(1000,600), pol=missing) = begin
+	plot_glider_default(glider,markersize=2,size=size,pol=pol)
 end
 
 ##
 
-function plot_glider_default(glider; markersize=2)
+
+"""
+```
+using MeshArrays, GeoJSON, DataDeps
+pol=MeshArrays.Dataset("countries_geojson1")
+
+```
+"""
+function plot_glider_default(glider; markersize=2, 
+			size=(600,800), pol=missing, pad=2.0)
 	da=glider.data
-	fig=Figure(size=(1000,600))
+	fig=Figure(size=size)
 
 	tim=DateTime.(da.time)
 	dt=tim.-minimum(tim)
@@ -138,15 +136,23 @@ function plot_glider_default(glider; markersize=2)
 
 	tt=findall(	(!ismissing).(da.temperature) .&& 
 				(!ismissing).(da.salinity)	)
+	xlims=rng(da.longitude,mini=-180,maxi=180,pad=pad)
+	ylims=rng(da.latitude,mini=-90,maxi=90,pad=pad)
 
-	Axis(fig[1,1],title="time")
+	Axis(fig[1,1],title="time",limits = (xlims, ylims))
 	scatter!(da.longitude[tt],da.latitude[tt],color=dt[tt],markersize=2)
-	Axis(fig[1,2],title="depth")
+	ismissing(pol) ? nothing : lines!(pol,color = :black, linewidth = 0.5)
+
+	Axis(fig[1,2],title="depth",limits = (xlims, ylims))
 	scatter!(da.longitude[tt],da.latitude[tt],color=da.depth[tt],markersize=2)
+	ismissing(pol) ? nothing : lines!(pol,color = :black, linewidth = 0.5)
+
 	Axis(fig[2,1:2],title="temperature")
-	scatter!(tim[tt],-da.depth[tt],color=da.temperature[tt],markersize=markersize)
+	hm=scatter!(tim[tt],-da.depth[tt],color=da.temperature[tt],markersize=markersize)
+	Colorbar(fig[2,3],hm)
 	Axis(fig[3,1:2],title="salinity")
-	scatter!(tim[tt],-da.depth[tt],color=da.salinity[tt],markersize=markersize)
+	hm=scatter!(tim[tt],-da.depth[tt],color=da.salinity[tt],markersize=markersize)
+	Colorbar(fig[3,3],hm)
 
 	fig
 end

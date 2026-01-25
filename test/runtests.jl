@@ -58,10 +58,11 @@ end
     f3=plot(b)
     @test isa(f3,Figure)
 
+    #specific plot that currently cannot be replicated with default format
 	OceanRobotsMakieExt = Base.get_extension(OceanRobots, :OceanRobotsMakieExt);
 	x=read(Glider_Spray(),"GulfStream.nc",1,-1);
 	gdf=Glider_Spray_module.groupby(x.data,:ID);
-	fig=OceanRobotsMakieExt.plot_glider_Spray_v1(gl_Spray_v1.data,gdf,1)
+	fig=OceanRobotsMakieExt.plot_glider_Spray_v1(x.data,gdf,1)
     @test isa(fig,Figure)
 end
 
@@ -80,8 +81,8 @@ end
     data=read(Glider_AOML(),file)
     @test isa(data,Glider_AOML)
 
-#    f=plot(data,1)
-#    @test isa(f,Figure)
+    f=plot(data)
+    @test isa(f,Figure)
 end
 
 @testset "NOAAbuoy" begin
