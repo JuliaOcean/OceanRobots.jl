@@ -201,27 +201,6 @@ end
 
 ##
 
-function scan(i=5,j=1,k=3)
-	top=Glider_AOML_module.query(option=:gliders);
-	name_glider=top[i]
-	ls_glider=query(glider=name_glider,option=:missions)
-	name_mission=ls_glider[j]
-	ls_mission=query(glider=name_glider,mission=name_mission,option=:profiles)
-	sample_file=ls_mission[k]
-
-	(top_level=top,name_glider=name_glider,name_mission=name_mission,
-	ls_glider=ls_glider,ls_mission=ls_mission,sample_file=sample_file)
-end
-
-##
-
-function sample_file()
-	sc=scan();
-	sample_file=download_AOML(sc.sample_file)
-end
-
-##
-
 """
     download_AOML(ID::Symbol)
 
@@ -244,7 +223,7 @@ glider=read(Glider_AOML(),p);
 function download_AOML(ID::Symbol; verbose=false)
 	missions=query(glider=string(ID),option=:missions)
 	for m in missions
-		profiles=Glider_AOML_module.query(glider=string(ID),mission=m,option=:profiles)
+		profiles=query(glider=string(ID),mission=m,option=:profiles)
 		for p in profiles
 				println(p)
 			download_AOML(p,verbose=verbose)
@@ -257,9 +236,8 @@ end
 
 ```
 using OceanRobots
-
-scan=OceanRobots.Glider_AOML_module.scan();
-sample_file=OceanRobots.Glider_AOML_module.download_AOML(scan.sample_file)
+sample_file=Glider_AOML_module.sample_file()
+sample_file=Glider_AOML_module.download_AOML(sample_file)
 ```	
 """
 function download_AOML(fil::String; verbose=false)
@@ -279,36 +257,20 @@ function download_AOML(fil::String; verbose=false)
     fil
 end
 
-function url_to_file(url; folder=joinpath(tempdir(),"glider_AOML"))
-	tmp0=split(url,"/")
-	tmp1=tmp0[end-2]
-	tmp2=tmp0[end-1]
-	fil0=tmp0[end]
-	joinpath(folder,tmp1,tmp2,fil0)
-end
-
-function file_to_url(fil)
-	tmp0=split(fil,"/")
-	tmp1=tmp0[end-2]
-	tmp2=tmp0[end-1]
-	fil0=tmp0[end]
-	joinpath(url0,tmp1,tmp2,fil0)
-end
-
 ##
 
 """
-    read_profiles(x::Glider_AOML, file::String)
+    read(x::Glider_AOML, file::String)
 
 Read a AOML Glider file. 
 
 ```
 using OceanRobots
 sample_file=Glider_AOML_module.sample_file()
-glider=Glider_AOML_module.read_profile(Glider_AOML(),sample_file);
+glider=read(Glider_AOML(),sample_file);
 ```
 """
-read_profile(x::Glider_AOML, file::String=sample_file()) = begin
+read(x::Glider_AOML, file::String=sample_file()) = begin
 	_,tmp=read_profile(file)
 	data=NamedTuple((Symbol(key),value) for (key,value) in tmp)
     Glider_AOML(file,data)
@@ -322,16 +284,16 @@ Read a AOML glider mission.
 ```
 using OceanRobots
 
-sample_file=OceanRobots.Glider_AOML_module.sample_file()
-glider=read(Glider_AOML(),sample_file);
+gliders=Glider_AOML_module.query();
+ID=gliders[5]
+
+missions=OceanRobots.query(Glider_AOML,glider=ID,option=:missions)
+glider=read(Glider_AOML(),ID,missions[1]);
 
 scatter(glider.data.longitude,glider.data.latitude)
 ```
 """
 read(x::Glider_AOML, ID::Symbol, mission::Symbol) = begin
-#	missions=query(glider=string(ID),option=:missions)
-#	profiles=query(glider=string(ID),mission=missions[m],option=:profiles)
-
 	profiles=query(glider=string(ID),mission=string(mission),option=:profiles)
 	p=joinpath(tempdir(),"glider_AOML",string(ID),string(mission))
 	profiles=Glob.glob("*.nc",p)
@@ -350,14 +312,11 @@ end
 
 ```
 using OceanRobots
-scan=OceanRobots.Glider_AOML.scan();
-sample_file=OceanRobots.Glider_AOML.download_AOML(scan.sample_file)
-ds,data=OceanRobots.Glider_AOML.read(sample_file)
 
 gliders=Glider_AOML_module.query();
 ID=Symbol(gliders[5]);
 missions=Glider_AOML_module.download_AOML(ID);
-
+glider=read(Glider_AOML(),ID,missions[1]);
 ```
 """
 function read_profile(file; verbose=false)
@@ -374,5 +333,34 @@ function read_profile(file; verbose=false)
 	
 	ds,tmp
 end
+
+##
+
+function sample_file()
+	gliders=Glider_AOML_module.query();
+	ID=Symbol(gliders[5]);
+	mission=Glider_AOML_module.query(glider=string(ID),option=:missions)[1]
+	profile=Glider_AOML_module.query(glider=string(ID),mission=mission,option=:profiles)[1]
+end
+
+##
+
+function url_to_file(url; folder=joinpath(tempdir(),"glider_AOML"))
+	tmp0=split(url,"/")
+	tmp1=tmp0[end-2]
+	tmp2=tmp0[end-1]
+	fil0=tmp0[end]
+	joinpath(folder,tmp1,tmp2,fil0)
+end
+
+function file_to_url(fil)
+	tmp0=split(fil,"/")
+	tmp1=tmp0[end-2]
+	tmp2=tmp0[end-1]
+	fil0=tmp0[end]
+	joinpath(url0,tmp1,tmp2,fil0)
+end
+
+##
 
 end
