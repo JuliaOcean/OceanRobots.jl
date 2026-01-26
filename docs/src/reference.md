@@ -6,8 +6,8 @@ Each type of ocean data gets :
 - a default `plot` function that depicts some of the data.
 
 ```@example ex1
-using MeshArrays, Shapefile, DataDeps
-pol=MeshArrays.Dataset("countries_shp1")
+using MeshArrays, GeoJSON, DataDeps
+pol=MeshArrays.Dataset("countries_geojson1")
 GC.gc() #hide
 nothing #hide
 ```
@@ -83,13 +83,33 @@ date2=DateTime(2005,2,1)
 plot(whots,date1,date2)
 ```
 
-### Spray Gliders
+### Gliders
+
+Three data sets, corresponding to different glider programs (`Spray`, `EGO`, `AOML`).
 
 ```@example ex1
 using OceanRobots, CairoMakie
-gliders=read(Glider_Spray(),"GulfStream.nc")
-plot(gliders,1,pol=pol)
+glider=read(Glider_Spray(),"GulfStream.nc",1)
+plot(glider,pol=pol)
 ```
+
+```@example ex1
+using OceanRobots, CairoMakie
+glider=read(Glider_Spray(),"GulfStream.nc",1)
+plot(glider,pol=pol)
+```
+
+```@example ex1
+glider=read(Glider_EGO(),2)
+plot(glider,pol=pol)
+```
+
+```@example ex1
+(ID,MS)=Glider_AOML_module.ID_MS(3,1)
+glider=read(Glider_AOML(),ID,MS)
+plot(glider,pol=pol)
+```
+
 
 ## `read` methods
 

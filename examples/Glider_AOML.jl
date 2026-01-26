@@ -4,111 +4,83 @@
 using Markdown
 using InteractiveUtils
 
-# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
-macro bind(def, element)
-    #! format: off
-    return quote
-        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
-        local el = $(esc(element))
-        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
-        el
-    end
-    #! format: on
-end
-
-# ╔═╡ d61376ca-76f2-11ec-0393-83d9b38831ca
+# ╔═╡ 0247a51e-c89b-11ec-071f-bb82fe257adc
 begin
 	using OceanRobots, PlutoUI, CairoMakie
-	"Done with packages"
+	import MeshArrays, GeoJSON, DataDeps
+	"Done with Software Packages"
 end
 
-# ╔═╡ e6d47534-3bdb-401f-8758-12ebce4232f6
+# ╔═╡ e5b9772e-cbb5-42f0-bacb-5bae6bc8d5b6
+md"""# AOML Gliders
+
+AOML gliders often target hurricane events in the Tropical Atlantic. 
+
+They collect measurements in the upper kilometer of the ocean during missions than can last three to four months.
+
+- <https://www.aoml.noaa.gov/hurricane-glider-project/#gliderdata>
+- <https://ioos.noaa.gov/ioos-hurricane-glider-coordination/>
+"""
+
+# ╔═╡ 0a016d12-de41-45f5-800d-af8f953720e4
+begin
+	url1="https://cdn.ioos.noaa.gov/media/2024/01/AOML-glider-credit_-AOML.jpg"
+	url2="https://www.aoml.noaa.gov/phod/goos/gliders/website_pictures/20160720-IMG_3250_web.png"
+	
+	url3="https://www.aoml.noaa.gov/phod/goos/gliders/images/2022_AOML_Hurricane_Gliders.png"
+	url4="https://www.aoml.noaa.gov/wp-content/uploads/2022/07/52216507730_242dda7942_o-1920x1440.jpg"
+	md"""
+	$(Resource(url2,:height => 130))
+	$(Resource(url1,:height => 130))
+	$(Resource(url4,:height => 130))
+	$(Resource(url3,:height => 130))
+	
+	_Image Credits : AOML, NOAA._
+	"""
+end
+
+# ╔═╡ d9ffd0a8-85e3-4e2a-9d6a-81f3dbd3ee31
 TableOfContents()
 
-# ╔═╡ 84964782-cdd1-4773-a134-04d486e69856
-md"""# Surface Drifters
+# ╔═╡ 9523dc0d-1758-4e0f-864c-4ab253bf11a9
+begin
+	sample_file=Glider_AOML_module.sample_file()
+	glider=read(Glider_AOML(),sample_file)
+	"Done with Data Ingestion"
+end
 
-Here we learn to download, read, and plot one hourly drifter data file from [NOAA webpage](https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/) or its [ftp server](ftp://ftp.aoml.noaa.gov/pub/phod/lumpkin/hourly/v2.00/netcdf/). 
+# ╔═╡ 68028522-205e-4b41-b3c0-2e3b09c2d8a7
+md"""## Appendix
 
-!!! note
-    See [global drifter website](https://www.aoml.noaa.gov/phod/gdp/hourly_data.php) for more information about this data set.
+### Julia Packages
 """
 
-# ╔═╡ 568d54ae-19a6-4ff4-ae0b-e131693029e5
-begin
-	url0="https://www.aoml.noaa.gov/wp-content/uploads/2020/12/GDP-map.jpg"
-	url1="https://www.aoml.noaa.gov/wp-content/uploads/2020/07/Global-Drifter-Program-300x300.jpg"
-	url2="https://www.hidrografico.pt/recursos/imagens/noticias/2021/01/20210108-NOAA-GDP-1.jpg"
-	url3="https://www.aoml.noaa.gov/wp-content/uploads/2020/08/GlobalDrifterProgram.jpg"
-	
-	#	http://www.aoml.noaa.gov/phod/gdp/interactive/drifter_array.html"
-	md"""	
- 	$(PlutoUI.Resource(url0,:height => 100))
- 	$(PlutoUI.Resource(url1,:height => 100))
-	$(PlutoUI.Resource(url2,:height => 100))
- 	$(PlutoUI.Resource(url3,:height => 100))
-	"""
-end
+# ╔═╡ 30a7f579-bea3-4bee-9624-75436b56bb51
+md"""### Ancillary Data"""
 
-# ╔═╡ 4ada19d2-b4ce-463c-b771-f067b2982db0
-md"""## Interactive Display"""
+# ╔═╡ 43be1962-2ebb-4763-ba2e-f1bfc83d29aa
+pol=MeshArrays.Dataset("countries_geojson1")
 
-# ╔═╡ 760bc397-cdd3-49eb-80ef-7e4bc73885ce
-md"""## Appendix"""
-
-# ╔═╡ 37186681-41f5-4bbc-b8f6-fde37c7b5130
-md"""### Julia"""
-
-# ╔═╡ 156ff1f1-ca05-4ac6-8351-69b6c19ed8fa
-OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
-
-# ╔═╡ 1a5bf0e8-669b-47b7-ad1e-72a39d86e69e
-md"""### Files
-
-A subset of the drifter files is used for illustration in this notebook.
-"""
-
-# ╔═╡ e8f3749c-e009-45be-9f25-71354352c8ee
-begin
-	list_files=GDP.list_files()
-	jj=[1,5000,10000,15000] #subset of the files
-	list_files=list_files[jj,:]
-end
-
-# ╔═╡ 505b7aa1-d598-4e58-bc5a-1fb435c5c476
-begin
-	ii_select = @bind ii_txt Select(list_files.filename,default=list_files.filename[end])
-	md"""Select one of the drifting buoys $(ii_select)
-	"""
-end
-
-# ╔═╡ 1af8da1e-8906-4042-91b0-bad3632d02bf
-begin
-	kk=findall(list_files.filename.==ii_txt)[1]
-    ds=read(SurfaceDrifter(),kk,list_files=list_files)
-    keys(ds.data)
-end
-
-# ╔═╡ 32810c75-efaf-4bb6-8e54-19077b4e5a00
-plot(ds)
-
-# ╔═╡ b39d9b80-4674-424b-ad52-091033b07ce2
-begin
-	md""" Selected Buoy identifiers:
-	
-	- `GDP ID`=$(ds.ID)
-	- `WMO ID` =$(ds.wmo)
-	"""
-end
-
-
+# ╔═╡ 3e5fd65e-e3d9-49e5-a9b0-87a2475cc3a0
+plot(glider,pol=pol,markersize=8)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+DataDeps = "124859b0-ceae-595e-8997-d05f6a7a8dfe"
+GeoJSON = "61d90e0f-e114-555e-ac52-39dfb47a3ef9"
+MeshArrays = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
 OceanRobots = "0b51df41-3294-4961-8d23-db645e32016d"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+
+[compat]
+CairoMakie = "~0.15.8"
+DataDeps = "~0.7.13"
+GeoJSON = "~0.8.4"
+MeshArrays = "~0.5.3"
+OceanRobots = "~0.3.2"
+PlutoUI = "~0.7.79"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -117,7 +89,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.1"
 manifest_format = "2.0"
-project_hash = "a5a27bcd4401357551a02ce47955dcedd4d9c177"
+project_hash = "9dec9b1234cdb086f02b2ee0121d7e51e3017fd4"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -824,6 +796,20 @@ version = "1.6.0"
 
     [deps.GeoInterface.weakdeps]
     GeometryBasics = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
+    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+    RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
+
+[[deps.GeoJSON]]
+deps = ["Extents", "GeoFormatTypes", "GeoInterface", "JSON3", "StructTypes", "Tables"]
+git-tree-sha1 = "ce64817b826c36b30493b31be2ce53c55a277835"
+uuid = "61d90e0f-e114-555e-ac52-39dfb47a3ef9"
+version = "0.8.4"
+
+    [deps.GeoJSON.extensions]
+    GeoJSONMakieExt = "Makie"
+    GeoJSONRecipesBaseExt = "RecipesBase"
+
+    [deps.GeoJSON.weakdeps]
     Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
     RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 
@@ -2411,19 +2397,14 @@ version = "4.1.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╟─e6d47534-3bdb-401f-8758-12ebce4232f6
-# ╟─84964782-cdd1-4773-a134-04d486e69856
-# ╟─568d54ae-19a6-4ff4-ae0b-e131693029e5
-# ╟─32810c75-efaf-4bb6-8e54-19077b4e5a00
-# ╟─4ada19d2-b4ce-463c-b771-f067b2982db0
-# ╟─505b7aa1-d598-4e58-bc5a-1fb435c5c476
-# ╟─b39d9b80-4674-424b-ad52-091033b07ce2
-# ╟─760bc397-cdd3-49eb-80ef-7e4bc73885ce
-# ╟─37186681-41f5-4bbc-b8f6-fde37c7b5130
-# ╟─d61376ca-76f2-11ec-0393-83d9b38831ca
-# ╟─156ff1f1-ca05-4ac6-8351-69b6c19ed8fa
-# ╟─1a5bf0e8-669b-47b7-ad1e-72a39d86e69e
-# ╟─e8f3749c-e009-45be-9f25-71354352c8ee
-# ╟─1af8da1e-8906-4042-91b0-bad3632d02bf
+# ╟─e5b9772e-cbb5-42f0-bacb-5bae6bc8d5b6
+# ╟─0a016d12-de41-45f5-800d-af8f953720e4
+# ╟─d9ffd0a8-85e3-4e2a-9d6a-81f3dbd3ee31
+# ╟─3e5fd65e-e3d9-49e5-a9b0-87a2475cc3a0
+# ╟─9523dc0d-1758-4e0f-864c-4ab253bf11a9
+# ╟─68028522-205e-4b41-b3c0-2e3b09c2d8a7
+# ╟─0247a51e-c89b-11ec-071f-bb82fe257adc
+# ╟─30a7f579-bea3-4bee-9624-75436b56bb51
+# ╟─43be1962-2ebb-4763-ba2e-f1bfc83d29aa
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
