@@ -67,9 +67,9 @@ Argo Float Track            |  Argo Float Profiles
 
 👉 [Drifter notebook 1](https://juliaocean.github.io/OceanRobots.jl/dev/examples/Drifter_GDP.html) 👈
 
-![](https://user-images.githubusercontent.com/20276764/149673826-a43e2a44-f4e5-437b-99cb-5e032228b3af.png)
-
 👉 [Drifter notebook 2](https://juliaocean.github.io/OceanRobots.jl/dev/examples/Drifter_CloudDrift.html) 👈
+
+![](https://user-images.githubusercontent.com/20276764/149673826-a43e2a44-f4e5-437b-99cb-5e032228b3af.png)
 
 ![](https://user-images.githubusercontent.com/20276764/205257672-f8adc8fc-dea7-4dea-91dd-ab9e1c18c1c1.png)
 
@@ -80,7 +80,11 @@ Argo Float Track            |  Argo Float Profiles
  <summary> Underwater Gliders </summary>
 <p>
 
-👉 [Glider notebook](https://juliaocean.github.io/OceanRobots.jl/dev/examples/https://juliaocean.github.io/OceanRobots.jl/dev/examples/Glider_Spray.html) 👈
+👉 [Glider notebook 1](https://juliaocean.github.io/OceanRobots.jl/dev/examples/Glider_Spray.html) 👈
+
+👉 [Glider notebook 2](https://juliaocean.github.io/OceanRobots.jl/dev/examples/Glider_EGO.html) 👈
+
+👉 [Glider notebook 3](https://juliaocean.github.io/OceanRobots.jl/dev/examples/Glider_AOML.html) 👈
 
 ![](https://user-images.githubusercontent.com/20276764/166470390-952e89df-60ad-4a45-b015-9469c3c297de.png)
 
