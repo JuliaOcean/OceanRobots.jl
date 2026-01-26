@@ -26,11 +26,12 @@ end
 # ╔═╡ 00eed108-ed57-11f0-ad11-2b926f36f35c
 md"""# EGO Glider Data
 
-This notebook is a first step towards supporting [EGO glider data set](ftp://ftp.ifremer.fr/ifremer/glider/v2) in [OceanRobots.jl](https://github.com/JuliaOcean/OceanRobots.jl).
+This notebook is a first step towards supporting [EGO glider data set](https://sextant.ifremer.fr/geonetwork/srv/api/records/589bfa51-2219-4cc8-a19e-83f3c3f27bb4/formatters/xsl-view) in [OceanRobots.jl](https://github.com/JuliaOcean/OceanRobots.jl).
 
 !!! note
-    - Gaël Forget created the initial notebook
+    - Gaël Forget created the notebook and data interface in `OceanRobots.jl`
     - Manuela Juliano, Francisco Campuzano presented dataset
+    - <https://www.ego-network.org/dokuwiki/doku.php>
 """
 
 # ╔═╡ 3434054c-5cb0-4d9c-9e3a-aa13b9c4bf36
