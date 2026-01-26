@@ -53,10 +53,17 @@ end
 end
 
 @testset "Glider_Spray" begin
-    b=read(Glider_Spray(),"GulfStream.nc")
+    b=read(Glider_Spray(),"GulfStream.nc",1)
     @test isa(b,Glider_Spray)
-    f3=plot(b,1)
+    f3=plot(b)
     @test isa(f3,Figure)
+
+    #specific plot that currently cannot be replicated with default format
+	OceanRobotsMakieExt = Base.get_extension(OceanRobots, :OceanRobotsMakieExt);
+	x=read(Glider_Spray(),"GulfStream.nc",1,-1);
+	gdf=Glider_Spray_module.groupby(x.data,:ID);
+	fig=OceanRobotsMakieExt.plot_glider_Spray_v1(x.data,gdf,1)
+    @test isa(fig,Figure)
 end
 
 @testset "Glider_EGO" begin
@@ -64,6 +71,18 @@ end
     @test isa(b,Glider_EGO)
     f3=plot(b)
     @test isa(f3,Figure)
+end
+
+@testset "Glider_AOML" begin
+    file=Glider_AOML_module.sample_file()
+    Glider_AOML_module.download_AOML(file)
+    @test isfile(file)
+
+    data=read(Glider_AOML(),file)
+    @test isa(data,Glider_AOML)
+
+    f=plot(data)
+    @test isa(f,Figure)
 end
 
 @testset "NOAAbuoy" begin
@@ -164,3 +183,4 @@ end
     xbt=XBT.read_XBT_AOML(df0.subfolder[1],path=path0)
     @test isa(xbt,XBTtransect)
 end
+

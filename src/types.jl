@@ -77,6 +77,8 @@ end
 
 CloudDrift() = CloudDrift("",NamedTuple())
 
+##
+
 struct Glider_Spray <: AbstractOceanRobotData
     file::String
     data::DataFrame
@@ -88,10 +90,19 @@ Glider_Spray() = Glider_Spray("",DataFrame())
 
 struct Glider_EGO <: AbstractOceanRobotData
     ID::Union{Missing,Int64}
-    data::NamedTuple
+    data::Any #Union{NamedTuple,DataFrame}
 end
 
 Glider_EGO() = Glider_EGO(missing,NamedTuple())
+
+##
+
+struct Glider_AOML <: AbstractOceanRobotData
+    path::String
+    data::DataFrame
+end
+
+Glider_AOML() = Glider_AOML("",DataFrame())
 
 ##
 
@@ -151,6 +162,8 @@ function query(x::DataType,args...;kwargs...)
         list.wmo
     elseif x==OceanSite
         OceanSites.index()
+    elseif x==Glider_AOML
+        Glider_AOML_module.query(;kwargs...)
     else
         warning("unknown data type")
     end
