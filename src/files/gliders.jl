@@ -233,7 +233,7 @@ p=list3[1]
 ```
 """
 function query(; option=:gliders, glider=missing, mission=missing, 
-			verbose=false, folder=joinpath("tempdir()","glider_AOML"))
+			verbose=false, folder=joinpath(tempdir(),"glider_AOML"))
 	if option==:gliders
 		ftp=FTPClient.FTP(url0)
 		Symbol.(readdir(ftp))
