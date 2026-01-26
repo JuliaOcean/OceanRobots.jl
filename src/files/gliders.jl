@@ -232,8 +232,8 @@ list3=Glider_AOML_module.query(glider=g,mission=m,option=:profiles)
 p=list3[1]
 ```
 """
-function query(; option=:gliders,  
-	glider=missing, mission=missing, verbose=false)
+function query(; option=:gliders, glider=missing, mission=missing, 
+			verbose=false, folder=joinpath("tempdir()","glider_AOML"))
 	if option==:gliders
 		ftp=FTPClient.FTP(url0)
 		Symbol.(readdir(ftp))
@@ -243,7 +243,7 @@ function query(; option=:gliders,
 		Symbol.(readdir(FTPClient.FTP(url)))
 	elseif option==:profiles
 		url1=url0*string(glider)*"/"*string(mission)*"/"
-		url_to_file.(url1.*readdir(FTPClient.FTP(url1)))
+		fil=url_to_file.(url1.*readdir(FTPClient.FTP(url1)),folder=folder)
 	else
 		"unknown option"
 	end
@@ -346,9 +346,10 @@ using CairoMakie
 scatter(glider.data.longitude,glider.data.latitude)
 ```
 """
-function read(x::Glider_AOML, ID::Symbol, mission::Symbol)
+function read(x::Glider_AOML, ID::Symbol, mission::Symbol; 
+		folder=joinpath(tempdir(),"glider_AOML"))
 	profiles=query(glider=string(ID),mission=string(mission),option=:profiles)
-	p=joinpath(tempdir(),"glider_AOML",string(ID),string(mission))
+	p=joinpath(folder,string(ID),string(mission))
 	profiles=Glob.glob("*.nc",p)
 
 	tmp=DataFrames.DataFrame()
