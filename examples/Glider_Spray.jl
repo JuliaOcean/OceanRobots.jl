@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.20
+# v0.20.21
 
 using Markdown
 using InteractiveUtils
@@ -56,6 +56,12 @@ begin
 end
 
 
+# ╔═╡ 428120da-1542-4265-a369-1273ae4718ac
+begin
+	ID_bind = @bind ID NumberField(1:2, default=1)
+	md"""- Select mission  : $(ID_bind)"""
+end
+
 # ╔═╡ 68028522-205e-4b41-b3c0-2e3b09c2d8a7
 md"""## Appendix
 
@@ -67,17 +73,12 @@ md"""### Data Ingestion"""
 
 # ╔═╡ 9523dc0d-1758-4e0f-864c-4ab253bf11a9
 begin
-    gliders=read(Gliders(),MID)
-    ng=length(unique(gliders.data.ID))
-	ID_bind = @bind ID NumberField(1:ng, default=1)
+    glider=read(Glider_Spray(),MID,ID)
 	"Done with Data Ingestion"
 end
 
 # ╔═╡ 3e5fd65e-e3d9-49e5-a9b0-87a2475cc3a0
-plot(gliders,ID)
-
-# ╔═╡ 428120da-1542-4265-a369-1273ae4718ac
-md"""- Select mission  : $(ID_bind)"""
+plot(glider)
 
 # ╔═╡ 5748bb5f-528f-42fd-8961-fd7c93d12554
 md"""### Typical File Content
