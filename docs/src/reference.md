@@ -105,9 +105,10 @@ plot(glider,pol=pol)
 ```
 
 ```@example ex1
-(ID,MS)=Glider_AOML_module.ID_MS(3,1)
-glider=read(Glider_AOML(),ID,MS)
-plot(glider,pol=pol)
+file=Glider_AOML_module.sample_file()
+Glider_AOML_module.download_AOML(file)
+glider=read(Glider_AOML(),file)
+plot(glider,pol=pol,markersize=8)
 ```
 
 
