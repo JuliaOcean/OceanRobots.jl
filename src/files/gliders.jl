@@ -273,12 +273,16 @@ function download_AOML(ID::Symbol; verbose=false)
 	for m in missions
 		verbose ? println(m) : nothing
 		profiles=query(glider=string(ID),mission=m,option=:profiles)
-		url1=dirname(file_to_url(profiles[1]))
-		ftp=FTPClient.FTP(url1)
-		for p in profiles
-			download_AOML(ftp,p,verbose=verbose)
+		if isempty(profiles)
+			@warn "ignoring empty mission folder : $(m)"
+		else
+			url1=dirname(file_to_url(profiles[1]))
+			ftp=FTPClient.FTP(url1)
+			for p in profiles
+				download_AOML(ftp,p,verbose=verbose)
+			end
+			close(ftp)
 		end
-		close(ftp)
 	end
 end
 
