@@ -19,14 +19,6 @@ end
 # ╔═╡ e7f710ec-e429-4b93-b687-1e6d4678bbe3
 using OceanRobots, CairoMakie, PlutoUI
 
-# ╔═╡ 58bffbe1-dd21-4551-95ff-d8727d010c58
-begin
-	using MeshArrays, Shapefile, DataDeps
-	pol_file=demo.download_polygons("ne_110m_admin_0_countries.shp")
-	pol=MeshArrays.read_polygons(pol_file)
-	"Done with country polygons"
-end
-
 # ╔═╡ 7e8b02b8-546e-46ca-989c-a29961c11730
 md"""# XBT transect
 
@@ -34,9 +26,9 @@ For more information, see [this page](https://www-hrx.ucsd.edu/index.html) and [
 
 ### Acknowledgments
 
-- Scripps : _Data were made available by the Scripps High Resolution XBT program (<www-hrx.ucsd.edu>)_
-- NOAA : _The XBT data are made freely available on the Atlantic Oceanographic and Meteorological Laboratory and are funded by the NOAA Office of Climate Observations_ (<https://www.aoml.noaa.gov/phod/hdenxbt/index.php>).
-- Australia’s Integrated Marine Observing System (IMOS) : <https://portal.aodn.org.au>
+- [UCSD/Scripps](https://www-hrx.ucsd.edu) : _Data were made available by the Scripps High Resolution XBT program_, <https://www-hrx.ucsd.edu>
+- [NOAA/AOML](https://www.aoml.noaa.gov/phod/hdenxbt/index.php) : _The XBT data are made freely available on the Atlantic Oceanographic and Meteorological Laboratory and are funded by the NOAA Office of Climate Observations_, <https://www.aoml.noaa.gov/phod/hdenxbt/index.php>
+- [IMOS](https://portal.aodn.org.au) : Australia’s Integrated Marine Observing System, <https://portal.aodn.org.au>
 """
 
 # ╔═╡ 0b9d4b00-2fdc-4a13-aa90-239e16a87469
@@ -76,9 +68,6 @@ else
 	xbt=read(XBTtransect(),source=source,transect=transect,cruise=string(cr))
 end
 
-# ╔═╡ 5c0f77e2-f11d-4f21-9a87-ce4aee0a2f2b
-plot(xbt,pol=pol)
-
 # ╔═╡ a6a403b0-70eb-43ef-9b37-856bebd58e91
 if source=="IMOS"
 	xbt.data[1].rec=[findall(xbt.data[2].time.==a)[1] for a in xbt.data[1].time]
@@ -90,15 +79,33 @@ md"""## Appendix"""
 
 
 
+# ╔═╡ 58bffbe1-dd21-4551-95ff-d8727d010c58
+begin
+	import GeoJSON, DataDeps, MeshArrays
+	pol=MeshArrays.Dataset("countries_geojson1")
+	"Done with country boundaries"
+end
+
+# ╔═╡ 5c0f77e2-f11d-4f21-9a87-ce4aee0a2f2b
+plot(xbt,pol=pol)
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 DataDeps = "124859b0-ceae-595e-8997-d05f6a7a8dfe"
+GeoJSON = "61d90e0f-e114-555e-ac52-39dfb47a3ef9"
 MeshArrays = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
 OceanRobots = "0b51df41-3294-4961-8d23-db645e32016d"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-Shapefile = "8e980c4a-a4fe-5da2-b3a7-4b4b0353a2f4"
+
+[compat]
+CairoMakie = "~0.15.8"
+DataDeps = "~0.7.13"
+GeoJSON = "~0.8.4"
+MeshArrays = "~0.5.3"
+OceanRobots = "~0.3.2"
+PlutoUI = "~0.7.79"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -107,7 +114,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.1"
 manifest_format = "2.0"
-project_hash = "b8c8570c5d9846162958af41f3748a9a1b0924b6"
+project_hash = "9dec9b1234cdb086f02b2ee0121d7e51e3017fd4"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -526,12 +533,6 @@ git-tree-sha1 = "249fe38abf76d48563e2f4556bebd215aa317e15"
 uuid = "a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"
 version = "4.1.1"
 
-[[deps.DBFTables]]
-deps = ["Dates", "Printf", "Tables", "WeakRefStrings"]
-git-tree-sha1 = "25f7e32f980605f8261ed8008418e41f5faec4b1"
-uuid = "75c7ada1-017a-5fb6-b8c7-2125ff2d6c93"
-version = "1.2.7"
-
 [[deps.DataAPI]]
 git-tree-sha1 = "abe83f3a2f1b857aac70ef8b269080af17764bbe"
 uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
@@ -820,6 +821,20 @@ version = "1.6.0"
 
     [deps.GeoInterface.weakdeps]
     GeometryBasics = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
+    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+    RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
+
+[[deps.GeoJSON]]
+deps = ["Extents", "GeoFormatTypes", "GeoInterface", "JSON3", "StructTypes", "Tables"]
+git-tree-sha1 = "ce64817b826c36b30493b31be2ce53c55a277835"
+uuid = "61d90e0f-e114-555e-ac52-39dfb47a3ef9"
+version = "0.8.4"
+
+    [deps.GeoJSON.extensions]
+    GeoJSONMakieExt = "Makie"
+    GeoJSONRecipesBaseExt = "RecipesBase"
+
+    [deps.GeoJSON.weakdeps]
     Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
     RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 
@@ -1862,22 +1877,6 @@ deps = ["ColorTypes", "FixedPointNumbers", "GeometryBasics", "LinearAlgebra", "O
 git-tree-sha1 = "818554664a2e01fc3784becb2eb3a82326a604b6"
 uuid = "65257c39-d410-5151-9873-9b3e5be5013e"
 version = "0.5.0"
-
-[[deps.Shapefile]]
-deps = ["DBFTables", "DataAPI", "Extents", "GeoFormatTypes", "GeoInterface", "OrderedCollections", "Tables"]
-git-tree-sha1 = "761a19d86ab3e90ed4dcb07692b2ce225124feb3"
-uuid = "8e980c4a-a4fe-5da2-b3a7-4b4b0353a2f4"
-version = "0.13.3"
-
-    [deps.Shapefile.extensions]
-    ShapefileMakieExt = "Makie"
-    ShapefileRecipesBaseExt = "RecipesBase"
-    ShapefileZipFileExt = "ZipFile"
-
-    [deps.Shapefile.weakdeps]
-    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-    RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
-    ZipFile = "a5390f91-8eb1-5f08-bee0-b1d1ffed6cea"
 
 [[deps.SharedArrays]]
 deps = ["Distributed", "Mmap", "Random", "Serialization"]

@@ -5,8 +5,8 @@ println("downloading files ...")
 ENV["DATADEPS_ALWAYS_ACCEPT"]=true
 OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
 
-using MeshArrays, Shapefile, DataDeps
-pol=MeshArrays.Dataset("countries_shp1")
+using MeshArrays, GeoJSON, DataDeps
+pol=MeshArrays.Dataset("countries_geojson1")
 
 Glider_Spray_module.check_for_file_Spray("GulfStream.nc")
 Glider_Spray_module.check_for_file_Spray("CUGN_along.nc")
@@ -36,9 +36,12 @@ makedocs(;
 
 println("running notebooks ...")
 
-lst=("Glider_EGO.jl","CPR_notebook.jl","Roce_interop.jl","XBT_transect.jl","ShipCruise_CCHDO.jl",
-  "Drifter_CloudDrift.jl","Buoy_NWP_NOAA_monthly.jl","Glider_Spray.jl","OceanOPS.jl",
-  "Buoy_NWP_NOAA.jl","Mooring_WHOTS.jl","Drifter_GDP.jl","Float_Argo.jl")
+lst=("OceanOPS.jl","ShipCruise_CCHDO.jl",
+    "CPR_notebook.jl","Roce_interop.jl","XBT_transect.jl",
+    "Buoy_NWP_NOAA.jl","Buoy_NWP_NOAA_monthly.jl","Mooring_WHOTS.jl",
+    "Glider_Spray.jl","Glider_EGO.jl","Glider_AOML.jl",
+    "Drifter_GDP.jl","Drifter_CloudDrift.jl","Float_Argo.jl")
+
 for i in lst
     fil_in=joinpath(@__DIR__,"..","examples",i)
     fil_out=joinpath(@__DIR__,"build","examples",i[1:end-2]*"html")
