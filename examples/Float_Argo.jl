@@ -166,6 +166,7 @@ end
 # ╔═╡ e1d9253a-4ac4-47c8-97d7-edb92cd54397
 fig3=plot(argo,option=:standard,pol=pol)
 
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -1030,9 +1031,9 @@ version = "0.0.5"
 
 [[deps.HypertextLiteral]]
 deps = ["Tricks"]
-git-tree-sha1 = "7134810b1afce04bbc1045ca1985fbe81ce17653"
+git-tree-sha1 = "d1a86724f81bcd184a38fd284ce183ec067d71a0"
 uuid = "ac1192a8-f4b3-4bfe-ba22-af5b92cd3ab2"
-version = "0.9.5"
+version = "1.0.0"
 
 [[deps.IOCapture]]
 deps = ["Logging", "Random"]
@@ -1618,9 +1619,9 @@ version = "0.5.5"
 
 [[deps.OceanRobots]]
 deps = ["ArgoData", "CFTime", "CSV", "CodecZlib", "DataFrames", "Dataverse", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "Interpolations", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "TableScraper", "URIs"]
-git-tree-sha1 = "dafa34f7c21d5ea272eb4b7228bd51c027265f1e"
+git-tree-sha1 = "a2968faf93ba112c848583aae867f55a9773c0bb"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
-version = "0.3.2"
+version = "0.3.3"
 weakdeps = ["Makie"]
 
     [deps.OceanRobots.extensions]

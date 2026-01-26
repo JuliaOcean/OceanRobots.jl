@@ -103,6 +103,7 @@ end
 
 
 
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -1526,9 +1527,9 @@ version = "0.5.5"
 
 [[deps.OceanRobots]]
 deps = ["ArgoData", "CFTime", "CSV", "CodecZlib", "DataFrames", "Dataverse", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "Interpolations", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "TableScraper", "URIs"]
-git-tree-sha1 = "dafa34f7c21d5ea272eb4b7228bd51c027265f1e"
+git-tree-sha1 = "a2968faf93ba112c848583aae867f55a9773c0bb"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
-version = "0.3.2"
+version = "0.3.3"
 weakdeps = ["Makie"]
 
     [deps.OceanRobots.extensions]
