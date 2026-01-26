@@ -200,7 +200,12 @@ function to_DataFrame(ds)
 	df.time=ds[:TIME][:]
 	df.longitude=ds[:LONGITUDE][:]
 	df.latitude=ds[:LATITUDE][:]
-	df.depth=ds[:GLIDER_DEPTH][:]
+	df.depth=
+	if haskey(ds,"GLIDER_DEPTH")
+		ds[:GLIDER_DEPTH][:]
+	else
+		ds[:PRES][:]
+	end
 	df.temperature=ds[:TEMP][:]
 	df.salinity=ds[:PSAL][:]
 	df
@@ -224,12 +229,9 @@ url0="ftp://ftp.aoml.noaa.gov/phod/pub/bringas/Glider/Operation/Data/"
 ```
 OceanRobots.query(Glider_AOML,glider="SG610",mission="M03JUL2015",option=:profiles)
 
-list1=Glider_AOML_module.query(option=:gliders)
-g=list1[5]
-list2=Glider_AOML_module.query(glider=g,option=:missions)
-m=list1[2]
-list3=Glider_AOML_module.query(glider=g,mission=m,option=:profiles)
-p=list3[1]
+Glider_AOML_module.query(option=:gliders)[5]
+Glider_AOML_module.query(glider=g,option=:missions)[2]
+Glider_AOML_module.query(glider=g,mission=m,option=:profiles)[1]
 ```
 """
 function query(; option=:gliders, glider=missing, mission=missing, 
@@ -255,19 +257,15 @@ end
     download_AOML(ID::Symbol)
 
 ```
-using OceanRobots
-gliders=Glider_AOML_module.query();
-ID=Symbol(gliders[5]);
+using OceanRobots, CairoMakie
 
-missions=Glider_AOML_module.query(glider=string(ID),option=:missions)
-#Glider_AOML_module.download_AOML(ID);
+(ID,MS)=Glider_AOML_module.ID_MS(3,1)
+profiles=Glider_AOML_module.query(glider=ID,mission=MS,option=:profiles)
 
-m=missions[1]
-profiles=Glider_AOML_module.query(glider=string(ID),mission=m,option=:profiles)
+Glider_AOML_module.download_AOML(profiles[1])
+glider=read(Glider_AOML(),profiles[1])
 
-p=profiles[1]
-isfile(p) ? nothing : Glider_AOML_module.download_AOML(p)
-glider=read(Glider_AOML(),p);
+plot(glider)
 ```
 """
 function download_AOML(ID::Symbol; verbose=false)

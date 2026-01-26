@@ -86,8 +86,8 @@ glider=read(Glider_EGO(),1);
 plot(glider)
 ```
 """
-plot(x::Glider_EGO; size=(900,600),pol=missing) = begin
-	plot_glider_default(x,markersize=2,pol=pol)
+function plot(x::Glider_EGO; size=(900,600),pol=missing,markersize=2)
+	plot_glider_default(x,markersize=markersize,pol=pol)
 end
 
 function colorrange(x;positive=false)
