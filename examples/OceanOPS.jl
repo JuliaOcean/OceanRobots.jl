@@ -17,10 +17,7 @@ macro bind(def, element)
 end
 
 # ╔═╡ ccf98691-9386-41b9-a957-3cdeba51312b
-using OceanRobots, CairoMakie, PlutoUI, MeshArrays
-
-# ╔═╡ 30277358-0a8d-437e-9d2e-ebc7c307db31
-using Shapefile, GeoJSON, DataDeps, PrettyTables, Proj
+using OceanRobots, CairoMakie, PlutoUI
 
 # ╔═╡ 5fa93c17-0a01-44c6-8679-d712c786907a
 md"""# OceanOPS : Global Ocean Metadata
@@ -74,17 +71,21 @@ end
 # ╔═╡ cb5cce8c-f67f-496b-ba10-38eefe9285e1
 md"""## List of Platform Types"""
 
+# ╔═╡ 1bf99223-ef46-4202-bdcc-8d7d6c561822
+md"""## Appendices"""
+
+# ╔═╡ 30277358-0a8d-437e-9d2e-ebc7c307db31
+import Shapefile, GeoJSON, DataDeps, PrettyTables, Proj, MeshArrays
+
 # ╔═╡ 9d4b4eed-2cc8-49cd-bb4d-2e7d51e9e4d9
 begin
 	list_platform_types=OceanOPS.list_platform_types()
 
-	tb=pretty_table(
-		[list_platform_types[:,:name] list_platform_types[:,:wigosCode] list_platform_types[:,:id]],
-		header = ["name","wigosCode","ID"],
-		header_crayon = crayon"yellow bold",
-		highlighters  = ( hl_col(1, crayon"yellow"),hl_col(2, crayon"white"),hl_col(3, crayon"white") ),
+	tb=PrettyTables.pretty_table(
+	[list_platform_types[:,:name] list_platform_types[:,:wigosCode] list_platform_types[:,:id]];
+    column_labels            = ["Name","wigos code","ID"],
+    title                    = "Types of Observations",
 	)
-	display(tb)
 end
 
 # ╔═╡ 3b80d06d-72b8-4f67-945e-0b18f61de6e9
@@ -96,15 +97,8 @@ begin
 	more_platform_name=list_platform_types[more_platform_ii,:name]
 end
 
-# ╔═╡ 1bf99223-ef46-4202-bdcc-8d7d6c561822
-md"""## Appendices"""
-
 # ╔═╡ 18cf7db9-f987-4c41-adf2-035e810c2da0
-begin
-	fil=demo.download_polygons("ne_110m_admin_0_countries.shp")
-	#fil=demo.download_polygons("countries.geojson")
-	pol=MeshArrays.read_polygons(fil)
-end
+pol=MeshArrays.Dataset("countries_geojson1")
 
 # ╔═╡ fccdc273-2e9f-4f60-a659-8ee2790ae2fc
 more_operational=OceanOPS.get_list_pos(Symbol(nam_platform_types))
