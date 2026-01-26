@@ -19,6 +19,7 @@ end
 # ╔═╡ 0247a51e-c89b-11ec-071f-bb82fe257adc
 begin
 	using OceanRobots, PlutoUI, CairoMakie
+	import MeshArrays, GeoJSON, DataDeps
 	"Done with Software Packages"
 end
 
@@ -50,17 +51,13 @@ TableOfContents()
 # ╔═╡ b8db58ca-ed7a-4174-a6b0-e53925b5887a
 begin
 	MID_bind = @bind MID Select(["CUGN_along.nc", "GulfStream.nc"], default="GulfStream.nc")
+	ID_bind = @bind ID NumberField(1:2, default=1)
 	md"""## Interactive Visualization
 	
+	- Select mission  : $(ID_bind)
 	- Select data set : $(MID_bind)"""
 end
 
-
-# ╔═╡ 428120da-1542-4265-a369-1273ae4718ac
-begin
-	ID_bind = @bind ID NumberField(1:2, default=1)
-	md"""- Select mission  : $(ID_bind)"""
-end
 
 # ╔═╡ 68028522-205e-4b41-b3c0-2e3b09c2d8a7
 md"""## Appendix
@@ -77,8 +74,11 @@ begin
 	"Done with Data Ingestion"
 end
 
+# ╔═╡ 43be1962-2ebb-4763-ba2e-f1bfc83d29aa
+pol=MeshArrays.Dataset("countries_geojson1")
+
 # ╔═╡ 3e5fd65e-e3d9-49e5-a9b0-87a2475cc3a0
-plot(glider)
+plot(glider,pol=pol)
 
 # ╔═╡ 5748bb5f-528f-42fd-8961-fd7c93d12554
 md"""### Typical File Content
@@ -133,8 +133,19 @@ Spray gliders autonomously collect measurements in the upper kilometer of the oc
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+DataDeps = "124859b0-ceae-595e-8997-d05f6a7a8dfe"
+GeoJSON = "61d90e0f-e114-555e-ac52-39dfb47a3ef9"
+MeshArrays = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
 OceanRobots = "0b51df41-3294-4961-8d23-db645e32016d"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+
+[compat]
+CairoMakie = "~0.15.8"
+DataDeps = "~0.7.13"
+GeoJSON = "~0.8.4"
+MeshArrays = "~0.5.3"
+OceanRobots = "~0.3.2"
+PlutoUI = "~0.7.79"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -143,7 +154,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.1"
 manifest_format = "2.0"
-project_hash = "a5a27bcd4401357551a02ce47955dcedd4d9c177"
+project_hash = "9dec9b1234cdb086f02b2ee0121d7e51e3017fd4"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -850,6 +861,20 @@ version = "1.6.0"
 
     [deps.GeoInterface.weakdeps]
     GeometryBasics = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
+    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+    RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
+
+[[deps.GeoJSON]]
+deps = ["Extents", "GeoFormatTypes", "GeoInterface", "JSON3", "StructTypes", "Tables"]
+git-tree-sha1 = "ce64817b826c36b30493b31be2ce53c55a277835"
+uuid = "61d90e0f-e114-555e-ac52-39dfb47a3ef9"
+version = "0.8.4"
+
+    [deps.GeoJSON.extensions]
+    GeoJSONMakieExt = "Makie"
+    GeoJSONRecipesBaseExt = "RecipesBase"
+
+    [deps.GeoJSON.weakdeps]
     Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
     RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 
@@ -2442,11 +2467,11 @@ version = "4.1.0+0"
 # ╟─d9ffd0a8-85e3-4e2a-9d6a-81f3dbd3ee31
 # ╟─3e5fd65e-e3d9-49e5-a9b0-87a2475cc3a0
 # ╟─b8db58ca-ed7a-4174-a6b0-e53925b5887a
-# ╟─428120da-1542-4265-a369-1273ae4718ac
 # ╟─68028522-205e-4b41-b3c0-2e3b09c2d8a7
 # ╟─0247a51e-c89b-11ec-071f-bb82fe257adc
 # ╟─e729416a-a2b2-46ce-bb1e-ededeb8c75b3
 # ╟─9523dc0d-1758-4e0f-864c-4ab253bf11a9
+# ╟─43be1962-2ebb-4763-ba2e-f1bfc83d29aa
 # ╟─5748bb5f-528f-42fd-8961-fd7c93d12554
 # ╟─440e4256-d6eb-4dfa-946b-22fac53432e8
 # ╟─00000000-0000-0000-0000-000000000001
