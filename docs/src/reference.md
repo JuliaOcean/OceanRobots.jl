@@ -20,7 +20,7 @@ nothing #hide
 - Ship-Based CTD (`ShipCruise_CCHDO.jl`)
 - Ship-Based XBT (`XBT_transect.jl`)
 - NOAA Buoys (`Buoy_NWP_NOAA.jl` , `Buoy_NWP_NOAA_monthly.jl`)
-- Gliders (`Glider_EGO.jl`,`Glider_Spray.jl`)
+- Gliders (`Glider_AOML.jl`, `Glider_EGO.jl`,`Glider_Spray.jl`)
 - WHOTS Mooring (`Mooring_WHOTS.jl`)
 
 ### Surface Drifters
