@@ -341,8 +341,8 @@ Read a AOML glider mission.
 
 ```
 using OceanRobots
-(ID,MS)=Glider_AOML_module.ID_MS(5,1)
-glider=read(Glider_AOML(),ID,MS)
+(ID,MS)=Glider_AOML_module.ID_MS(3,1)
+glider=read(Glider_AOML(),ID,MS,folder=folder)
 
 using CairoMakie
 scatter(glider.data.longitude,glider.data.latitude)
