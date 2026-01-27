@@ -124,10 +124,10 @@ ShipCruise()=ShipCruise("unknown",[],tempdir())
 
 struct XBTtransect <: AbstractOceanRobotData
     source::String
-    format::String
-    ID::String
-    transect::String
-    path::String
+    format::String ##default will be ~ IMOS case (i.e. simple DataFrame )
+    ID::String ##or line (or transect, but ID is undescript)
+    transect::String ##or mission (but not cruise)
+    path::String ##or folder, as in the glider case
     data::Union{Array,Dataset,DataFrame}
     stations::DataFrame
 end
