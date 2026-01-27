@@ -26,7 +26,7 @@ function read(x::XBTtransect;source="SIO",transect="PX05",cr=1,cruise="")
         url2=get_url_to_download(url1)
         path2=download_SIO_cruise(url2)
         T_all,meta_all=read_SIO_XBT(path2)
-        XBTtransect(source,source,transect,transect,path2,[T_all,meta_all,cruises.cruise[CR]])
+        XBTtransect(source,source,transect,transect,path2,[T_all,meta_all,cruises.cruise[CR]],DataFrame())
     elseif source=="AOML"
 #       list2=XBT.get_url_to_transect(transect)
         CR=(isempty(cruise) ? cr : findall(cruises.File.==cruise)[1])
@@ -36,7 +36,7 @@ function read(x::XBTtransect;source="SIO",transect="PX05",cr=1,cruise="")
             path=dirname(files[1])
             (data,meta)=read_NOAA_XBT(path)
             tr=string(transect)
-            XBTtransect(source,source,tr,basename(path),path,[data,meta,cru])
+            XBTtransect(source,source,tr,basename(path),path,[data,meta,cru],DataFrame())
         else
             XBTtransect()
         end
@@ -46,7 +46,7 @@ function read(x::XBTtransect;source="SIO",transect="PX05",cr=1,cruise="")
         df=DataFrame(cruises[CR])
         df.file=download_IMOS_cruise(cruises[CR])
         data,meta=read_IMOS_XBT(df)
-        XBTtransect(source,source,cr,transect,dirname(df.file[1]),[data,meta,df.file])
+        XBTtransect(source,source,cr,transect,dirname(df.file[1]),[data,meta,df.file],DataFrame())
     else
         @warn "unknown source"
     end
@@ -488,7 +488,7 @@ function read_XBT_AOML(list4::AbstractDataFrame; path="XBT_AOML")
 
     path2=joinpath(path,subfolder)
     T_all,meta_all=read_NOAA_XBT(path2)
-    XBTtransect("AOML","AOML",cruise,transect,path2,[T_all,meta_all,subfolder])
+    XBTtransect("AOML","AOML",cruise,transect,path2,[T_all,meta_all,subfolder],DataFrame())
 end
 
 ### helper methods
@@ -537,7 +537,7 @@ function to_standard_depth(xbt2)
     lon,lat,tim=[[df[1,val] for df in gdf] for val in (:lon,:lat,:time)]
     meta_all=[lon[:] lat[:] tim[:] 1:length(tim)]
     #[arr,meta_all,xbt2.data[3]]
-    XBTtransect("AOML","SIO",xbt2.ID,xbt2.transect,xbt2.path,[arr,meta_all,xbt2.data[3]])
+    XBTtransect("AOML","SIO",xbt2.ID,xbt2.transect,xbt2.path,[arr,meta_all,xbt2.data[3]],DataFrame())
 end
 
 ## IMOS data (Australia)
