@@ -90,13 +90,13 @@ function plot(x::Glider_EGO; size=(900,600),pol=missing,markersize=2)
 	plot_glider_default(x,markersize=markersize,pol=pol)
 end
 
-function colorrange(x;positive=false)
+function colorrange(x; positive=false, delta=0.02)
 	y=findall((!ismissing).(x)); z=x[y];
 	y=findall((!isnan).(z)); z=z[y];
 	if positive
 		y=findall(x.>0); z=z[y];
 	end
-	quantile(z, 0.05),quantile(z, 0.95)
+	quantile(z, delta),quantile(z, 1-delta)
 end
 
 
@@ -112,8 +112,8 @@ glider=read(Glider_AOML(),sample_file)
 plot(glider,markersize=8)
 ```
 """
-plot(glider::Glider_AOML; size=(1000,600), markersize=2, pol=missing) = begin
-	plot_glider_default(glider,markersize=markersize,size=size,pol=pol)
+function plot(glider::Glider_AOML; size=(1000,600), markersize=2, pol=missing, title="")
+	plot_glider_default(glider,markersize=markersize,size=size,pol=pol,title=title)
 end
 
 ##
@@ -134,7 +134,7 @@ plot(glider,pol=pol)
 ```
 """
 function plot_glider_default(glider; markersize=2, 
-			size=(600,800), pol=missing, pad=2.0)
+			size=(600,800), pol=missing, pad=0.1, title="")
 	da=glider.data
 	fig=Figure(size=size)
 
@@ -144,24 +144,37 @@ function plot_glider_default(glider; markersize=2,
 
 	tt=findall(	(!ismissing).(da.temperature) .&& 
 				(!ismissing).(da.salinity)	)
+
 	xlims=rng(da.longitude,mini=-180,maxi=180,pad=pad)
+	xlims2=(xlims[2]+xlims[1])/2 .+ (-5,5)
+	xlims=extrema((xlims...,xlims2...))
+
 	ylims=rng(da.latitude,mini=-90,maxi=90,pad=pad)
+	ylims2=(ylims[2]+ylims[1])/2 .+ (-5,5)
+	ylims=extrema((ylims...,ylims2...))
 
 	Axis(fig[1,1],title="time",limits = (xlims, ylims))
-	scatter!(da.longitude[tt],da.latitude[tt],color=dt[tt],markersize=2)
+	scatter!(da.longitude[tt],da.latitude[tt],color=dt[tt],
+		colormap=:berlin,markersize=2)
 	ismissing(pol) ? nothing : lines!(pol,color = :black, linewidth = 0.5)
 
 	Axis(fig[1,2],title="depth",limits = (xlims, ylims))
-	scatter!(da.longitude[tt],da.latitude[tt],color=da.depth[tt],markersize=2)
+	scatter!(da.longitude[tt],da.latitude[tt],color=da.depth[tt],
+		colormap=:berlin,markersize=2)
 	ismissing(pol) ? nothing : lines!(pol,color = :black, linewidth = 0.5)
 
-	Axis(fig[2,1:2],title="temperature")
-	hm=scatter!(tim[tt],-da.depth[tt],color=da.temperature[tt],markersize=markersize)
+	Axis(fig[2,1:2],title=title*"temperature")
+	crng=colorrange(da.temperature[tt])
+	hm=scatter!(tim[tt],-da.depth[tt],color=da.temperature[tt],
+		colormap=:turbo, markersize=markersize, colorrange=crng)
 	Colorbar(fig[2,3],hm)
-	Axis(fig[3,1:2],title="salinity")
-	hm=scatter!(tim[tt],-da.depth[tt],color=da.salinity[tt],markersize=markersize)
+	Axis(fig[3,1:2],title=title*"salinity")
+	crng=colorrange(da.salinity[tt])
+	hm=scatter!(tim[tt],-da.depth[tt],color=da.salinity[tt],
+		colormap=:viridis, markersize=markersize, colorrange=crng)
 	Colorbar(fig[3,3],hm)
 
 	fig
 end
 
+#colorrange = 10-90 percentile
