@@ -6,12 +6,53 @@ using DataFrames, CSV, Dataverse, Interpolations
 import OceanRobots: XBTtransect, query, THREDDS, Dataset
 import Base: read
 
-"""# XBT transect
+## General, Driver, Methods
 
-For more information, [see this page](https://www-hrx.ucsd.edu/index.html).
+### Read Method
 
-_Data were made available by the Scripps High Resolution XBT program (www-hrx.ucsd.edu)_
 """
+    read(x::XBTtransect;transect="PX05",cr=1,cruise="")
+
+```
+using OceanRobots
+read(XBTtransect(),source="SIO",transect="PX05",cruise="0910")
+```
+"""
+function read(x::XBTtransect;source="SIO",transect="PX05",cr=1,cruise="")
+    cruises=list_of_cruises(transect,source=source)
+    if source=="SIO"
+        CR=(isempty(cruise) ? cr : findall(cruises.cruise.==cruise)[1])
+        url1=cruises.url[CR]
+        url2=get_url_to_download(url1)
+        path2=download_SIO_cruise(url2)
+        T_all,meta_all=read_SIO_XBT(path2)
+        XBTtransect(source,source,transect,transect,path2,[T_all,meta_all,cruises.cruise[CR]])
+    elseif source=="AOML"
+#       list2=XBT.get_url_to_transect(transect)
+        CR=(isempty(cruise) ? cr : findall(cruises.File.==cruise)[1])
+        cru=cruises.File[CR]
+        files=download_AOML_cruise(transect,cru)
+        if !isempty(files)
+            path=dirname(files[1])
+            (data,meta)=read_NOAA_XBT(path)
+            tr=string(transect)
+            XBTtransect(source,source,tr,basename(path),path,[data,meta,cru])
+        else
+            XBTtransect()
+        end
+    elseif source=="IMOS"
+        cr=transect*"_"*cruise
+        CR=findall([a.cruise==cr for a in keys(cruises)])[1]
+        df=DataFrame(cruises[CR])
+        df.file=download_IMOS_cruise(cruises[CR])
+        data,meta=read_IMOS_XBT(df)
+        XBTtransect(source,source,cr,transect,dirname(df.file[1]),[data,meta,df.file])
+    else
+        @warn "unknown source"
+    end
+end
+
+### Query Methods
 
 """
     list_transects(; group="SIO")
@@ -36,31 +77,30 @@ function list_transects(group="SIO")
     end
 end
 
-list_of_transects_SIO()=[
-	"PX05", "PX06", "PX30", "PX34", "PX37", "PX37-South", "PX38", "PX40", 
-	"PX06-Loop", "PX08", "PX10", "PX25", "PX44", "PX50", "PX81", 
-	"AX22", "IX15", "IX28"]
+"""
+    list_of_cruises(transect)
 
-list_of_transects_AOML()=[
-    "AX01","AX02","AX04","AX07","AX08","AX10","AX18","AX20","AX25","AX32","AX90","AX97",
-    "AXCOAST","AXWBTS","MX01","MX02","MX04"]
-    
-function list_of_transects_IMOS()
-    url="https://thredds.aodn.org.au/thredds/catalog/IMOS/SOOP/SOOP-XBT/DELAYED/catalog.xml"
-    fil=joinpath(tempdir(),"list_of_transects_IMOS.csv")
-    if isfile(fil)
-        CSV.read(fil,DataFrame)
+```
+transect="PX05"
+cruises,years,months,url_base=list_of_cruises(transect)
+
+CR=cruises[1]
+url1=url_base*CR*".html"
+url2=get_url_to_download(url1)
+
+path2=download_file(url2)
+```
+"""
+function list_of_cruises(transect="PX05"; source="SIO")
+    if source=="SIO"
+        list_of_cruises_SIO(transect)
+    elseif source=="AOML"
+        list_of_cruises_AOML(transect)
+    elseif source=="IMOS"
+        list_of_cruises_IMOS(transect)
     else
-        x=THREDDS.parse_catalog(url,false)[2]
-        x1=[split(y,"/")[1] for y in x]
-        for i in findall(occursin.("Line_",x))
-            x1[i]=split(x[i],"_")[2]
-    #        x1[i]=split(split(x[i],"_")[2],"_")[1]
-        end
-        x2=[dirname(url)*"/"*y for y in x]
-        df=DataFrame("transect"=>String.(x1),"url"=>x2)
-        CSV.write(fil,df)
-        df
+        @warn "unknown source"
+        DataFrame()
     end
 end
 
@@ -120,8 +160,16 @@ function read_SIO_XBT(path2)
 		T_all[li,:].=T
 	end
 
+    #Turn each Array into a DataFrame
 	T_all,meta_all
-#	lines(T,dep)
+end
+
+### Query Methods
+
+function list_of_transects_SIO()
+    ["PX05", "PX06", "PX30", "PX34", "PX37", "PX37-South", "PX38", "PX40", 
+	"PX06-Loop", "PX08", "PX10", "PX25", "PX44", "PX50", "PX81", 
+	"AX22", "IX15", "IX28"]
 end
 
 """
@@ -143,36 +191,6 @@ function scan_SIO()
     end
     data.source.="SIO"
     data
-end
-
-
-## 
-
-"""
-    list_of_cruises(transect)
-
-```
-transect="PX05"
-cruises,years,months,url_base=list_of_cruises(transect)
-
-CR=cruises[1]
-url1=url_base*CR*".html"
-url2=get_url_to_download(url1)
-
-path2=download_file(url2)
-```
-"""
-function list_of_cruises(transect="PX05"; source="SIO")
-    if source=="SIO"
-        list_of_cruises_SIO(transect)
-    elseif source=="AOML"
-        list_of_cruises_AOML(transect)
-    elseif source=="IMOS"
-        list_of_cruises_IMOS(transect)
-    else
-        @warn "unknown source"
-        DataFrame()
-    end
 end
 
 function list_of_cruises_SIO(transect="PX05")
@@ -214,73 +232,7 @@ function cleanup_2(x)
     y[findall(.!(y.==""))]
 end
 
-function list_of_cruises_AOML(transect)
-    files=list_files_on_server(transect)
-    DataFrame("File"=>files)
-end
-
-function list_of_cruises_IMOS(transect)
-    list_files_path=joinpath(tempdir(),"files_"*transect*".csv")
-    if !isfile(list_files_path)
-        list_IMOS=list_of_transects_IMOS()
-        ii=findall(list_IMOS.transect.==transect)[1]
-        list_files=THREDDS.parse_catalog(list_IMOS.url[ii],true)[1]
-        CSV.write(list_files_path,DataFrame("files"=>list_files))
-    end
-    list_files=CSV.read(list_files_path,DataFrame).files
-
-    urls=["https://thredds.aodn.org.au/thredds/fileServer/"*f for f in list_files]
-    years=[parse(Int64,split(f,"/")[end-1]) for f in list_files]
-
-    groupby(DataFrame("transect" => fill(transect,length(years)), 
-        "cruise" => (transect*"_").*string.(years), 
-        "year" => years, "url" => urls),:cruise)
-#    path1=joinpath(tempdir(),transect*"_"*cruise)
-end
-
-"""
-    read(x::XBTtransect;transect="PX05",cr=1,cruise="")
-
-```
-using OceanRobots
-read(XBTtransect(),source="SIO",transect="PX05",cruise="0910")
-```
-"""
-function read(x::XBTtransect;source="SIO",transect="PX05",cr=1,cruise="")
-    cruises=list_of_cruises(transect,source=source)
-    if source=="SIO"
-        CR=(isempty(cruise) ? cr : findall(cruises.cruise.==cruise)[1])
-        url1=cruises.url[CR]
-        url2=get_url_to_download(url1)
-        path2=download_SIO_cruise(url2)
-        T_all,meta_all=read_SIO_XBT(path2)
-        XBTtransect(source,source,transect,transect,path2,[T_all,meta_all,cruises.cruise[CR]])
-    elseif source=="AOML"
-#       list2=XBT.get_url_to_transect(transect)
-        CR=(isempty(cruise) ? cr : findall(cruises.File.==cruise)[1])
-        cru=cruises.File[CR]
-        files=download_AOML_cruise(transect,cru)
-        if !isempty(files)
-            path=dirname(files[1])
-            (data,meta)=read_NOAA_XBT(path)
-            tr=string(transect)
-            XBTtransect(source,source,tr,basename(path),path,[data,meta,cru])
-        else
-            XBTtransect()
-        end
-    elseif source=="IMOS"
-        cr=transect*"_"*cruise
-        CR=findall([a.cruise==cr for a in keys(cruises)])[1]
-        df=DataFrame(cruises[CR])
-        df.file=download_IMOS_cruise(cruises[CR])
-        data,meta=read_IMOS_XBT(df)
-        XBTtransect(source,source,cr,transect,dirname(df.file[1]),[data,meta,df.file])
-    else
-        @warn "unknown source"
-    end
-end
-
-### AOML transects
+## NOAA AOML data
 
 """
     read_NOAA_XBT(path)
@@ -331,6 +283,18 @@ function read_NOAA_XBT(path; silencewarnings=true)
     append!(data,d)
   end
   (data,meta)
+end
+
+### Query and helper methods
+
+function list_of_transects_AOML()
+    ["AX01","AX02","AX04","AX07","AX08","AX10","AX18","AX20","AX25","AX32","AX90","AX97",
+    "AXCOAST","AXWBTS","MX01","MX02","MX04"]
+end
+
+function list_of_cruises_AOML(transect)
+    files=list_files_on_server(transect)
+    DataFrame("File"=>files)
 end
 
 function get_url_to_transect(transect="AX08")
@@ -421,8 +385,6 @@ function download_AOML_cruise(transect="AX08",file="ax80102_qc.tgz")
     glob("*.???",p[1])
 end
 
-###
-
 """
     download_all_AOML(;path="XBT_AOML",quick_test=false)
 
@@ -452,8 +414,6 @@ function download_all_AOML(;path="XBT_AOML",quick_test=false)
     end
 end
 
-###
-
 """
     scan_AOML()
 
@@ -469,8 +429,6 @@ function scan_AOML()
     data.source.=source
     data
 end
-
-###
 
 """
     scan_XBT_AOML(ii=0,jj=0; path="XBT_AOML")
@@ -533,6 +491,8 @@ function read_XBT_AOML(list4::AbstractDataFrame; path="XBT_AOML")
     XBTtransect("AOML","AOML",cruise,transect,path2,[T_all,meta_all,subfolder])
 end
 
+### helper methods
+
 function valid_XBT_AOML(;path="XBT_AOML")
     list1=scan_XBT_AOML(path=path)
     df=DataFrame()
@@ -560,7 +520,7 @@ function valid_XBT_AOML(;path="XBT_AOML")
     df[ok,:]
 end
 
-## interpolate to standard depth (AOML format -> SIO format)
+### interpolate to standard depth (AOML format -> SIO format)
 
 function to_standard_depth(xbt2)
     xbt2.source=="AOML" ? nothing : error("option not available")
@@ -580,7 +540,45 @@ function to_standard_depth(xbt2)
     XBTtransect("AOML","SIO",xbt2.ID,xbt2.transect,xbt2.path,[arr,meta_all,xbt2.data[3]])
 end
 
-## IMOS
+## IMOS data (Australia)
+
+function list_of_transects_IMOS()
+    url="https://thredds.aodn.org.au/thredds/catalog/IMOS/SOOP/SOOP-XBT/DELAYED/catalog.xml"
+    fil=joinpath(tempdir(),"list_of_transects_IMOS.csv")
+    if isfile(fil)
+        CSV.read(fil,DataFrame)
+    else
+        x=THREDDS.parse_catalog(url,false)[2]
+        x1=[split(y,"/")[1] for y in x]
+        for i in findall(occursin.("Line_",x))
+            x1[i]=split(x[i],"_")[2]
+    #        x1[i]=split(split(x[i],"_")[2],"_")[1]
+        end
+        x2=[dirname(url)*"/"*y for y in x]
+        df=DataFrame("transect"=>String.(x1),"url"=>x2)
+        CSV.write(fil,df)
+        df
+    end
+end
+
+function list_of_cruises_IMOS(transect)
+    list_files_path=joinpath(tempdir(),"files_"*transect*".csv")
+    if !isfile(list_files_path)
+        list_IMOS=list_of_transects_IMOS()
+        ii=findall(list_IMOS.transect.==transect)[1]
+        list_files=THREDDS.parse_catalog(list_IMOS.url[ii],true)[1]
+        CSV.write(list_files_path,DataFrame("files"=>list_files))
+    end
+    list_files=CSV.read(list_files_path,DataFrame).files
+
+    urls=["https://thredds.aodn.org.au/thredds/fileServer/"*f for f in list_files]
+    years=[parse(Int64,split(f,"/")[end-1]) for f in list_files]
+
+    groupby(DataFrame("transect" => fill(transect,length(years)), 
+        "cruise" => (transect*"_").*string.(years), 
+        "year" => years, "url" => urls),:cruise)
+#    path1=joinpath(tempdir(),transect*"_"*cruise)
+end
 
 """
     download_IMOS_cruise(files; path=tempdir(), verbose=false)
