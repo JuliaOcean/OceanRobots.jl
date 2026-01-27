@@ -134,7 +134,7 @@ plot(glider,pol=pol)
 ```
 """
 function plot_glider_default(glider; markersize=2, 
-			size=(600,800), pol=missing, pad=5.0, title="")
+			size=(600,800), pol=missing, pad=0.1, title="")
 	da=glider.data
 	fig=Figure(size=size)
 
@@ -144,8 +144,14 @@ function plot_glider_default(glider; markersize=2,
 
 	tt=findall(	(!ismissing).(da.temperature) .&& 
 				(!ismissing).(da.salinity)	)
+
 	xlims=rng(da.longitude,mini=-180,maxi=180,pad=pad)
+	xlims2=(xlims[2]+xlims[1])/2 .+ (-5,5)
+	xlims=extrema((xlims...,xlims2...))
+
 	ylims=rng(da.latitude,mini=-90,maxi=90,pad=pad)
+	ylims2=(ylims[2]+ylims[1])/2 .+ (-5,5)
+	ylims=extrema((ylims...,ylims2...))
 
 	Axis(fig[1,1],title="time",limits = (xlims, ylims))
 	scatter!(da.longitude[tt],da.latitude[tt],color=dt[tt],
