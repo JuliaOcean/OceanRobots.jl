@@ -124,14 +124,16 @@ ShipCruise()=ShipCruise("unknown",[],tempdir())
 
 struct XBTtransect <: AbstractOceanRobotData
     source::String
-    format::String
-    ID::String
+    format::String ##default will be ~ IMOS case (i.e. simple DataFrame )
+    mission::String
     transect::String
-    path::String
-    data::Union{Array,Dataset}
+    folder::String
+    data::Union{Array,Dataset,DataFrame}
+    stations::DataFrame
 end
 
-XBTtransect()=XBTtransect("unknown","unknown","unknown","unknown",tempdir(),[])
+XBTtransect()=XBTtransect("unknown","unknown","unknown","unknown",
+                tempdir(),DataFrame(),DataFrame())
 
 """
     query(x::DataType)
