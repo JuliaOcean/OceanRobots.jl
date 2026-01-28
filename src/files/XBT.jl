@@ -46,7 +46,8 @@ function read(x::XBTtransect;source="SIO",transect="PX05",cr=1,cruise="")
         df=DataFrame(cruises[CR])
         df.file=download_IMOS_cruise(cruises[CR])
         data,meta=read_IMOS_XBT(df)
-        XBTtransect(source,source,cr,transect,dirname(df.file[1]),[data,meta,df.file],DataFrame())
+        meta.file=basename.(df.file)
+        XBTtransect(source,source,cr,transect,dirname(df.file[1]),data,meta)
     else
         @warn "unknown source"
     end
@@ -537,7 +538,7 @@ function to_standard_depth(xbt2)
     lon,lat,tim=[[df[1,val] for df in gdf] for val in (:lon,:lat,:time)]
     meta_all=[lon[:] lat[:] tim[:] 1:length(tim)]
     #[arr,meta_all,xbt2.data[3]]
-    XBTtransect("AOML","SIO",xbt2.ID,xbt2.transect,xbt2.path,[arr,meta_all,xbt2.data[3]],DataFrame())
+    XBTtransect("AOML","SIO",xbt2.mission,xbt2.transect,xbt2.folder,[arr,meta_all,xbt2.data[3]],DataFrame())
 end
 
 ## IMOS data (Australia)

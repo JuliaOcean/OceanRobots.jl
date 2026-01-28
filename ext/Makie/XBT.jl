@@ -24,7 +24,7 @@ function plot(x::XBTtransect;pol=missing)
 end
 
 function plot_XBT_SIO(x::XBTtransect;pol=missing)	
-	transect=x.ID
+	transect=x.mission
 	T_all=x.data[1]
 	meta_all=x.data[2]
 	CR=x.data[3]
@@ -46,7 +46,7 @@ function plot_XBT_SIO(x::XBTtransect;pol=missing)
 end
 
 function plot_XBT_AOML(x::XBTtransect;pol=missing)	
-	transect=x.ID
+	transect=x.mission
 	d=x.data[1]
 	m=x.data[2]
 	CR=x.data[3]
@@ -66,10 +66,10 @@ function plot_XBT_AOML(x::XBTtransect;pol=missing)
 end
 
 function plot_XBT_IMOS(x::XBTtransect;pol=missing)	
-	ID=x.ID
+	ID=x.mission
 #	transect_year=x.data[2].cruise[1]
-	d=x.data[1]
-	m=x.data[2]
+	d=x.data
+	m=x.stations
 
 	fig=Figure()
 	ax=Axis(fig[1,1],title=ID ,ylabel="depth")
