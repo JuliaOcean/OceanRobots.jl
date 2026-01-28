@@ -132,7 +132,8 @@ struct XBTtransect <: AbstractOceanRobotData
     stations::DataFrame
 end
 
-XBTtransect()=XBTtransect("unknown","unknown","unknown","unknown",tempdir(),[],DataFrame())
+XBTtransect()=XBTtransect("unknown","unknown","unknown","unknown",
+                tempdir(),DataFrame(),DataFrame())
 
 """
     query(x::DataType)

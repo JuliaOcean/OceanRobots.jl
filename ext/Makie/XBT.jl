@@ -12,9 +12,11 @@ plot(xbt)
 """
 function plot(x::XBTtransect;pol=missing)
 	if x.format=="AOML"
-        plot_XBT_AOML(x,pol=pol)
+#        plot_XBT_AOML(x,pol=pol)
+        plot_XBT_IMOS(x,pol=pol)
     elseif x.format=="SIO"
-        plot_XBT_SIO(x,pol=pol)
+#        plot_XBT_SIO(x,pol=pol)
+        plot_XBT_IMOS(x,pol=pol)
     elseif x.format=="IMOS"
         plot_XBT_IMOS(x,pol=pol)
     else
@@ -23,6 +25,7 @@ function plot(x::XBTtransect;pol=missing)
     end
 end
 
+#deprecated
 function plot_XBT_SIO(x::XBTtransect;pol=missing)	
 	transect=x.mission
 	T_all=x.data[1]
@@ -45,6 +48,7 @@ function plot_XBT_SIO(x::XBTtransect;pol=missing)
 	fig
 end
 
+#deprecated
 function plot_XBT_AOML(x::XBTtransect;pol=missing)	
 	transect=x.mission
 	d=x.data[1]

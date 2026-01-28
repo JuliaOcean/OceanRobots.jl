@@ -25,8 +25,8 @@ function read(x::XBTtransect;source="SIO",transect="PX05",cr=1,cruise="")
         url1=cruises.url[CR]
         url2=get_url_to_download(url1)
         path2=download_SIO_cruise(url2)
-        T_all,meta_all=read_SIO_XBT(path2)
-        XBTtransect(source,source,transect,transect,path2,[T_all,meta_all,cruises.cruise[CR]],DataFrame())
+        data,meta=read_SIO_XBT(path2)
+        XBTtransect(source,source,transect,cruise,path2,data,meta)
     elseif source=="AOML"
 #       list2=XBT.get_url_to_transect(transect)
         CR=(isempty(cruise) ? cr : findall(cruises.File.==cruise)[1])
@@ -34,9 +34,11 @@ function read(x::XBTtransect;source="SIO",transect="PX05",cr=1,cruise="")
         files=download_AOML_cruise(transect,cru)
         if !isempty(files)
             path=dirname(files[1])
-            (data,meta)=read_NOAA_XBT(path)
+            (tmp_data,meta)=read_NOAA_XBT(path)
+            data=DataFrame("lon"=>tmp_data.lon,"lat"=>tmp_data.lat,
+                "time"=>tmp_data.time,"depth"=>tmp_data.de,"temp"=>tmp_data.th)
             tr=string(transect)
-            XBTtransect(source,source,tr,basename(path),path,[data,meta,cru],DataFrame())
+            XBTtransect(source,source,basename(path),tr,path,data,meta)
         else
             XBTtransect()
         end
@@ -94,9 +96,9 @@ path2=download_file(url2)
 """
 function list_of_cruises(transect="PX05"; source="SIO")
     if source=="SIO"
-        list_of_cruises_SIO(transect)
+        list_of_cruises_SIO(transect) #requires web access
     elseif source=="AOML"
-        list_of_cruises_AOML(transect)
+        list_of_cruises_AOML(transect) #requires web access
     elseif source=="IMOS"
         list_of_cruises_IMOS(transect)
     else
@@ -107,7 +109,7 @@ end
 
 ### SIO transects
 
-dep = -(5:10:895) # Depth (m), same for all profiles
+dep = (5:10:895) # Depth (m), same for all profiles
 
 function get_url_to_download(url1)
     r = HTTP.get(url1)
@@ -161,8 +163,18 @@ function read_SIO_XBT(path2)
 		T_all[li,:].=T
 	end
 
-    #Turn each Array into a DataFrame
-	T_all,meta_all
+    (np,nz)=size(T_all)
+    lon=meta_all[:,1]*ones(1,nz)
+    lat=meta_all[:,2]*ones(1,nz)
+    t=repeat(meta_all[:,3],1,nz)
+    d=ones(np,1)*transpose(dep)
+
+    ii=findall((!isnan).(T_all))
+    data=DataFrame("lon"=>lon[ii],"lat"=>lat[ii],
+        "depth"=>d[ii],"time"=>t[ii],"temp"=>T_all[ii])
+    meta=DataFrame("lon"=>meta_all[:,1],"lat"=>meta_all[:,2],
+        "date"=>meta_all[:,3],"profile_number"=>meta_all[:,4])
+	data,meta
 end
 
 ### Query Methods
