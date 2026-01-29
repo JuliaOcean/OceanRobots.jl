@@ -506,13 +506,15 @@ function read_XBT_AOML(list4::AbstractDataFrame; path="XBT_AOML")
     subfolder=transect*"_"*cruise
 
     path2=joinpath(path,subfolder)
-    T_all,meta_all=read_NOAA_XBT(path2,format="legacy")
-    XBTtransect("AOML","AOML",cruise,transect,path2,[T_all,meta_all,subfolder],DataFrame())
+#    T_all,meta_all=read_NOAA_XBT(path2,output_format="legacy")
+#    XBTtransect("AOML","AOML",cruise,transect,path2,[T_all,meta_all,subfolder],DataFrame())
+    data,meta=read_NOAA_XBT(path2)
+    XBTtransect("AOML","AOML",cruise,transect,path2,data,meta)
 end
 
 ### helper methods
 
-function valid_XBT_AOML(;path="XBT_AOML")
+function valid_XBT_AOML(;path="XBT_AOML",verbose=true)
     list1=scan_XBT_AOML(path=path)
     df=DataFrame()
     for ii in 1:length(list1)
@@ -526,6 +528,7 @@ function valid_XBT_AOML(;path="XBT_AOML")
                 read_XBT_AOML(ii,jj,path=path)
                 true
             catch
+                @warn "failed to read "*subfolder
                 false
             end
             append!(df,DataFrame("transect"=>transect,
