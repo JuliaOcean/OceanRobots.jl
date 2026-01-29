@@ -34,9 +34,7 @@ function read(x::XBTtransect;source="SIO",transect="PX05",cr=1,cruise="")
         files=download_AOML_cruise(transect,cru)
         if !isempty(files)
             path=dirname(files[1])
-            (tmp_data,meta)=read_NOAA_XBT(path)
-            data=DataFrame("lon"=>tmp_data.lon,"lat"=>tmp_data.lat,
-                "time"=>tmp_data.time,"depth"=>tmp_data.de,"temp"=>tmp_data.th)
+            (data,meta)=read_NOAA_XBT(path)
             tr=string(transect)
             XBTtransect(source,source,basename(path),tr,path,data,meta)
         else
@@ -167,13 +165,14 @@ function read_SIO_XBT(path2)
     lon=meta_all[:,1]*ones(1,nz)
     lat=meta_all[:,2]*ones(1,nz)
     t=repeat(meta_all[:,3],1,nz)
+    c=repeat(meta_all[:,4],1,nz)
     d=ones(np,1)*transpose(dep)
 
     ii=findall((!isnan).(T_all))
-    data=DataFrame("lon"=>lon[ii],"lat"=>lat[ii],
+    data=DataFrame("cast"=>c[ii],"lon"=>lon[ii],"lat"=>lat[ii],
         "depth"=>d[ii],"time"=>t[ii],"temp"=>T_all[ii])
     meta=DataFrame("lon"=>meta_all[:,1],"lat"=>meta_all[:,2],
-        "date"=>meta_all[:,3],"profile_number"=>meta_all[:,4])
+        "time"=>meta_all[:,3],"profile_number"=>meta_all[:,4])
 	data,meta
 end
 
@@ -266,7 +265,7 @@ List of variables:
 - “ox” for oxygen
 - “Cast” for oxygen
 """
-function read_NOAA_XBT(path; silencewarnings=true)
+function read_NOAA_XBT(path; silencewarnings=true, output_format="DataFrame")
   list=glob("*.???",path)
   data=DataFrame()
   meta=DataFrame()
@@ -295,7 +294,14 @@ function read_NOAA_XBT(path; silencewarnings=true)
     d.cast.=meta.cast[end]
     append!(data,d)
   end
-  (data,meta)
+
+  if output_format=="DataFrame"
+    da=DataFrame("cast"=>data.cast,"lon"=>data.lon,"lat"=>data.lat,
+        "time"=>data.time,"depth"=>data.de,"temp"=>data.th)
+    (da,meta)
+  else
+    (data,meta)
+  end
 end
 
 ### Query and helper methods
@@ -500,7 +506,7 @@ function read_XBT_AOML(list4::AbstractDataFrame; path="XBT_AOML")
     subfolder=transect*"_"*cruise
 
     path2=joinpath(path,subfolder)
-    T_all,meta_all=read_NOAA_XBT(path2)
+    T_all,meta_all=read_NOAA_XBT(path2,format="legacy")
     XBTtransect("AOML","AOML",cruise,transect,path2,[T_all,meta_all,subfolder],DataFrame())
 end
 
@@ -535,22 +541,52 @@ end
 
 ### interpolate to standard depth (AOML format -> SIO format)
 
+"""
+     to_standard_depth(xbt)
+
+- interpolate to `SIO`'s standard depth levels.
+- output as a `SIO`-formatted `XBTtransect`.
+
+```
+using OceanRobots, DataFrames
+xbt=read(XBTtransect(),source="AOML",transect="AX08",cr=1);
+xbt2=XBT.to_standard_depth(xbt);
+
+using CairoMakie
+x=groupby(xbt.data,:cast)[1]; lines(x.temp,-x.depth)
+x=groupby(xbt2.data,:cast)[1]; scatter!(x.temp,-x.depth,color=:red)
+```     
+"""
 function to_standard_depth(xbt2)
     xbt2.source=="AOML" ? nothing : error("option not available")
-    zz=-XBT.dep
+    zz=XBT.dep
     nz=length(zz)
-    gdf=groupby(xbt2.data[1],:time) #group by profile
+    gdf=groupby(xbt2.data,:time) #group by profile
     np=length(gdf)
     arr=zeros(np,nz)
     for pp in 1:np
-        x,y=(gdf[pp][:,:pr],gdf[pp][:,:te])
+        x,y=(gdf[pp][:,:depth],gdf[pp][:,:temp])
         interp_linear = linear_interpolation(x,y,extrapolation_bc=NaN)
         arr[pp,:].=interp_linear(zz)
     end
     lon,lat,tim=[[df[1,val] for df in gdf] for val in (:lon,:lat,:time)]
     meta_all=[lon[:] lat[:] tim[:] 1:length(tim)]
-    #[arr,meta_all,xbt2.data[3]]
-    XBTtransect("AOML","SIO",xbt2.mission,xbt2.transect,xbt2.folder,[arr,meta_all,xbt2.data[3]],DataFrame())
+
+    (np,nz)=size(arr)
+    lon=lon*ones(1,nz)
+    lat=lat*ones(1,nz)
+    t=repeat(tim,1,nz)
+    c=repeat(1:np,1,nz)
+    d=ones(np,1)*transpose(zz)
+
+    ii=findall((!isnan).(arr))
+    data=DataFrame("cast"=>c[ii],"lon"=>lon[ii],"lat"=>lat[ii],
+        "depth"=>d[ii],"time"=>t[ii],"temp"=>arr[ii])
+    meta=DataFrame("lon"=>meta_all[:,1],"lat"=>meta_all[:,2],
+        "time"=>meta_all[:,3],"profile_number"=>meta_all[:,4])
+
+    XBTtransect("AOML","SIO",xbt2.mission,xbt2.transect,xbt2.folder,
+        sort(data,:time),sort(meta,:time))
 end
 
 ## IMOS data (Australia)
