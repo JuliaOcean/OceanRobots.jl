@@ -5,6 +5,7 @@ import Downloads, Dataverse, NCDatasets, Glob
 import NCDatasets: Dataset
 import DataFrames: DataFrame
 import JSON3, HTTP
+import Statistics: median
 
 import Base: read
 import OceanRobots: ShipCruise
@@ -58,14 +59,41 @@ using GLMakie
 scatter(x1,y1)
 ```
 """
-function extract_json_table(url="https://cchdo.ucsd.edu/search?q=GO-SHIP")
-  tmp=String(HTTP.get(url).body)
+function extract_json_table(url="https://cchdo.ucsd.edu/search?q=GO-SHIP";
+    format="json")
+    tmp=String(HTTP.get(url).body)
 
-  x1=findall("var results =",tmp)[1]
-  x2=findall("]]}}]",tmp)[1]
-  y=maximum(x1)+1:maximum(x2)
+    x1=findall("var results =",tmp)[1]
+    x2=findall("]]}}]",tmp)[1]
+    y=maximum(x1)+1:maximum(x2)
 
-  JSON3.read(tmp[y])
+    table=JSON3.read(tmp[y])
+
+    if format=="json"
+    table
+
+    else
+    tab_code=[t.expocode for t in table]
+    tab_id=[t.id for t in table]
+    tab_startDate=[t.startDate for t in table]
+    tab_endDate=[t.endDate for t in table]
+    lon=[if isempty(t.track)
+            NaN
+        else
+            median([Float64.(c)[1] for c in t.track.coordinates])
+        end
+        for t in table]
+    lat=[if isempty(t.track)
+            NaN
+        else
+            median([Float64.(c)[2] for c in t.track.coordinates])
+        end
+        for t in table]
+    DataFrame("transect"=>tab_code, "id"=>tab_id, 
+    "startDate"=>tab_startDate, "endDate"=>tab_endDate,
+    "lon"=>lon,"lat"=>lat)
+    end
+
 end
 
 

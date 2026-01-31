@@ -56,21 +56,22 @@ end
 ### Query Methods
 
 """
-    list_transects(; group="SIO")
+    list_transects(; source="SIO")
 
 known groups : AOML, SIO, IMOS 
 
 ```
 using OceanRobots
-OceanRobots.XBT.list_transects("SIO")
+OceanRobots.XBT.list_transects(source="SIO")
 ```
 """
-function list_transects(group="SIO")
-    if group=="AOML"
+function list_transects(group="deprecated"; source="SIO")
+    src=(group=="deprecated" ? source : group)
+    if src=="AOML"
         list_of_transects_AOML()
-    elseif group=="SIO"
+    elseif src=="SIO"
         list_of_transects_SIO()
-    elseif group=="IMOS"
+    elseif src=="IMOS"
         list_of_transects_IMOS().transect
     else
         @warn "unknown group"
@@ -92,17 +93,19 @@ url2=get_url_to_download(url1)
 path2=download_file(url2)
 ```
 """
-function list_of_cruises(transect="PX05"; source="SIO")
-    if source=="SIO"
-        list_of_cruises_SIO(transect) #requires web access
+function list_of_cruises(tr="deprecated"; source="SIO", transect="PX05", option="cruises")
+    trnsct=(tr=="deprecated" ? transect : tr)
+    all=if source=="SIO"
+        list_of_cruises_SIO(trnsct) #requires web access
     elseif source=="AOML"
-        list_of_cruises_AOML(transect) #requires web access
+        list_of_cruises_AOML(trnsct) #requires web access
     elseif source=="IMOS"
-        list_of_cruises_IMOS(transect)
+        list_of_cruises_IMOS(trnsct)
     else
         @warn "unknown source"
         DataFrame()
     end
+        
 end
 
 ### SIO transects
