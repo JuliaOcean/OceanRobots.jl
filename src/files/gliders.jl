@@ -119,7 +119,7 @@ import Base: read
 ftp_url0="ftp://ftp.ifremer.fr/ifremer/glider/v2/"
 
 """
-    file_lists(; subset=missing, format="default", verbose=false)
+    query(; mission=missing, subset=missing,verbose=false)
 
 Get list of EGO glider files from ftp server `ftp://ftp.ifremer.fr/ifremer/glider/v2/`
 
@@ -138,33 +138,24 @@ function query(; mission=missing, subset=missing,verbose=false)
 	ftp=FTPClient.FTP(ftp_url0)
 	if (!ismissing)(mission)
 		if isa(mission,Int)
+			s=mission:mission
+		elseif isa(mission,UnitRange)
 			s=mission
+		elseif mission=="all"
+			df=query()
+			s=1:length(df.mission)
 		else
 			df=query()
-			s=findall(df.mission.==mission)[1]
+			m=findall(df.mission.==mission)[1]
+			s=m:m
 		end
-		df=readdir_two_levels(ftp=ftp,subset=s:s,verbose=verbose)
+		df=readdir_two_levels(ftp=ftp,subset=s,verbose=verbose)
 	else
 		missions=readdir(ftp)
 		ii=findall((!occursin).(Ref(".txt"),missions))
 		df=DataFrames.DataFrame("mission"=>missions[ii])
 	end
 	close(ftp)
-	df
-end
-
-function file_lists(k=missing; ftp=missing, subset=missing, 
-		format="default", verbose=false)
-	
-	_ftp=(ismissing(ftp) ? FTPClient.FTP(ftp_url0) : ftp)
-
-	missions=readdir(_ftp)
-
-	!ismissing(k) ? error("deprecated option. use e.g. subset=1:2") : nothing
-	kk=(!ismissing(subset) ? subset : (1:length(missions)))
-	df=readdir_two_levels(ftp=_ftp,subset=kk,verbose=verbose)
-
-	(ismissing(ftp) ? close(_ftp) : nothing)
 	df
 end
 
@@ -226,22 +217,10 @@ function file_indices(files)
 	i_nc,i_json
 end
 
-#deprecated
-function file_indices_v1(files)
-	if split(files[1],".")[end]=="json"
-		i_nc=2
-		i_json=1
-	else
-		i_nc=1
-		i_json=2
-	end
-	i_nc,i_json
-end
-
 function read_Glider_EGO(ID::Int; ftp=missing, verbose=true)
 #	_ftp=(ismissing(ftp) ? FTPClient.FTP(ftp_url0) : ftp)
 
-    df=file_lists(subset=ID:ID)
+    df=query(subset=ID:ID)
 	missions=df.mission
 	folders=df.folder
 	files=df.url
@@ -305,9 +284,9 @@ url0="ftp://ftp.aoml.noaa.gov/phod/pub/bringas/Glider/Operation/Data/"
 ```
 OceanRobots.query(Glider_AOML,glider="SG610",mission="M03JUL2015",option=:profiles)
 
-Glider_AOML_module.query(option=:gliders)[5]
-Glider_AOML_module.query(glider=g,option=:missions)[2]
-Glider_AOML_module.query(glider=g,mission=m,option=:profiles)[1]
+g=Glider_AOML_module.query(option=:gliders)[5]
+m=Glider_AOML_module.query(glider=g,option=:missions)[2]
+p=Glider_AOML_module.query(glider=g,mission=m,option=:profiles)[1]
 ```
 """
 function query(; option=:gliders, glider=missing, mission=missing, 

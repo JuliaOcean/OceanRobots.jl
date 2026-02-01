@@ -770,7 +770,11 @@ Read OceanSite data.
 read(x::OceanSite,ID=:WHOTS) = begin
     if ID==:WHOTS
         (arr,units)=read_WHOTS()
-        OceanSite(ID,arr,units)
+        OceanSite(ID,arr,units,missing)
+    elseif isa(ID,Int)
+        #read by numerical ID
+        ds,data,meta=read_basic(ID)
+        OceanSite(ID,data,meta,ds)
     else
         @warn "site not yet supported"
         OceanSite()
@@ -808,6 +812,30 @@ function read_WHOTS(file="DATA_GRIDDED/WHOTS/OS_WHOTS_200408-201809_D_MLTS-1H.nc
     return data,units
 end
 
+function read_basic(ID)
+    list1=index()
+    file=list1.FILE[1]
+    url0="https://tds0.ifremer.fr/thredds/dodsC/CORIOLIS-OCEANSITES-GDAC-OBS/"
+    fil0=url0*file*"#fillmismatch"
+
+    ds=NCDataset(fil0)
+
+    data=DataFrame()
+    list=["TIME","TEMP"]
+    for va in list
+        data[!,va]=ds[va][:]
+    end
+
+    meta=DataFrame()
+    list=["LONGITUDE","LATITUDE","DEPTH"]
+    for va in list
+        meta[!,va]=ds[va][:]
+    end
+
+    return ds,data,meta
+end
+
+
 """
     index()
 
@@ -841,6 +869,9 @@ function index()
 
     #rename column
     rename!(oceansites_index,list)
+
+    #add a simple index
+    oceansites_index.ID=1:size(oceansites_index,1)
 
     return oceansites_index
 end

@@ -13,7 +13,8 @@ function Base.show(io::IO, z::AbstractOceanRobotData)
         tmp=(if isa(z.data,NamedTuple)
             keys(z.data)
         elseif isa(z.data,DataFrames.DataFrame)
-            show(z.data)
+            names(z.data)
+            #show(z.data)
         else
             typeof.(z.data)
         end)
@@ -107,12 +108,13 @@ Glider_AOML() = Glider_AOML("",DataFrame())
 ##
 
 struct OceanSite <: AbstractOceanRobotData
-    ID::Symbol
-    data::NamedTuple
-    units::NamedTuple
+    ID::Union{Symbol,Int}
+    data::Union{NamedTuple,DataFrame}
+    meta::Union{NamedTuple,DataFrame}
+    other::Any
 end
 
-OceanSite() = OceanSite(:unknown,NamedTuple(),NamedTuple())
+OceanSite() = OceanSite(:unknown,NamedTuple(),NamedTuple(),missing)
 
 struct ShipCruise <: AbstractOceanRobotData
     ID::String
