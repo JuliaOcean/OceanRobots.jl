@@ -52,6 +52,14 @@ function read(x::Glider_Spray, file="GulfStream.nc", cruise=1, format=0)
     Glider_Spray(f,data)
 end
 
+function query(; file="GulfStream.nc", mission=0)
+    f=check_for_file_Spray(file)
+	d=Dataset(f)
+	n=[string(d["mission_name"][:,k]...) for k in 1:d.dim["trajectory"]]
+	close(d)
+	DataFrame("ID"=>n)
+end
+
 function to_DataFrame(ds,cruise=0)
 #	id=unique(ds["trajectory_index"])
 	nz=ds.dim["depth"]
@@ -109,34 +117,63 @@ import OceanRobots: Glider_EGO
 import Base: read
 
 """
-    file_lists(k=1:2)
+    file_lists(; subset=missing, format="default", verbose=false)
 
 Get list of EGO glider files from ftp server `ftp://ftp.ifremer.fr/ifremer/glider/v2/`
 
 ```
-missions,folders,files=Glider_EGO_module.file_lists(1:10)
-Glider_EGO_module.glider_download(files[1][1])
+df=Glider_EGO_module.file_lists(subset=1:2)
+
+Glider_EGO_module.glider_download(df.url[1])
 
 data=read(Glider_EGO(),2)
 fig_glider=plot(data)
 ds=data.ds,variable="CHLA")
 ```
 """
-function file_lists(k=1:2)
+function file_lists(k=missing; subset=missing, format="default", verbose=false)
 	ftp=FTPClient.FTP("ftp://ftp.ifremer.fr/ifremer/glider/v2/")
 	missions=readdir(ftp)
-	folders=[]
-	files=[]
-	for m in missions[k]
-		ftp=FTPClient.FTP("ftp://ftp.ifremer.fr/ifremer/glider/v2/"*m*"/")
-		push!(folders,readdir(ftp))
-		for n in folders[end]
-			ftp=FTPClient.FTP("ftp://ftp.ifremer.fr/ifremer/glider/v2/"*m*"/"*n*"/")
-			url0="ftp://ftp.ifremer.fr/ifremer/glider/v2/"*m*"/"*n*"/"			
-			push!(files,url0.*readdir(ftp))
+	close(ftp)
+
+	!ismissing(k) ? error("deprecated option. use e.g. subset=1:2") : nothing
+	kk=(!ismissing(subset) ? subset : (1:length(missions)))
+	df=readdir_two_levels(ftp=ftp,subset=subset,verbose=verbose)
+	close(ftp)
+	df
+end
+
+function readdir_two_levels(; ftp=ftp,subset=missing,verbose=false)
+	missions=readdir(ftp)
+	df=DataFrames.DataFrame()
+	kk=(!ismissing(subset) ? subset : (1:length(missions)))
+	url0="ftp://ftp.ifremer.fr/ifremer/glider/v2/"
+	for m in missions[kk]
+		cd(ftp,m)
+		folders=readdir(ftp)
+		for f in folders
+			cd(ftp,f)
+			files=readdir(ftp)
+			for ff in files
+				url=url0*f*"/"*ff
+				df0=DataFrames.DataFrame("mission"=>m,"folder"=>f,"file"=>ff,"url"=>url)
+				append!(df,df0)
+			end
+			cd(ftp,"..")
 		end
+		cd(ftp,"..")
 	end
-	missions,folders,files
+	df
+end
+
+function query(; 
+		#option=:gliders, glider=missing, mission=missing, 
+		#, folder=joinpath(tempdir(),"glider_AOML")
+	subset=missing,verbose=false)
+	ftp=FTPClient.FTP("ftp://ftp.ifremer.fr/ifremer/glider/v2/")
+	df=readdir_two_levels(ftp=ftp,subset=subset,verbose=verbose)
+	close(ftp)
+	df
 end
 
 function glider_download(fil)
@@ -173,9 +210,8 @@ function file_indices(files)
 	i_nc,i_json
 end
 
-
 function read_Glider_EGO(ID::Int)
-    missions,folders,files=file_lists(ID:ID)
+    missions,folders,files=file_lists(subset=ID:ID)
     i_nc,i_json=file_indices(files[1])
     file_nc=glider_download(files[1][i_nc])
     file_json=glider_download(files[1][i_json])

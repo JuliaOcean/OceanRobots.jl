@@ -180,6 +180,10 @@ function query(x::DataType,args...;kwargs...)
         tab_code=Glider_AOML_module.query(;kwargs...)
         DataFrame("ID"=>tab_code)
         #missing : Glider_EGO, Glider_Spray
+    elseif x==Glider_Spray
+        tab_code=Glider_Spray_module.query(;kwargs...)
+    elseif x==Glider_EGO
+        tab_code=Glider_EGO_module.query(;kwargs...)
     else
         warning("unknown data type")
     end
