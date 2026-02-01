@@ -220,7 +220,8 @@ end
 function read_Glider_EGO(ID::Int; ftp=missing, verbose=true)
 #	_ftp=(ismissing(ftp) ? FTPClient.FTP(ftp_url0) : ftp)
 
-    df=query(subset=ID:ID)
+    df=query(mission=ID)
+
 	missions=df.mission
 	folders=df.folder
 	files=df.url

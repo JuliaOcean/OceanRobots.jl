@@ -47,7 +47,9 @@ end
 end
 
 @testset "ArgoFloat" begin
-    #query methods
+    a=OceanRobots.query(ArgoFloat)
+    @test in("wmo",names(a))
+
     b=read(ArgoFloat(),wmo=2900668)
     @test isa(b,ArgoFloat)
 
@@ -56,13 +58,13 @@ end
 end
 
 @testset "Glider_Spray" begin
+    a=OceanRobots.query(Glider_Spray)
+    @test isa(a,DataFrame)
+
     b=read(Glider_Spray(),"GulfStream.nc",1)
     @test isa(b,Glider_Spray)
     f3=plot(b)
     @test isa(f3,Figure)
-
-    list1=OceanRobots.query(Glider_Spray)
-    @test isa(list1,DataFrame)
 
     #specific plot that currently cannot be replicated with default format
 	OceanRobotsMakieExt = Base.get_extension(OceanRobots, :OceanRobotsMakieExt);
@@ -73,7 +75,6 @@ end
 end
 
 @testset "Glider_EGO" begin
-    #
     list1=OceanRobots.query(Glider_EGO)
     @test isa(list1,DataFrame)
     list1=OceanRobots.query(Glider_EGO,mission=1:2)
@@ -106,7 +107,7 @@ end
 
 @testset "NOAAbuoy" begin
     allstations=OceanRobots.query(NOAAbuoy)
-    @test isa(allstations,Vector)
+    @test in("transect",names(allstations))
 
     metstations=NOAA.list_realtime(ext=:txt)
     stations=metstations[1:200:end]

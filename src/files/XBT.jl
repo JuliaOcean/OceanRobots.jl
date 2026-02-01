@@ -414,7 +414,7 @@ Download XBT data files from AOML site.
 """
 function download_all_AOML(;path="XBT_AOML",quick_test=false)
     !ispath(path) ? mkdir(path) : nothing
-    lst_AOML=query(XBTtransect,"AOML")
+    lst_AOML=query(XBTtransect,"AOML").transect
     lst_AOML=(quick_test ? lst_AOML[1:2] : lst_AOML)
     for transect in lst_AOML
         println(transect)

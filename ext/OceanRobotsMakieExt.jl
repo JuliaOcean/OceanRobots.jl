@@ -113,7 +113,7 @@ whots=read(OceanSite(),:WHOTS)
 plot(whots,DateTime(2005,1,1),DateTime(2005,2,1),size=(900,600))
 ```
 """
-plot(x::OceanSite,args...;kwargs...)=plot_WHOTS(x.data,x.units,args...;kwargs...)
+plot(x::OceanSite,args...;kwargs...)=plot_WHOTS(x.data,x.meta,args...;kwargs...)
 
 function plot_WHOTS(arr,units,d0,d1;size=(900,600))
 	
