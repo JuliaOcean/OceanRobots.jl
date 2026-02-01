@@ -217,7 +217,7 @@ function file_indices(files)
 	i_nc,i_json
 end
 
-function read_Glider_EGO(ID::Int; ftp=missing, verbose=true)
+function read_Glider_EGO(ID::Int; ftp=missing, verbose=false)
 #	_ftp=(ismissing(ftp) ? FTPClient.FTP(ftp_url0) : ftp)
 
     df=query(mission=ID)

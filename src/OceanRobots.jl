@@ -16,7 +16,8 @@ export GDP, GDP_CloudDrift, NOAA, ArgoFiles
 export OceanSites, OceanOPS, CCHDO, XBT
 export Glider_Spray_module, Glider_EGO_module, Glider_AOML_module
 #export THREDDS
-export NOAAbuoy, NOAAbuoy_monthly, ArgoFloat, SurfaceDrifter, Glider_Spray
-export OceanSite, CloudDrift, ShipCruise, XBTtransect, Glider_EGO, Glider_AOML
+export NOAAbuoy, NOAAbuoy_monthly, ArgoFloat, SurfaceDrifter
+export ObservingPlatform, OceanSite, CloudDrift, ShipCruise, XBTtransect
+export Glider_EGO, Glider_AOML, Glider_Spray
 
 end # module

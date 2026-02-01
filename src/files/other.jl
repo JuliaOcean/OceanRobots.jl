@@ -1047,7 +1047,7 @@ end
 
 List platform types.
 """
-list_platform_types() = begin
+function list_platform_types()
     list_platform_types=DataFrame(:nameShort=>String[],:name=>String[],:description=>String[],:wigosCode=>String[],:id=>Int[])
     list_platform_types=DataFrame(:nameShort=>String[],:name=>String[],:description=>Any[],:wigosCode=>Any[],:id=>Int[])
     
@@ -1058,6 +1058,24 @@ list_platform_types() = begin
                     description=i.description,wigosCode=i.wigosCode,id=i.id))
     end
     list_platform_types
+end
+
+#query : list_platform_types()
+
+function query(; platform=missing, ID=missing, option="default")
+    if (!ismissing(ID))
+        get_platform(ID)
+    elseif !ismissing(platform)
+        if option=="position"
+            tmp=get_list_pos(:Drifter)
+            DataFrame("lon"=>tmp.lon, "lat"=>tmp.lat, "flag"=>tmp.flag)
+        else
+            lst=get_list(platform)
+            DataFrame("ID"=>lst)
+        end
+    else
+        list_platform_types()
+    end
 end
 
 end

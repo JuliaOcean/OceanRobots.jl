@@ -116,6 +116,8 @@ end
 
 OceanSite() = OceanSite(:unknown,NamedTuple(),NamedTuple(),missing)
 
+##
+
 struct ShipCruise <: AbstractOceanRobotData
     ID::String
     data::Union{Array,Dataset}
@@ -123,6 +125,19 @@ struct ShipCruise <: AbstractOceanRobotData
 end
 
 ShipCruise()=ShipCruise("unknown",[],tempdir())
+
+##
+
+struct ObservingPlatform <: AbstractOceanRobotData
+    ID::Union{Symbol,Int}
+    data::Union{NamedTuple,DataFrame}
+    meta::Union{NamedTuple,DataFrame}
+    other::Any
+end
+
+ObservingPlatform() = ObservingPlatform(:unknown,NamedTuple(),NamedTuple(),missing)
+
+##
 
 struct XBTtransect <: AbstractOceanRobotData
     source::String
@@ -178,6 +193,8 @@ function query(x::DataType,args...;kwargs...)
         #could be source  wmo
     elseif x==OceanSite
         OceanSites.index()
+    elseif x==ObservingPlatform
+        OceanOPS.query(;kwargs...)
     elseif x==Glider_AOML
         tab_code=Glider_AOML_module.query(;kwargs...)
         DataFrame("ID"=>tab_code)

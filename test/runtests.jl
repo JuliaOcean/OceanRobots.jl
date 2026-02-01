@@ -138,19 +138,19 @@ end
 end
 
 @testset "OceanOPS" begin
-    #query methods
+    platforms=OceanRobots.query(ObservingPlatform)
+    @test in("nameShort",names(platforms))
 
-    list_Argo=OceanOPS.get_list(:Argo)
-    @test isa(list_Argo,Vector)
+    a=OceanRobots.query(ObservingPlatform,platform="TSUNAMETER")
+    @test isa(a.ID,Vector)
+    b=OceanRobots.query(ObservingPlatform,platform=:Argo)
+    @test isa(b.ID,Vector)
 
-    tmp=OceanOPS.get_platform(list_Argo[1000])
-    @test tmp.status=="OPERATIONAL"
+    c=OceanRobots.query(ObservingPlatform,ID=b.ID[1000])
+    @test c.status=="OPERATIONAL"
 
-    tmp=OceanOPS.get_list_pos(:Drifter)
-    @test isa(tmp.lon,Vector)
-
-    tmp=OceanOPS.list_platform_types()
-    @test isa(tmp.name,Vector)
+    d=OceanRobots.query(ObservingPlatform,platform=:Drifter,option="position")
+    @test isa(d.lon,Vector)
 end
 
 @testset "CCHDO" begin
