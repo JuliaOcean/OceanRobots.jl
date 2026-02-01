@@ -19,5 +19,6 @@ export Glider_Spray_module, Glider_EGO_module, Glider_AOML_module
 export NOAAbuoy, NOAAbuoy_monthly, ArgoFloat, SurfaceDrifter
 export ObservingPlatform, OceanSite, CloudDrift, ShipCruise, XBTtransect
 export Glider_EGO, Glider_AOML, Glider_Spray
+export query
 
 end # module

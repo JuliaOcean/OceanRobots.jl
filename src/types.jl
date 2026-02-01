@@ -169,19 +169,15 @@ function query(x::DataType,args...;kwargs...)
     if x==ShipCruise
         table=CCHDO.extract_json_table(format="DataFrame")
     elseif x==NOAAbuoy
-        #can I get location, activity status, and a bit more metadata?
+        #option to get location, activity status, and a bit more metadata?
         tab_code=NOAA.list_stations()
         DataFrame("transect"=>tab_code)
     elseif x==SurfaceDrifter
-        #quid about hourly data
+        #option to query the hourly data set?
         list=GDP.list_files()
         DataFrame("ID"=>list.ID)
     elseif x==XBTtransect
         if haskey(kwargs,:transect)
-            #say mission rather than cruise
-            #IMOS => grouped DataFrame (transect  cruise     year   url)
-            #AOML => DataFrame of file names (ax10109_qc.tgz)
-            #SIO => DataFrame (cruise     year   month  url)
             XBT.list_of_cruises(args...;kwargs...)
         else
             tmp=XBT.list_transects(args...;kwargs...)
@@ -189,8 +185,7 @@ function query(x::DataType,args...;kwargs...)
         end
     elseif x==ArgoFloat
         list=ArgoData.GDAC.files_list()
-        #   folder  wmo
-        #could be source  wmo
+        #rename [folder  wmo] as [source  wmo]?
     elseif x==OceanSite
         OceanSites.index()
     elseif x==ObservingPlatform
@@ -198,7 +193,6 @@ function query(x::DataType,args...;kwargs...)
     elseif x==Glider_AOML
         tab_code=Glider_AOML_module.query(;kwargs...)
         DataFrame("ID"=>tab_code)
-        #missing : Glider_EGO, Glider_Spray
     elseif x==Glider_Spray
         tab_code=Glider_Spray_module.query(;kwargs...)
     elseif x==Glider_EGO

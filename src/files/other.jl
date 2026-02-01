@@ -1060,14 +1060,33 @@ function list_platform_types()
     list_platform_types
 end
 
-#query : list_platform_types()
+###
+
+function demo1()
+	argo_operational=get_list_pos(:Argo)
+	
+	a0=get_list_pos(:Argo,status=:PROBABLE)
+	a1=get_list_pos(:Argo,status=:CONFIRMED)
+	a2=get_list_pos(:Argo,status=:REGISTERED)
+	
+	argo_planned=( lon=vcat(a0.lon,a1.lon,a2.lon),
+				lat=vcat(a0.lat,a1.lat,a2.lat),
+				flag=vcat(a0.flag,a1.flag,a2.flag))
+
+	drifter_operational=get_list_pos(:Drifter)
+
+    (argo_operational=argo_operational,argo_planned=argo_planned,drifter_operational=drifter_operational)
+end
+
+
+###
 
 function query(; platform=missing, ID=missing, option="default")
     if (!ismissing(ID))
         get_platform(ID)
     elseif !ismissing(platform)
         if option=="position"
-            tmp=get_list_pos(:Drifter)
+            tmp=get_list_pos(platform)
             DataFrame("lon"=>tmp.lon, "lat"=>tmp.lat, "flag"=>tmp.flag)
         else
             lst=get_list(platform)

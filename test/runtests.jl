@@ -151,6 +151,9 @@ end
 
     d=OceanRobots.query(ObservingPlatform,platform=:Drifter,option="position")
     @test isa(d.lon,Vector)
+
+    demo1=OceanOPS.demo1()
+    @test isa(demo1.argo_operational.lon,Vector)
 end
 
 @testset "CCHDO" begin

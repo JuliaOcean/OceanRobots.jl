@@ -127,12 +127,17 @@ plot
 ## `query` method
 
 ```@docs
-OceanRobots.query
+query
 ```
 
 ```@example ex1
-using OceanRobots
-OceanRobots.query(XBTtransect,"AOML")
+list=(  ArgoFloat, SurfaceDrifter, XBTtransect, ShipCruise,
+        ObservingPlatform, OceanSite, NOAAbuoy,
+        Glider_AOML, Glider_Spray, Glider_EGO )
+
+for T in list
+    println("\n"); show(T); println("\n"); show(query(T));
+end
 ```
 
 ## Add-Ons
