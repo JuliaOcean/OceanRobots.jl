@@ -5,6 +5,7 @@ import Downloads, Dataverse, NCDatasets, Glob
 import NCDatasets: Dataset
 import DataFrames: DataFrame
 import JSON3, HTTP
+import Statistics: median
 
 import Base: read
 import OceanRobots: ShipCruise
@@ -58,14 +59,41 @@ using GLMakie
 scatter(x1,y1)
 ```
 """
-function extract_json_table(url="https://cchdo.ucsd.edu/search?q=GO-SHIP")
-  tmp=String(HTTP.get(url).body)
+function extract_json_table(url="https://cchdo.ucsd.edu/search?q=GO-SHIP";
+    format="json")
+    tmp=String(HTTP.get(url).body)
 
-  x1=findall("var results =",tmp)[1]
-  x2=findall("]]}}]",tmp)[1]
-  y=maximum(x1)+1:maximum(x2)
+    x1=findall("var results =",tmp)[1]
+    x2=findall("]]}}]",tmp)[1]
+    y=maximum(x1)+1:maximum(x2)
 
-  JSON3.read(tmp[y])
+    table=JSON3.read(tmp[y])
+
+    if format=="json"
+    table
+
+    else
+    tab_code=[t.expocode for t in table]
+    tab_id=[t.id for t in table]
+    tab_startDate=[t.startDate for t in table]
+    tab_endDate=[t.endDate for t in table]
+    lon=[if isempty(t.track)
+            NaN
+        else
+            median([Float64.(c)[1] for c in t.track.coordinates])
+        end
+        for t in table]
+    lat=[if isempty(t.track)
+            NaN
+        else
+            median([Float64.(c)[2] for c in t.track.coordinates])
+        end
+        for t in table]
+    DataFrame("transect"=>tab_code, "id"=>tab_id, 
+    "startDate"=>tab_startDate, "endDate"=>tab_endDate,
+    "lon"=>lon,"lat"=>lat)
+    end
+
 end
 
 
@@ -742,7 +770,11 @@ Read OceanSite data.
 read(x::OceanSite,ID=:WHOTS) = begin
     if ID==:WHOTS
         (arr,units)=read_WHOTS()
-        OceanSite(ID,arr,units)
+        OceanSite(ID,arr,units,missing)
+    elseif isa(ID,Int)
+        #read by numerical ID
+        ds,data,meta=read_basic(ID)
+        OceanSite(ID,data,meta,ds)
     else
         @warn "site not yet supported"
         OceanSite()
@@ -780,6 +812,30 @@ function read_WHOTS(file="DATA_GRIDDED/WHOTS/OS_WHOTS_200408-201809_D_MLTS-1H.nc
     return data,units
 end
 
+function read_basic(ID)
+    list1=index()
+    file=list1.FILE[1]
+    url0="https://tds0.ifremer.fr/thredds/dodsC/CORIOLIS-OCEANSITES-GDAC-OBS/"
+    fil0=url0*file*"#fillmismatch"
+
+    ds=NCDataset(fil0)
+
+    data=DataFrame()
+    list=["TIME","TEMP"]
+    for va in list
+        data[!,va]=ds[va][:]
+    end
+
+    meta=DataFrame()
+    list=["LONGITUDE","LATITUDE","DEPTH"]
+    for va in list
+        meta[!,va]=ds[va][:]
+    end
+
+    return ds,data,meta
+end
+
+
 """
     index()
 
@@ -813,6 +869,9 @@ function index()
 
     #rename column
     rename!(oceansites_index,list)
+
+    #add a simple index
+    oceansites_index.ID=1:size(oceansites_index,1)
 
     return oceansites_index
 end
@@ -988,7 +1047,7 @@ end
 
 List platform types.
 """
-list_platform_types() = begin
+function list_platform_types()
     list_platform_types=DataFrame(:nameShort=>String[],:name=>String[],:description=>String[],:wigosCode=>String[],:id=>Int[])
     list_platform_types=DataFrame(:nameShort=>String[],:name=>String[],:description=>Any[],:wigosCode=>Any[],:id=>Int[])
     
@@ -999,6 +1058,43 @@ list_platform_types() = begin
                     description=i.description,wigosCode=i.wigosCode,id=i.id))
     end
     list_platform_types
+end
+
+###
+
+function demo1()
+	argo_operational=get_list_pos(:Argo)
+	
+	a0=get_list_pos(:Argo,status=:PROBABLE)
+	a1=get_list_pos(:Argo,status=:CONFIRMED)
+	a2=get_list_pos(:Argo,status=:REGISTERED)
+	
+	argo_planned=( lon=vcat(a0.lon,a1.lon,a2.lon),
+				lat=vcat(a0.lat,a1.lat,a2.lat),
+				flag=vcat(a0.flag,a1.flag,a2.flag))
+
+	drifter_operational=get_list_pos(:Drifter)
+
+    (argo_operational=argo_operational,argo_planned=argo_planned,drifter_operational=drifter_operational)
+end
+
+
+###
+
+function query(; platform=missing, ID=missing, option="default")
+    if (!ismissing(ID))
+        get_platform(ID)
+    elseif !ismissing(platform)
+        if option=="position"
+            tmp=get_list_pos(platform)
+            DataFrame("lon"=>tmp.lon, "lat"=>tmp.lat, "flag"=>tmp.flag)
+        else
+            lst=get_list(platform)
+            DataFrame("ID"=>lst)
+        end
+    else
+        list_platform_types()
+    end
 end
 
 end

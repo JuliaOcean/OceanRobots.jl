@@ -2,9 +2,8 @@ using OceanRobots, DataFrames, CairoMakie
 using Test
 
 @testset "SurfaceDrifter" begin
-
     list1=OceanRobots.query(SurfaceDrifter)
-    @test isa(list1,Vector)
+    @test isa(list1,DataFrame)
 
     url="https://dods.ndbc.noaa.gov/thredds/catalog/oceansites/long_timeseries/WHOTS/catalog.xml"
     files,folders=OceanRobots.THREDDS.parse_catalog(url)
@@ -30,9 +29,12 @@ using Test
 end
 
 @testset "OceanSites" begin
+    #query methods
+    list1=OceanRobots.query(OceanSite)
+    @test isa(list1,DataFrame)
 
-    oceansites_index=OceanSites.index()
-    @test !isempty(oceansites_index)
+    a=read(OceanSite(),1)
+    @test isa(a,OceanSite)
 
     b=read(OceanSite(),:WHOTS)
     f3=plot(b,DateTime(2005,1,1),DateTime(2005,2,1))
@@ -45,6 +47,9 @@ end
 end
 
 @testset "ArgoFloat" begin
+    a=OceanRobots.query(ArgoFloat)
+    @test in("wmo",names(a))
+
     b=read(ArgoFloat(),wmo=2900668)
     @test isa(b,ArgoFloat)
 
@@ -53,6 +58,9 @@ end
 end
 
 @testset "Glider_Spray" begin
+    a=OceanRobots.query(Glider_Spray)
+    @test isa(a,DataFrame)
+
     b=read(Glider_Spray(),"GulfStream.nc",1)
     @test isa(b,Glider_Spray)
     f3=plot(b)
@@ -67,6 +75,11 @@ end
 end
 
 @testset "Glider_EGO" begin
+    list1=OceanRobots.query(Glider_EGO)
+    @test isa(list1,DataFrame)
+    list1=OceanRobots.query(Glider_EGO,mission=1:2)
+    @test isa(list1,DataFrame)
+
     b=read(Glider_EGO(),1)
     @test isa(b,Glider_EGO)
     f3=plot(b)
@@ -74,6 +87,13 @@ end
 end
 
 @testset "Glider_AOML" begin
+    g=OceanRobots.query(Glider_AOML,option=:gliders).ID[5]
+    m=OceanRobots.query(Glider_AOML,glider=g,option=:missions).ID[2]
+    p=OceanRobots.query(Glider_AOML,glider=g,mission=m,option=:profiles).ID[1]
+    @test isa(g,Symbol)
+    @test isa(m,Symbol)
+    @test isa(p,String)
+
     file=Glider_AOML_module.sample_file()
     Glider_AOML_module.download_AOML(file)
     @test isfile(file)
@@ -87,7 +107,7 @@ end
 
 @testset "NOAAbuoy" begin
     allstations=OceanRobots.query(NOAAbuoy)
-    @test isa(allstations,Vector)
+    @test in("transect",names(allstations))
 
     metstations=NOAA.list_realtime(ext=:txt)
     stations=metstations[1:200:end]
@@ -118,22 +138,27 @@ end
 end
 
 @testset "OceanOPS" begin
-    list_Argo=OceanOPS.get_list(:Argo)
-    @test isa(list_Argo,Vector)
+    platforms=OceanRobots.query(ObservingPlatform)
+    @test in("nameShort",names(platforms))
 
-    tmp=OceanOPS.get_platform(list_Argo[1000])
-    @test tmp.status=="OPERATIONAL"
+    a=OceanRobots.query(ObservingPlatform,platform="TSUNAMETER")
+    @test isa(a.ID,Vector)
+    b=OceanRobots.query(ObservingPlatform,platform=:Argo)
+    @test isa(b.ID,Vector)
 
-    tmp=OceanOPS.get_list_pos(:Drifter)
-    @test isa(tmp.lon,Vector)
+    c=OceanRobots.query(ObservingPlatform,ID=b.ID[1000])
+    @test c.status=="OPERATIONAL"
 
-    tmp=OceanOPS.list_platform_types()
-    @test isa(tmp.name,Vector)
+    d=OceanRobots.query(ObservingPlatform,platform=:Drifter,option="position")
+    @test isa(d.lon,Vector)
+
+    demo1=OceanOPS.demo1()
+    @test isa(demo1.argo_operational.lon,Vector)
 end
 
 @testset "CCHDO" begin
-#    list1=OceanRobots.query(ShipCruise)
-#    @test isa(list1,Vector)
+    list1=OceanRobots.query(ShipCruise)
+    @test isa(list1,DataFrame)
 
     ID="33RR20160208"
     path=CCHDO.download(ID)
@@ -151,6 +176,7 @@ end
     fig=plot(xbt)
     @test isa(fig,Figure)
 
+    #query methods
     list=OceanRobots.query(XBTtransect,"SIO")
     cruises=XBT.list_of_cruises("PX05")
     

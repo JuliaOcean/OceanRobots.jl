@@ -1,7 +1,7 @@
 name = "OceanRobots"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
 authors = ["gaelforget <gforget@mit.edu>"]
-version = "0.3.4"
+version = "0.3.5"
 
 [deps]
 ArgoData = "9eb831cf-c491-48dc-bed4-6aca718df73c"

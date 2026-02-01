@@ -13,7 +13,8 @@ function Base.show(io::IO, z::AbstractOceanRobotData)
         tmp=(if isa(z.data,NamedTuple)
             keys(z.data)
         elseif isa(z.data,DataFrames.DataFrame)
-            show(z.data)
+            names(z.data)
+            #show(z.data)
         else
             typeof.(z.data)
         end)
@@ -107,12 +108,15 @@ Glider_AOML() = Glider_AOML("",DataFrame())
 ##
 
 struct OceanSite <: AbstractOceanRobotData
-    ID::Symbol
-    data::NamedTuple
-    units::NamedTuple
+    ID::Union{Symbol,Int}
+    data::Union{NamedTuple,DataFrame}
+    meta::Union{NamedTuple,DataFrame}
+    other::Any
 end
 
-OceanSite() = OceanSite(:unknown,NamedTuple(),NamedTuple())
+OceanSite() = OceanSite(:unknown,NamedTuple(),NamedTuple(),missing)
+
+##
 
 struct ShipCruise <: AbstractOceanRobotData
     ID::String
@@ -121,6 +125,19 @@ struct ShipCruise <: AbstractOceanRobotData
 end
 
 ShipCruise()=ShipCruise("unknown",[],tempdir())
+
+##
+
+struct ObservingPlatform <: AbstractOceanRobotData
+    ID::Union{Symbol,Int}
+    data::Union{NamedTuple,DataFrame}
+    meta::Union{NamedTuple,DataFrame}
+    other::Any
+end
+
+ObservingPlatform() = ObservingPlatform(:unknown,NamedTuple(),NamedTuple(),missing)
+
+##
 
 struct XBTtransect <: AbstractOceanRobotData
     source::String
@@ -150,22 +167,36 @@ OceanRobots.query(XBTtransect,"AOML")
 """
 function query(x::DataType,args...;kwargs...)
     if x==ShipCruise
-        table=CCHDO.extract_json_table()
-        [t.expocode for t in table]
+        table=CCHDO.extract_json_table(format="DataFrame")
     elseif x==NOAAbuoy
-        NOAA.list_stations()
+        #option to get location, activity status, and a bit more metadata?
+        tab_code=NOAA.list_stations()
+        DataFrame("transect"=>tab_code)
     elseif x==SurfaceDrifter
+        #option to query the hourly data set?
         list=GDP.list_files()
-        list.ID
+        DataFrame("ID"=>list.ID)
     elseif x==XBTtransect
-        XBT.list_transects(args...;kwargs...)
+        if haskey(kwargs,:transect)
+            XBT.list_of_cruises(args...;kwargs...)
+        else
+            tmp=XBT.list_transects(args...;kwargs...)
+            DataFrame("transect"=>tmp)
+        end
     elseif x==ArgoFloat
         list=ArgoData.GDAC.files_list()
-        list.wmo
+        #rename [folder  wmo] as [source  wmo]?
     elseif x==OceanSite
         OceanSites.index()
+    elseif x==ObservingPlatform
+        OceanOPS.query(;kwargs...)
     elseif x==Glider_AOML
-        Glider_AOML_module.query(;kwargs...)
+        tab_code=Glider_AOML_module.query(;kwargs...)
+        DataFrame("ID"=>tab_code)
+    elseif x==Glider_Spray
+        tab_code=Glider_Spray_module.query(;kwargs...)
+    elseif x==Glider_EGO
+        tab_code=Glider_EGO_module.query(;kwargs...)
     else
         warning("unknown data type")
     end
