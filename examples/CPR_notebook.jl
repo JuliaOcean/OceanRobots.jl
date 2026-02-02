@@ -50,26 +50,6 @@ md"""## Read Data
 - convert `lon,lat` to `GI.Point`
 """
 
-# ╔═╡ ee5f6fd6-a789-4d13-b5f2-766ef6a7f6bc
-begin
-    path_to_data=joinpath(tempdir(),"CPRBeam_DataExtract")
-    ispath(path_to_data) ? path_to_data : download_cpr_data(path_to_data)
-	println(path_to_data)
-    readdir(path_to_data)
-end
-
-# ╔═╡ 49439775-c3ac-4e64-a474-a837cbcfda56
-begin
-	data,meta,taxa=read_cpr(path_to_data)
-	taxa_list=unique(taxa.Phylum)
-end
-
-# ╔═╡ 1257cc5c-2946-4bb0-a57f-94b51b9caf68
-begin
-	np=length(data.Longitude)
-	points=[GI.Point(data.Longitude[i],data.Latitude[i]) for i in 1:np];
-end
-
 # ╔═╡ 643259db-28db-4349-a0e6-e63466b03efd
 md"""## Plot Data
 
@@ -109,6 +89,14 @@ function download_cpr_data(path_to_data)
 	path_to_data
 end
 
+# ╔═╡ ee5f6fd6-a789-4d13-b5f2-766ef6a7f6bc
+begin
+    path_to_data=joinpath(tempdir(),"CPRBeam_DataExtract")
+    ispath(path_to_data) ? path_to_data : download_cpr_data(path_to_data)
+	println(path_to_data)
+    readdir(path_to_data)
+end
+
 # ╔═╡ 4c86d37b-9ae2-430a-8e7c-a4acc3e0b151
 """
     read_cpr(path_to_data::String)
@@ -131,6 +119,18 @@ function read_cpr(path_to_data::String)
     taxa=CSV.read(f,DataFrame)
 
     data,meta,taxa
+end
+
+# ╔═╡ 49439775-c3ac-4e64-a474-a837cbcfda56
+begin
+	data,meta,taxa=read_cpr(path_to_data)
+	taxa_list=unique(taxa.Phylum)
+end
+
+# ╔═╡ 1257cc5c-2946-4bb0-a57f-94b51b9caf68
+begin
+	np=length(data.Longitude)
+	points=[GI.Point(data.Longitude[i],data.Latitude[i]) for i in 1:np];
 end
 
 # ╔═╡ e450cb01-cd62-44a4-88b8-5ae2376ec8aa
@@ -179,6 +179,7 @@ f1,f2=plot_checks(data);
 
 # ╔═╡ 8f3145af-3f47-410a-a19f-bc90e67a8465
 fig_check
+
 
 
 
@@ -617,9 +618,9 @@ version = "0.3.1"
 
 [[deps.FileIO]]
 deps = ["Pkg", "Requires", "UUIDs"]
-git-tree-sha1 = "d60eb76f37d7e5a40cc2e7c36974d864b82dc802"
+git-tree-sha1 = "6522cfb3b8fe97bec632252263057996cbd3de20"
 uuid = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
-version = "1.17.1"
+version = "1.18.0"
 weakdeps = ["HTTP"]
 
     [deps.FileIO.extensions]
@@ -1261,9 +1262,9 @@ version = "2.28.1010+0"
 
 [[deps.MeshArrays]]
 deps = ["CatViews", "Dates", "Distributed", "GeoInterface", "Glob", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SharedArrays", "SparseArrays", "Statistics", "Unitful"]
-git-tree-sha1 = "19e7464371ad3af9f0c0f3a2aac718a772f6c578"
+git-tree-sha1 = "b9b1389807c4d535c046c8849fb05e752120c0bd"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
-version = "0.5.3"
+version = "0.5.4"
 
     [deps.MeshArrays.extensions]
     MeshArraysDataDepsExt = ["DataDeps"]
@@ -1397,9 +1398,9 @@ version = "0.5.6+0"
 
 [[deps.Opus_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "39a11854f0cba27aa41efaedf43c77c5daa6be51"
+git-tree-sha1 = "e2bb57a313a74b8104064b7efd01406c0a50d2ff"
 uuid = "91d4177d-7536-5919-b921-800302f37372"
-version = "1.6.0+0"
+version = "1.6.1+0"
 
 [[deps.OrderedCollections]]
 git-tree-sha1 = "05868e21324cede2207c6f0f466b4bfef6d5e7ee"
@@ -1897,9 +1898,9 @@ version = "0.4.1"
 
 [[deps.Unitful]]
 deps = ["Dates", "LinearAlgebra", "Random"]
-git-tree-sha1 = "c25751629f5baaa27fef307f96536db62e1d754e"
+git-tree-sha1 = "57e1b2c9de4bd6f40ecb9de4ac1797b81970d008"
 uuid = "1986cc42-f94f-5a68-af5c-568840ba703d"
-version = "1.27.0"
+version = "1.28.0"
 
     [deps.Unitful.extensions]
     ConstructionBaseUnitfulExt = "ConstructionBase"

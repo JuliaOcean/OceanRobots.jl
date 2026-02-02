@@ -94,12 +94,6 @@ plot(glider,pol=pol)
 ```
 
 ```@example ex1
-using OceanRobots, CairoMakie
-glider=read(Glider_Spray(),"GulfStream.nc",1)
-plot(glider,pol=pol)
-```
-
-```@example ex1
 glider=read(Glider_EGO(),2)
 plot(glider,pol=pol)
 ```
@@ -110,7 +104,6 @@ Glider_AOML_module.download_AOML(file)
 glider=read(Glider_AOML(),file)
 plot(glider,pol=pol,markersize=8)
 ```
-
 
 ## `read` methods
 
