@@ -252,7 +252,8 @@ Read a EGO Glider files.
 read(x::Glider_EGO, ID=1; mission=1) = begin
     tmp=read_Glider_EGO(ID, mission=mission)
 	data=to_DataFrame(tmp.ds)
-    Glider_EGO(ID,data)
+	folder=dirname(tmp.file_nc)
+    Glider_EGO(ID,data,folder)
 end
 
 function to_DataFrame(ds)
