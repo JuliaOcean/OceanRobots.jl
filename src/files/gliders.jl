@@ -27,7 +27,7 @@ function check_for_file_Spray(args...)
 end
 
 """
-    read(x::Glider_Spray, file::String, cruise=1, format=0)
+    read(x::Glider_Spray, file::String, mission=1, format=0)
 
 Read a Spray Glider file into a `Glider_Spray`.
 
@@ -40,10 +40,10 @@ plot(glider)
 - `format==0` (default) : format data via `to_DataFrame`
 - `format==0` : format data via `to_DataFrame_v1` (to plot via `plot_glider_Spray_v1`)
 """
-function read(x::Glider_Spray, file="GulfStream.nc", cruise=1, format=0)
+function read(x::Glider_Spray, file="GulfStream.nc", mission=1, format=0)
     f=check_for_file_Spray(file)
     data=if format==0
-		to_DataFrame(Dataset(f),cruise)
+		to_DataFrame(Dataset(f),mission)
 	elseif format==-1
 		to_DataFrame_v1(Dataset(f))
 	else
@@ -60,11 +60,11 @@ function query(; file="GulfStream.nc", mission=0)
 	DataFrame("ID"=>n)
 end
 
-function to_DataFrame(ds,cruise=0)
+function to_DataFrame(ds,mission=0)
 #	id=unique(ds["trajectory_index"])
 	nz=ds.dim["depth"]
 	np=ds.dim["profile"]
-	ii=findall(ds["trajectory_index"].==cruise-1)
+	ii=findall(ds["trajectory_index"].==mission-1)
 	npi=length(ii)
 
 	lon=ds[:lon][ii]*ones(1,nz)
@@ -211,13 +211,21 @@ function glider_download(fil; verbose=false)
     fil_out
 end
 
-function file_indices(files)
-	i_nc=findall(occursin.(Ref(".nc"),files))[1]
-	i_json=findall(occursin.(Ref(".json"),files))[1]
+function file_indices(files,mission=1)
+	println(mission)
+	i_nc=findall(occursin.(Ref(".nc"),files))[mission]
+	i_json=findall(occursin.(Ref(".json"),files))[mission]
 	i_nc,i_json
 end
 
-function read_Glider_EGO(ID::Int; ftp=missing, verbose=false)
+"""
+    read_Glider_EGO(ID::Int; ftp=missing, verbose=false, mission=1)
+
+```
+glider=read(Glider_EGO(),100,mission=2)
+```
+"""
+function read_Glider_EGO(ID::Int; ftp=missing, verbose=false, mission=1)
 #	_ftp=(ismissing(ftp) ? FTPClient.FTP(ftp_url0) : ftp)
 
     df=query(mission=ID)
@@ -225,7 +233,7 @@ function read_Glider_EGO(ID::Int; ftp=missing, verbose=false)
 	missions=df.mission
 	folders=df.folder
 	files=df.url
-	i_nc,i_json=file_indices(files)
+	i_nc,i_json=file_indices(files,mission)
 	#
     file_nc=glider_download(files[i_nc],verbose=verbose)
     file_json=glider_download(files[i_json],verbose=verbose)
@@ -241,8 +249,8 @@ end
 
 Read a EGO Glider files.    
 """
-read(x::Glider_EGO, ID=1) = begin
-    tmp=read_Glider_EGO(ID)
+read(x::Glider_EGO, ID=1; mission=1) = begin
+    tmp=read_Glider_EGO(ID, mission=mission)
 	data=to_DataFrame(tmp.ds)
     Glider_EGO(ID,data)
 end
