@@ -53,12 +53,22 @@ function read(x::Glider_Spray, file="GulfStream.nc", mission=1, format=0)
     Glider_Spray(f,data,meta)
 end
 
-function query(; file="GulfStream.nc", mission=0)
-    f=check_for_file_Spray(file)
+"""
+    query(; file="GulfStream.nc", mission=missing)
+
+"""
+function query(; file="GulfStream.nc", mission=missing)
+	f=check_for_file_Spray(file)
 	d=Dataset(f)
-	n=[string(d["mission_name"][:,k]...) for k in 1:d.dim["trajectory"]]
-	close(d)
-	DataFrame("ID"=>n)
+	if ismissing(mission)
+		n=[string(d["mission_name"][:,k]...) for k in 1:d.dim["trajectory"]]
+		close(d)
+		DataFrame("ID"=>1:length(n),"name"=>n)
+	else
+		list0=query(file=file)
+		ii=findall(d["trajectory_index"].==(mission-1))
+		DataFrame("ID"=>mission, "name"=>list0[mission,"name"], "n_points"=>length(ii))
+	end
 end
 
 function to_DataFrame(ds,mission=0)
@@ -397,7 +407,7 @@ glider=read(Glider_AOML(),sample_file)
 ```
 """
 function read(x::Glider_AOML, file::String=sample_file())
-	Glider_AOML(file,read_profile(file),DataFrame())
+	Glider_AOML(file,read_profile(file),DataFrames.DataFrame())
 end
 
 """
