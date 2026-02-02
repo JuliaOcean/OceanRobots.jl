@@ -60,6 +60,8 @@ end
 @testset "Glider_Spray" begin
     a=OceanRobots.query(Glider_Spray)
     @test isa(a,DataFrame)
+    a=OceanRobots.query(Glider_Spray,mission=1)
+    @test isa(a,DataFrame)
 
     b=read(Glider_Spray(),"GulfStream.nc",1)
     @test isa(b,Glider_Spray)
@@ -77,7 +79,7 @@ end
 @testset "Glider_EGO" begin
     list1=OceanRobots.query(Glider_EGO)
     @test isa(list1,DataFrame)
-    list1=OceanRobots.query(Glider_EGO,mission=1:2)
+    list1=OceanRobots.query(Glider_EGO,subset=1:2)
     @test isa(list1,DataFrame)
 
     b=read(Glider_EGO(),1)

@@ -27,7 +27,7 @@ function check_for_file_Spray(args...)
 end
 
 """
-    read(x::Glider_Spray, file::String, cruise=1, format=0)
+    read(x::Glider_Spray, file::String, mission=1, format=0)
 
 Read a Spray Glider file into a `Glider_Spray`.
 
@@ -40,31 +40,42 @@ plot(glider)
 - `format==0` (default) : format data via `to_DataFrame`
 - `format==0` : format data via `to_DataFrame_v1` (to plot via `plot_glider_Spray_v1`)
 """
-function read(x::Glider_Spray, file="GulfStream.nc", cruise=1, format=0)
+function read(x::Glider_Spray, file="GulfStream.nc", mission=1, format=0)
     f=check_for_file_Spray(file)
     data=if format==0
-		to_DataFrame(Dataset(f),cruise)
+		to_DataFrame(Dataset(f),mission)
 	elseif format==-1
 		to_DataFrame_v1(Dataset(f))
 	else
 		error("unknown format")
 	end
-    Glider_Spray(f,data)
+	meta=DataFrame("file"=>f,"mission"=>mission,"ID"=>file)
+    Glider_Spray(f,data,meta)
 end
 
-function query(; file="GulfStream.nc", mission=0)
-    f=check_for_file_Spray(file)
+"""
+    query(; file="GulfStream.nc", mission=missing)
+
+"""
+function query(; file="GulfStream.nc", mission=missing)
+	f=check_for_file_Spray(file)
 	d=Dataset(f)
-	n=[string(d["mission_name"][:,k]...) for k in 1:d.dim["trajectory"]]
-	close(d)
-	DataFrame("ID"=>n)
+	if ismissing(mission)
+		n=[string(d["mission_name"][:,k]...) for k in 1:d.dim["trajectory"]]
+		close(d)
+		DataFrame("ID"=>1:length(n),"name"=>n)
+	else
+		list0=query(file=file)
+		ii=findall(d["trajectory_index"].==(mission-1))
+		DataFrame("ID"=>mission, "name"=>list0[mission,"name"], "n_points"=>length(ii))
+	end
 end
 
-function to_DataFrame(ds,cruise=0)
+function to_DataFrame(ds,mission=0)
 #	id=unique(ds["trajectory_index"])
 	nz=ds.dim["depth"]
 	np=ds.dim["profile"]
-	ii=findall(ds["trajectory_index"].==cruise-1)
+	ii=findall(ds["trajectory_index"].==mission-1)
 	npi=length(ii)
 
 	lon=ds[:lon][ii]*ones(1,nz)
@@ -119,7 +130,7 @@ import Base: read
 ftp_url0="ftp://ftp.ifremer.fr/ifremer/glider/v2/"
 
 """
-    query(; mission=missing, subset=missing,verbose=false)
+    query(; ID=missing, subset=missing,verbose=false)
 
 Get list of EGO glider files from ftp server `ftp://ftp.ifremer.fr/ifremer/glider/v2/`
 
@@ -134,36 +145,36 @@ fig_glider=plot(data)
 ds=data.ds,variable="CHLA")
 ```
 """
-function query(; mission=missing, subset=missing,verbose=false)
+function query(; ID=missing, subset=missing,verbose=false)
 	ftp=FTPClient.FTP(ftp_url0)
-	if (!ismissing)(mission)
-		if isa(mission,Int)
-			s=mission:mission
-		elseif isa(mission,UnitRange)
-			s=mission
-		elseif mission=="all"
+	if (!ismissing)(ID)
+		if isa(ID,Int)
+			s=ID:ID
+		elseif isa(ID,UnitRange)
+			s=ID
+		elseif ID=="all"
 			df=query()
-			s=1:length(df.mission)
+			s=1:length(df.ID)
 		else
 			df=query()
-			m=findall(df.mission.==mission)[1]
+			m=findall(df.ID.==ID)[1]
 			s=m:m
 		end
 		df=readdir_two_levels(ftp=ftp,subset=s,verbose=verbose)
 	else
-		missions=readdir(ftp)
-		ii=findall((!occursin).(Ref(".txt"),missions))
-		df=DataFrames.DataFrame("mission"=>missions[ii])
+		IDs=readdir(ftp)
+		ii=findall((!occursin).(Ref(".txt"),IDs))
+		df=DataFrames.DataFrame("ID"=>1:length(ii),"name"=>IDs[ii])
 	end
 	close(ftp)
 	df
 end
 
 function readdir_two_levels(; ftp=ftp,subset=missing,verbose=false)
-	missions=query().mission
+	gliders=query().name
 	df=DataFrames.DataFrame()
-	kk=(!ismissing(subset) ? subset : (1:length(missions)))
-	for m in missions[kk]
+	kk=(!ismissing(subset) ? subset : (1:length(gliders)))
+	for (ID, m) in enumerate(gliders[kk])
 		cd(ftp,m)
 		folders=readdir(ftp)
 		for f in folders
@@ -172,7 +183,7 @@ function readdir_two_levels(; ftp=ftp,subset=missing,verbose=false)
 			for ff in files
 				url=ftp_url0*m*"/"*f*"/"*ff
 				verbose ? println(url) : nothing
-				df0=DataFrames.DataFrame("mission"=>m,"folder"=>f,"file"=>ff,"url"=>url)
+				df0=DataFrames.DataFrame("ID"=>kk[ID],"name"=>m,"folder"=>f,"file"=>ff,"url"=>url)
 				append!(df,df0)
 			end
 			cd(ftp,"..")
@@ -211,21 +222,28 @@ function glider_download(fil; verbose=false)
     fil_out
 end
 
-function file_indices(files)
-	i_nc=findall(occursin.(Ref(".nc"),files))[1]
-	i_json=findall(occursin.(Ref(".json"),files))[1]
+function file_indices(files,mission=1)
+	i_nc=findall(occursin.(Ref(".nc"),files))[mission]
+	i_json=findall(occursin.(Ref(".json"),files))[mission]
 	i_nc,i_json
 end
 
-function read_Glider_EGO(ID::Int; ftp=missing, verbose=false)
+"""
+    read_Glider_EGO(ID::Int; ftp=missing, verbose=false, mission=1)
+
+```
+glider=read(Glider_EGO(),100,mission=2)
+```
+"""
+function read_Glider_EGO(ID::Int; ftp=missing, verbose=false, mission=1)
 #	_ftp=(ismissing(ftp) ? FTPClient.FTP(ftp_url0) : ftp)
 
-    df=query(mission=ID)
+    df=query(ID=ID)
 
-	missions=df.mission
+	IDs=df.ID
 	folders=df.folder
 	files=df.url
-	i_nc,i_json=file_indices(files)
+	i_nc,i_json=file_indices(files,mission)
 	#
     file_nc=glider_download(files[i_nc],verbose=verbose)
     file_json=glider_download(files[i_json],verbose=verbose)
@@ -233,7 +251,7 @@ function read_Glider_EGO(ID::Int; ftp=missing, verbose=false)
 	verbose ? println(file_json) : nothing
     ds=NCDatasets.Dataset(file_nc)
     js=JSON3.read(file_json)
-    (missions=missions,file_nc=file_nc,file_json=file_json,ds=ds,js=js)
+    (IDs=IDs,file_nc=file_nc,file_json=file_json,ds=ds,js=js)
 end
 
 """
@@ -241,10 +259,12 @@ end
 
 Read a EGO Glider files.    
 """
-read(x::Glider_EGO, ID=1) = begin
-    tmp=read_Glider_EGO(ID)
+read(x::Glider_EGO, ID=1; mission=1) = begin
+    tmp=read_Glider_EGO(ID, mission=mission)
 	data=to_DataFrame(tmp.ds)
-    Glider_EGO(ID,data)
+	folder=dirname(tmp.file_nc)
+	meta=DataFrames.DataFrame("folder"=>folder,"mission"=>mission,"ID"=>ID)
+    Glider_EGO(ID,data,meta)
 end
 
 function to_DataFrame(ds)
@@ -387,7 +407,7 @@ glider=read(Glider_AOML(),sample_file)
 ```
 """
 function read(x::Glider_AOML, file::String=sample_file())
-	Glider_AOML(file,read_profile(file))
+	Glider_AOML(file,read_profile(file),DataFrames.DataFrame())
 end
 
 """
@@ -416,7 +436,8 @@ function read(x::Glider_AOML, ID::Symbol, mission::Symbol;
 		append!(tmp,to_DataFrame(ds))
 	end
 	
-	Glider_AOML(p,tmp)
+	meta=DataFrames.DataFrame("folder"=>p,"ID"=>ID,"mission"=>mission)
+	Glider_AOML(p,tmp,meta)
 end
 
 """

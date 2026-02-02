@@ -20,6 +20,18 @@ function Base.show(io::IO, z::AbstractOceanRobotData)
         end)
         printstyled(io, "$(tmp)\n",color=:magenta)
     end
+    if in(:meta,zn)
+        printstyled(io, "  meta      = ",color=:normal)
+        tmp=(if isa(z.meta,NamedTuple)
+            keys(z.meta)
+        elseif isa(z.meta,DataFrames.DataFrame)
+            names(z.meta)
+            #show(z.data)
+        else
+            typeof.(z.meta)
+        end)
+        printstyled(io, "$(tmp)\n",color=:magenta)
+    end
     in(:file,zn) ? printstyled(io, "  file      = ",color=:normal) : nothing
     in(:file,zn) ? printstyled(io, "$(z.file)\n",color=:magenta) : nothing
     in(:source,zn) ? printstyled(io, "  source      = ",color=:normal) : nothing
@@ -83,27 +95,30 @@ CloudDrift() = CloudDrift("",NamedTuple())
 struct Glider_Spray <: AbstractOceanRobotData
     file::String
     data::DataFrame
+    meta::DataFrame
 end
 
-Glider_Spray() = Glider_Spray("",DataFrame())
+Glider_Spray() = Glider_Spray("",DataFrame(),DataFrame())
 
 ##
 
 struct Glider_EGO <: AbstractOceanRobotData
     ID::Union{Missing,Int64}
     data::Any #Union{NamedTuple,DataFrame}
+    meta::DataFrame
 end
 
-Glider_EGO() = Glider_EGO(missing,NamedTuple())
+Glider_EGO() = Glider_EGO(missing,NamedTuple(),DataFrame())
 
 ##
 
 struct Glider_AOML <: AbstractOceanRobotData
     path::String
     data::DataFrame
+    meta::DataFrame
 end
 
-Glider_AOML() = Glider_AOML("",DataFrame())
+Glider_AOML() = Glider_AOML("",DataFrame(),DataFrame())
 
 ##
 
