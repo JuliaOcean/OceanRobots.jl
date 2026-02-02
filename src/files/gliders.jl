@@ -120,7 +120,7 @@ import Base: read
 ftp_url0="ftp://ftp.ifremer.fr/ifremer/glider/v2/"
 
 """
-    query(; mission=missing, subset=missing,verbose=false)
+    query(; ID=missing, subset=missing,verbose=false)
 
 Get list of EGO glider files from ftp server `ftp://ftp.ifremer.fr/ifremer/glider/v2/`
 
@@ -135,36 +135,36 @@ fig_glider=plot(data)
 ds=data.ds,variable="CHLA")
 ```
 """
-function query(; mission=missing, subset=missing,verbose=false)
+function query(; ID=missing, subset=missing,verbose=false)
 	ftp=FTPClient.FTP(ftp_url0)
-	if (!ismissing)(mission)
-		if isa(mission,Int)
-			s=mission:mission
-		elseif isa(mission,UnitRange)
-			s=mission
-		elseif mission=="all"
+	if (!ismissing)(ID)
+		if isa(ID,Int)
+			s=ID:ID
+		elseif isa(ID,UnitRange)
+			s=ID
+		elseif ID=="all"
 			df=query()
-			s=1:length(df.mission)
+			s=1:length(df.ID)
 		else
 			df=query()
-			m=findall(df.mission.==mission)[1]
+			m=findall(df.ID.==ID)[1]
 			s=m:m
 		end
 		df=readdir_two_levels(ftp=ftp,subset=s,verbose=verbose)
 	else
-		missions=readdir(ftp)
-		ii=findall((!occursin).(Ref(".txt"),missions))
-		df=DataFrames.DataFrame("mission"=>missions[ii])
+		IDs=readdir(ftp)
+		ii=findall((!occursin).(Ref(".txt"),IDs))
+		df=DataFrames.DataFrame("ID"=>1:length(ii),"name"=>IDs[ii])
 	end
 	close(ftp)
 	df
 end
 
 function readdir_two_levels(; ftp=ftp,subset=missing,verbose=false)
-	missions=query().mission
+	gliders=query().name
 	df=DataFrames.DataFrame()
-	kk=(!ismissing(subset) ? subset : (1:length(missions)))
-	for m in missions[kk]
+	kk=(!ismissing(subset) ? subset : (1:length(gliders)))
+	for (ID, m) in enumerate(gliders[kk])
 		cd(ftp,m)
 		folders=readdir(ftp)
 		for f in folders
@@ -173,7 +173,7 @@ function readdir_two_levels(; ftp=ftp,subset=missing,verbose=false)
 			for ff in files
 				url=ftp_url0*m*"/"*f*"/"*ff
 				verbose ? println(url) : nothing
-				df0=DataFrames.DataFrame("mission"=>m,"folder"=>f,"file"=>ff,"url"=>url)
+				df0=DataFrames.DataFrame("ID"=>kk[ID],"name"=>m,"folder"=>f,"file"=>ff,"url"=>url)
 				append!(df,df0)
 			end
 			cd(ftp,"..")
@@ -228,9 +228,9 @@ glider=read(Glider_EGO(),100,mission=2)
 function read_Glider_EGO(ID::Int; ftp=missing, verbose=false, mission=1)
 #	_ftp=(ismissing(ftp) ? FTPClient.FTP(ftp_url0) : ftp)
 
-    df=query(mission=ID)
+    df=query(ID=ID)
 
-	missions=df.mission
+	IDs=df.ID
 	folders=df.folder
 	files=df.url
 	i_nc,i_json=file_indices(files,mission)
@@ -241,7 +241,7 @@ function read_Glider_EGO(ID::Int; ftp=missing, verbose=false, mission=1)
 	verbose ? println(file_json) : nothing
     ds=NCDatasets.Dataset(file_nc)
     js=JSON3.read(file_json)
-    (missions=missions,file_nc=file_nc,file_json=file_json,ds=ds,js=js)
+    (IDs=IDs,file_nc=file_nc,file_json=file_json,ds=ds,js=js)
 end
 
 """
