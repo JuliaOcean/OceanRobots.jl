@@ -49,7 +49,8 @@ function read(x::Glider_Spray, file="GulfStream.nc", mission=1, format=0)
 	else
 		error("unknown format")
 	end
-    Glider_Spray(f,data)
+	meta=DataFrame("file"=>f,"mission"=>mission,"ID"=>file)
+    Glider_Spray(f,data,meta)
 end
 
 function query(; file="GulfStream.nc", mission=0)
@@ -212,7 +213,6 @@ function glider_download(fil; verbose=false)
 end
 
 function file_indices(files,mission=1)
-	println(mission)
 	i_nc=findall(occursin.(Ref(".nc"),files))[mission]
 	i_json=findall(occursin.(Ref(".json"),files))[mission]
 	i_nc,i_json
@@ -253,7 +253,8 @@ read(x::Glider_EGO, ID=1; mission=1) = begin
     tmp=read_Glider_EGO(ID, mission=mission)
 	data=to_DataFrame(tmp.ds)
 	folder=dirname(tmp.file_nc)
-    Glider_EGO(ID,data,folder)
+	meta=DataFrames.DataFrame("folder"=>folder,"mission"=>mission,"ID"=>ID)
+    Glider_EGO(ID,data,meta)
 end
 
 function to_DataFrame(ds)
@@ -396,7 +397,7 @@ glider=read(Glider_AOML(),sample_file)
 ```
 """
 function read(x::Glider_AOML, file::String=sample_file())
-	Glider_AOML(file,read_profile(file))
+	Glider_AOML(file,read_profile(file),DataFrame())
 end
 
 """
@@ -425,7 +426,8 @@ function read(x::Glider_AOML, ID::Symbol, mission::Symbol;
 		append!(tmp,to_DataFrame(ds))
 	end
 	
-	Glider_AOML(p,tmp)
+	meta=DataFrames.DataFrame("folder"=>p,"ID"=>ID,"mission"=>mission)
+	Glider_AOML(p,tmp,meta)
 end
 
 """
