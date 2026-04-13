@@ -79,7 +79,7 @@ import Shapefile, GeoJSON, DataDeps, PrettyTables, Proj, MeshArrays
 
 # ╔═╡ 9d4b4eed-2cc8-49cd-bb4d-2e7d51e9e4d9
 begin
-	list_platform_types=OceanOPS.list_platform_types()
+	list_platform_types=query(ObservingPlatform)
 
 	tb=PrettyTables.pretty_table(
 	[list_platform_types[:,:name] list_platform_types[:,:wigosCode] list_platform_types[:,:id]];
@@ -100,14 +100,14 @@ end
 # ╔═╡ 18cf7db9-f987-4c41-adf2-035e810c2da0
 pol=MeshArrays.Dataset("countries_geojson1")
 
-# ╔═╡ fccdc273-2e9f-4f60-a659-8ee2790ae2fc
-more_operational=query(ObservingPlatform,platform=nam_platform_types,option="position")
-
 # ╔═╡ b6a138b0-fce5-4767-b4d1-eed0d0560988
 OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
 
 # ╔═╡ 52dc1cd5-e57a-43bb-82c9-feb1de25e5ca
 demo1=OceanOPS.demo1()
+
+# ╔═╡ fccdc273-2e9f-4f60-a659-8ee2790ae2fc
+more_operational=query(ObservingPlatform,platform=nam_platform_types,option="position")
 
 # ╔═╡ c5f24071-1c1f-4edf-b7b2-b6194c33b571
 begin
@@ -1599,9 +1599,9 @@ version = "0.5.5"
 
 [[deps.OceanRobots]]
 deps = ["ArgoData", "CFTime", "CSV", "CodecZlib", "DataFrames", "Dataverse", "Dates", "Downloads", "FTPClient", "Glob", "HTTP", "Interpolations", "JSON3", "LightXML", "NCDatasets", "Printf", "Statistics", "TableScraper", "URIs"]
-git-tree-sha1 = "830162dc70cbedfbd3689c7b78b784aeddd18615"
+git-tree-sha1 = "e68e98b02034d8cd15e4504a8556884fc37043c0"
 uuid = "0b51df41-3294-4961-8d23-db645e32016d"
-version = "0.3.5"
+version = "0.3.6"
 weakdeps = ["Makie"]
 
     [deps.OceanRobots.extensions]
