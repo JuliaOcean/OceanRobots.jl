@@ -8,8 +8,19 @@ OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
 using MeshArrays, GeoJSON, DataDeps
 pol=MeshArrays.Dataset("countries_geojson1")
 
-Glider_Spray_module.check_for_file_Spray("GulfStream.nc")
-Glider_Spray_module.check_for_file_Spray("CUGN_along.nc")
+try
+    Glider_Spray_module.check_for_file_Spray("GulfStream.nc")
+    println("GulfStream.nc aok")
+catch
+    @warn "issue with GulfStream.nc"
+end
+
+try
+    Glider_Spray_module.check_for_file_Spray("CUGN_along.nc")
+    println("CUGN_along.nc aok")
+catch
+    @warn "issue with CUGN_along.nc"
+end
 
 GDP_CloudDrift.CloudDrift_subset_download()
 
