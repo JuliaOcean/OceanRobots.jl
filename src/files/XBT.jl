@@ -1,7 +1,8 @@
 
 module XBT
 
-using TableScraper, HTTP, Downloads, CodecZlib, Dates, Glob
+import Lexbor
+using HTTP, Downloads, CodecZlib, Dates, Glob
 using DataFrames, CSV, Dataverse, Interpolations
 import OceanRobots: XBTtransect, query, THREDDS, Dataset
 import Base: read
@@ -208,6 +209,21 @@ function scan_SIO()
     data
 end
 
+# use Lexbor.jl to extract list of cruises from SIO webpage
+
+node_text(n::Lexbor.Node) = replace(Lexbor._content(n.ptr), '\u00a0' => ' ', '\r' => "")
+
+table_rows(t) = [[node_text(c) for c in Lexbor.query(tr, "th, td")]
+                 for tr in Lexbor.query(t, "tr")]
+
+function scrape_tables_SIO(url; leaves_only=true)
+    html = sprint(io -> Downloads.download(url, io))
+    doc  = Lexbor.Document(html)
+    tbls = Lexbor.query(doc, "table")
+    leaves_only && (tbls = filter(t -> isempty(Lexbor.query(t, "table")), tbls))
+    [table_rows(t) for t in tbls]
+end
+
 function list_of_cruises_SIO(transect="PX05")
 	PX=transect[3:end]
 	PX=( transect=="PX06-South" ? "37s" : PX )
@@ -219,9 +235,9 @@ function list_of_cruises_SIO(transect="PX05")
 	
     url0="https://www-hrx.ucsd.edu/$(pp)x$(PX).html"
     url_base=url0[1:end-5]*"/$(pp)$(PX)"
-    x=scrape_tables(url0)
-    y=x[4].rows
-
+    x=scrape_tables_SIO(url0)
+    y=x[2]
+    
     months=Int[]; years=Int[]; cruises=String[]; url00=String[]; 
     for row in 3:length(y)
         z=y[row]
