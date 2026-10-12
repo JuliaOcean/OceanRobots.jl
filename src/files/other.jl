@@ -4,7 +4,7 @@ module CCHDO
 import Downloads, Dataverse, NCDatasets, Glob
 import NCDatasets: Dataset
 import DataFrames: DataFrame
-import JSON3, HTTP
+import JSON, HTTP
 import Statistics: median
 
 import Base: read
@@ -40,7 +40,7 @@ end
     extract_json_table(url)
 
 ```
-using JSON3, HTTP
+using JSON, HTTP
 
 url="https://cchdo.ucsd.edu/search?q=GO-SHIP"
 url="https://cchdo.ucsd.edu/search?bbox=-75,-60,20,65" #Atlantic
@@ -67,7 +67,7 @@ function extract_json_table(url="https://cchdo.ucsd.edu/search?q=GO-SHIP";
     x2=findall("]]}}]",tmp)[1]
     y=maximum(x1)+1:maximum(x2)
 
-    table=JSON3.read(tmp[y])
+    table=JSON.parse(tmp[y])
 
     if format=="json"
     table
@@ -852,7 +852,7 @@ function index()
     !isfile(fil) ? FTPClient.download(ftp, "oceansites_index.txt",fil) : nothing
 
     #main table
-    oceansites_index=DataFrame(CSV.File(fil; header=false, skipto=9, silencewarnings=true))
+    oceansites_index=DataFrame(CSV.File(fil; header=false, skipto=9, on_error=:collect))
     
     #treat lines which seem mis-formatted
  #   aa=findall((ismissing).(oceansites_index.Column17))
@@ -917,7 +917,8 @@ end
 
 module OceanOPS
 
-using Downloads, CSV, DataFrames, JSON3, HTTP
+using Downloads, CSV, DataFrames, HTTP
+import JSON
 
 status_url(s::Symbol)="https://www.ocean-ops.org/share/"*string(s)*"/Status/"  
 
@@ -940,7 +941,7 @@ list_Argo4=OceanOPS.get_list(:Argo,status="INACTIVE")
 """
 function get_list(nam=:Argo; status="OPERATIONAL")
     url,_=get_url(nam; status=status)
-    tmp=JSON3.read(String(HTTP.get(url).body))
+    tmp=JSON.parse(String(HTTP.get(url).body))
     [i.id for i in tmp.data]
 end
 
@@ -956,7 +957,7 @@ For more information see
 """
 function get_list_pos(nam=:Argo; status="OPERATIONAL")
     _,url=get_url(nam; status=status)
-    tmp=JSON3.read(String(HTTP.get(url).body))
+    tmp=JSON.parse(String(HTTP.get(url).body))
     lon=Float64[]
     lat=Float64[]
     flag=Symbol[]
@@ -1029,7 +1030,7 @@ function get_platform(i)
     url="https://www.ocean-ops.org/api/1/data/platform/$(i)"*
         "?include=[%22ptfDepl.ship.name%22,%20%22ref%22,%20%22program.country.name%22,"*
         "%20%22ptfDepl.deplDate%22,%20%22ptfStatus.name%22]"
-    tmp=JSON3.read(String(HTTP.get(url).body))
+    tmp=JSON.parse(String(HTTP.get(url).body))
     #
     ship=(isnothing(tmp.data[1].ptfDepl.ship) ? 
         missing : tmp.data[1].ptfDepl.ship.name)
@@ -1052,7 +1053,7 @@ function list_platform_types()
     list_platform_types=DataFrame(:nameShort=>String[],:name=>String[],:description=>Any[],:wigosCode=>Any[],:id=>Int[])
     
     url="https://www.ocean-ops.org/api/1/data/platformtype"
-    tmp=JSON3.read(String(HTTP.get(url).body))
+    tmp=JSON.parse(String(HTTP.get(url).body))
     for i in tmp.data
         push!(list_platform_types,(nameShort=i.nameShort,name=i.name,
                     description=i.description,wigosCode=i.wigosCode,id=i.id))

@@ -235,6 +235,15 @@ try
     show(xbt2)
     @test isa(xbt2,XBTtransect)
 
+
+    files = XBT.download_AOML_cruise("AX08", "ax80102_qc.tgz")
+    da, meta = XBT.read_NOAA_XBT(dirname(files[1]))
+
+    @test nrow(da) > 0 && nrow(meta) > 0
+    @test names(da) == ["cast","lon","lat","time","depth","temp"]
+    @test all(XBT.year.(meta.time) .== 2002)     # check the " 2" century fix -> "2002", across all casts
+    @test issorted(unique(meta.cast))
+
     ##
 
     path0=tempname()

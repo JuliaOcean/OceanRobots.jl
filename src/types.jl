@@ -1,5 +1,5 @@
 
-using DataFrames, NCDatasets, JSON3
+using DataFrames, NCDatasets
 
 abstract type AbstractOceanRobotData <: Any end
 

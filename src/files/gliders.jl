@@ -123,7 +123,7 @@ end
 
 module Glider_EGO_module
 
-import FTPClient, NCDatasets, DataFrames, JSON3
+import FTPClient, NCDatasets, DataFrames, JSON
 import OceanRobots: Glider_EGO
 import Base: read
 
@@ -250,7 +250,7 @@ function read_Glider_EGO(ID::Int; ftp=missing, verbose=false, mission=1)
 	verbose ? println(file_nc) : nothing
 	verbose ? println(file_json) : nothing
     ds=NCDatasets.Dataset(file_nc)
-    js=JSON3.read(file_json)
+    js=JSON.parsefile(file_json)
     (IDs=IDs,file_nc=file_nc,file_json=file_json,ds=ds,js=js)
 end
 
