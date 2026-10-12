@@ -6,8 +6,10 @@ Each type of ocean data gets :
 - a default `plot` function that depicts some of the data.
 
 ```@example ex1
-using MeshArrays, GeoJSON, DataDeps
-pol=MeshArrays.Dataset("countries_geojson1")
+#using MeshArrays, GeoJSON, DataDeps
+#pol=MeshArrays.Dataset("countries_geojson1")
+pol=missing
+
 GC.gc() #hide
 nothing #hide
 ```
@@ -140,8 +142,8 @@ end
     To put data in context, it is useful to download gridded data sets.
 
 ```@example ex1
-using Climatology, CairoMakie, NCDatasets
-SLA=read(SeaLevelAnomaly(name="sla_podaac"))
-plot(SLA)
+#using Climatology, CairoMakie, NCDatasets
+#SLA=read(SeaLevelAnomaly(name="sla_podaac"))
+#plot(SLA)
 ```
 

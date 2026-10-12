@@ -5,8 +5,8 @@ println("downloading files ...")
 ENV["DATADEPS_ALWAYS_ACCEPT"]=true
 OceanRobotsMakieExt=Base.get_extension(OceanRobots, :OceanRobotsMakieExt)
 
-using MeshArrays, GeoJSON, DataDeps
-pol=MeshArrays.Dataset("countries_geojson1")
+#using MeshArrays, GeoJSON, DataDeps
+#pol=MeshArrays.Dataset("countries_geojson1")
 
 try
     Glider_Spray_module.check_for_file_Spray("GulfStream.nc")
