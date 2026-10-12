@@ -290,7 +290,8 @@ function read_NOAA_XBT(path; on_error=:collect, output_format="DataFrame")
   meta=DataFrame()
   for ii in 1:length(list)
     fil=list[ii]
-    tmp1=CSV.read(fil,DataFrame,header=1,limit=1,delim=' ',ignorerepeated=true, on_error=:collect)
+    tmp1=CSV.read(fil,DataFrame,header=1,limit=1,delim=' ',ignorerepeated=true)
+    #tmp1=DataFrame(CSV.File(fil; header=1, limit=1,delim=' ',ignorerepeated=true,on_error=on_error))
     #
     tmp2=tmp1[1,5]
     t=(if size(tmp1,2)==7
@@ -306,7 +307,8 @@ function read_NOAA_XBT(path; on_error=:collect, output_format="DataFrame")
     t=DateTime(d,Time(h,m,0))
     #
     append!(meta,DataFrame("lon"=>tmp1.long,"lat"=>tmp1.lat,"time"=>t,"cast"=>tmp1.Cast))
-    d=CSV.read(fil,DataFrame,header=11,skipto=13,delim=' ',ignorerepeated=true, on_error=on_error)
+    d=DataFrame(CSV.File(fil; header=11,skipto=13,delim=' ',ignorerepeated=true, on_error=on_error))
+
     d.lon.=meta.lon[end]
     d.lat.=meta.lat[end]
     d.time.=meta.time[end]

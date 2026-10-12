@@ -852,8 +852,7 @@ function index()
     !isfile(fil) ? FTPClient.download(ftp, "oceansites_index.txt",fil) : nothing
 
     #main table
-    oceansites_index=DataFrame(CSV.File(fil; header=false, skipto=9, 
-    on_error=:collect))
+    oceansites_index=DataFrame(CSV.File(fil; header=false, skipto=9, on_error=:collect))
     
     #treat lines which seem mis-formatted
  #   aa=findall((ismissing).(oceansites_index.Column17))
