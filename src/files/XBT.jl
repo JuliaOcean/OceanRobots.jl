@@ -265,64 +265,172 @@ end
 
 ## NOAA AOML data
 
+##### single-cast reader
+
+yr4(y) = y < 50 ? 2000 + y : y < 100 ? 1900 + y : y
+
 """
-    read_NOAA_XBT(path)
+    read_hrx_profile(fil; missval=nothing)
+
+Parse one NOAA/AOML high-resolution XBT cast file. Returns a `DataFrame` of the
+profile block, with cast position/time and the free-form header stored as
+table-level metadata (`:note` style).
+
+Handles the space-padded year in the cast line (e.g. `01/10/ 2`), locates the
+numeric block from the file's own `columns represent :` marker, and tolerates an
+optional units line.
+
+Pass `missval=-9.0` to convert the fill value to `missing`.
+"""
+function read_hrx_profile(fil; missval=nothing)
+    ls = readlines(fil)
+    length(ls) < 2 && error("file too short: $fil")
+
+    ## 1 - cast line: tolerates "01/10/ 2", " 1/10/02", "01/10/2002"
+    m = match(r"""^\s*(\d+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+
+                  (\d{1,2})\s*/\s*(\d{1,2})\s*/\s*(\d{1,4})\s+(\d{1,4})"""x, ls[2])
+    isnothing(m) && error("cannot parse cast line of $fil: ", repr(ls[2]))
+
+    yraw = parse(Int, m[7])
+    year = length(strip(m[7])) >= 4 ? yraw : yr4(yraw)
+    date = Date(year, parse(Int, m[5]), parse(Int, m[6]))
+    gmt  = parse(Int, m[8])
+
+    cast = Dict{String,Any}(
+        "cast" => parse(Int,     m[1]),
+        "lat"  => parse(Float64, m[2]),
+        "lon"  => parse(Float64, m[3]),
+        "jday" => parse(Int,     m[4]),
+        "gmt"  => gmt,
+        "date" => date,
+        "time" => DateTime(date) + Hour(gmt ÷ 100) + Minute(gmt % 100))
+
+    ## 2 - locate numeric block (replaces hard-coded header=11, skipto=13)
+    i = findfirst(l -> occursin(r"columns\s+represent", l), ls)
+    isnothing(i) && error("no 'columns represent' marker in $fil")
+    cols = Symbol.(split(ls[i+1]))
+    u    = i+2 <= length(ls) ? split(ls[i+2]) : String[]
+    numeric_u = !isempty(u) && all(x -> !isnothing(tryparse(Float64, x)), u)
+    j     = numeric_u ? i+2 : i+3
+    units = numeric_u ? fill("", length(cols)) :
+            [u; fill("", max(0, length(cols) - length(u)))]
+
+    ## 3 - free-form metadata ("Key: value", several per line)
+    meta = Dict{String,Any}()
+    for l in ls[3:i-1]
+        for mm in eachmatch(
+                r"([A-Za-z_][A-Za-z_0-9]*):\s*(.*?)(?=\s{2,}[A-Za-z_][A-Za-z_0-9]*:|\s*$)", l)
+            v = strip(mm[2])
+            isempty(v) || (meta[mm[1]] = (v == "NA" ? missing : v))
+        end
+    end
+    free = filter(l -> !occursin(':', l) && !isempty(strip(l)), ls[3:i-1])
+    isempty(free) || (meta["comments"] = strip.(free))
+
+    ## 4 - the profile itself
+    body = filter(!isempty ∘ strip, ls[j:end])
+    df = CSV.read(IOBuffer(join(body, '\n')), DataFrame;
+                  header=cols, delim=' ', ignorerepeated=true,
+                  types=Float64,  on_error=:collect)
+
+    if missval !== nothing
+        for c in propertynames(df)
+            df[!, c] = [ismissing(x) || x == missval ? missing : x for x in df[!, c]]
+        end
+    end
+
+    for (k, v) in cast; metadata!(df, k, v; style=:note); end
+    for (k, v) in meta; metadata!(df, k, v; style=:note); end
+    for (c, un) in zip(cols, units)
+        isempty(un) || colmetadata!(df, c, "units", un; style=:note)
+    end
+    return df
+end
+
+##### directory-level wrapper
+
+"""
+    read_NOAA_XBT(path; output_format="DataFrame", temp_var=:th, missval=nothing)
+
+Read all NOAA/AOML high-resolution XBT cast files found in `path`.
+Returns `(data, meta)`, where `meta` has one row per cast
+(`lon`, `lat`, `time`, `cast`) and `data` holds the profiles.
 
 ```
 using OceanRobots
-files=XBT.download_AOML_cruise(8,"ax80102_qc.tgz")
+files=XBT.download_AOML_cruise("AX08","ax80102_qc.tgz")
 (data,meta)=XBT.read_NOAA_XBT(dirname(files[1]))
 ```
 
-List of variables:
+Output formats:
 
+- `output_format="DataFrame"` (default) : `cast`, `lon`, `lat`, `time`,
+  `depth` (= `de`), `temp` (= `temp_var`, `:th` by default).
+- anything else : all columns found in the files, as named below, plus
+  `cast`, `lon`, `lat`, `time`.
+
+List of variables (as named in the files):
+
+- "pr" is for pressure
 - "te" is for in situ temperature
 - "th" is for potential temperature
-- “sa” for salinity (climatology from WOA)
-- “ht” for dynamic height reference to sea surface
-- “de” for depth
-- “ox” for oxygen
-- “Cast” for oxygen
+- "sa" for salinity (climatology from WOA)
+- "ht" for dynamic height referenced to sea surface
+- "de" for depth
+- "ox" for oxygen (present only in files that report it)
+- "cast" for the cast number
+
+Notes:
+
+- `-9.000` is the fill value; pass `missval=-9.0` to get `missing` instead.
+- Columns are taken from each file's own `columns represent :` block, so files
+  with different variable sets can be mixed (absent columns become `missing`).
+- Per-cast header info (`Ship_name`, `Probe_type`, `Bottom_depth`, ...) is
+  available via `metadata()` on the per-file `read_hrx_profile` result.
+- `on_error=:collect` skips unparseable files with a warning; anything else
+  rethrows.
 """
-function read_NOAA_XBT(path; on_error=:collect, output_format="DataFrame")
-  list=glob("*.???",path)
-  data=DataFrame()
-  meta=DataFrame()
-  for ii in 1:length(list)
-    fil=list[ii]
-    tmp1=CSV.read(fil,DataFrame,header=1,limit=1,delim=' ',ignorerepeated=true)
-    #tmp1=DataFrame(CSV.File(fil; header=1, limit=1,delim=' ',ignorerepeated=true,on_error=on_error))
-    #
-    tmp2=tmp1[1,5]
-    t=(if size(tmp1,2)==7
-        tmp2*"200"*string(tmp1[1,6])
+function read_NOAA_XBT(path; on_error=:collect, output_format="DataFrame",
+                       temp_var=:th, missval=nothing, verbose=false)
+    temp_var = Symbol(temp_var)
+    list = glob("*.???", path)
+    data = DataFrame()
+    meta = DataFrame()
+
+    for fil in list
+        verbose && println(fil)
+        df = try
+            read_hrx_profile(fil; missval)
+        catch err
+            on_error === :collect || rethrow()
+            @warn "skipping $fil" exception=(err, catch_backtrace())
+            continue
+        end
+
+        append!(meta, DataFrame("lon"  => metadata(df, "lon"),
+                                "lat"  => metadata(df, "lat"),
+                                "time" => metadata(df, "time"),
+                                "cast" => metadata(df, "cast")))
+
+        df.lon  .= metadata(df, "lon")
+        df.lat  .= metadata(df, "lat")
+        df.time .= metadata(df, "time")
+        df.cast .= metadata(df, "cast")
+        append!(data, df; cols=:union)
+    end
+
+    isempty(data) && return (data, meta)
+
+    if output_format == "DataFrame"
+        tv = hasproperty(data, temp_var) ? temp_var : (temp_var === :th ? :te : :th)
+        da = DataFrame("cast" => data.cast, "lon" => data.lon, "lat" => data.lat,
+                       "time" => data.time, "depth" => data.de, "temp" => data[!, tv])
+        colmetadata!(da, :temp,  "variable", string(tv); style=:note)
+        colmetadata!(da, :depth, "variable", "de";       style=:note)
+        return (da, meta)
     else
-        tmp2a=tmp2[end-1:end]
-        tmp2b=parse(Int,tmp2a)
-        tmp2[1:end-2]*(tmp2b<50 ? "19"*tmp2a : "20"*tmp2a)
-    end)
-    d=Date(t,"mm/dd/yyyy")
-    h=div(tmp1[1,end],100)
-    m=rem(tmp1[1,end],100)
-    t=DateTime(d,Time(h,m,0))
-    #
-    append!(meta,DataFrame("lon"=>tmp1.long,"lat"=>tmp1.lat,"time"=>t,"cast"=>tmp1.Cast))
-    d=DataFrame(CSV.File(fil; header=11,skipto=13,delim=' ',ignorerepeated=true, on_error=on_error))
-
-    d.lon.=meta.lon[end]
-    d.lat.=meta.lat[end]
-    d.time.=meta.time[end]
-    d.cast.=meta.cast[end]
-    append!(data,d)
-  end
-
-  if output_format=="DataFrame"
-    da=DataFrame("cast"=>data.cast,"lon"=>data.lon,"lat"=>data.lat,
-        "time"=>data.time,"depth"=>data.de,"temp"=>data.th)
-    (da,meta)
-  else
-    (data,meta)
-  end
+        return (data, meta)
+    end
 end
 
 ### Query and helper methods
