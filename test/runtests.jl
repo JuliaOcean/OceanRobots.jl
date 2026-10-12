@@ -209,7 +209,7 @@ end
 
 try
 @testset "XBT" begin
-    xbt=read(XBTtransect(),source="IMOS",transect="IX21",cruise="2006")
+    xbt=read(XBTtransect(),source="IMOS",transect="IX21",cruise="2003")
     fig=plot(xbt)
     @test isa(fig,Figure)
 

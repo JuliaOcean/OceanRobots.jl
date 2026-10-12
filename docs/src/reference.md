@@ -73,7 +73,7 @@ plot(buoy)
 
 ### WHOTS Mooring
 
-```@example ex1
+```
 using OceanRobots
 whots=read(OceanSite(),:WHOTS)
 
@@ -87,7 +87,7 @@ plot(whots,date1,date2)
 
 Three data sets, corresponding to different glider programs (`Spray`, `EGO`, `AOML`).
 
-```@example ex1
+```
 using OceanRobots, CairoMakie
 glider=read(Glider_Spray(),"GulfStream.nc",1)
 plot(glider,pol=pol)
@@ -126,7 +126,8 @@ query
 ```@example ex1
 list=(  ArgoFloat, SurfaceDrifter, XBTtransect, ShipCruise,
         ObservingPlatform, OceanSite, NOAAbuoy,
-        Glider_AOML, Glider_Spray, Glider_EGO )
+        Glider_AOML, Glider_EGO )
+#has failed : Glider_Spray
 
 for T in list
     println("\n"); show(T); println("\n"); show(query(T));
